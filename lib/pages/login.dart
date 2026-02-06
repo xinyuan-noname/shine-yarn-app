@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shine/components/input.dart';
 import 'package:shine/theme.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -27,19 +28,7 @@ class _LoginPageState extends State<LoginPage> {
               child: const Text("学号姓名密码登录", style: TextStyle(fontSize: 24)),
             ),
             const SizedBox(height: 40),
-            const Text("学号", style: TextStyle(fontSize: smallFontSize)),
-            TextField(
-              decoration: InputDecoration(
-                hintText: "请输入学号",
-                contentPadding: EdgeInsets.only(left: 10),
-                filled: true,
-                fillColor: mainColorPurple,
-                border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
-            ),
+            NumberInput(title: "学号"),
             const SizedBox(height: 10),
             const Text("姓名", style: TextStyle(fontSize: smallFontSize)),
             TextField(
@@ -47,7 +36,6 @@ class _LoginPageState extends State<LoginPage> {
                 hintText: "请输入姓名",
                 contentPadding: EdgeInsets.only(left: 10),
                 filled: true,
-                fillColor: mainColorPurple,
                 border: OutlineInputBorder(
                   borderSide: BorderSide.none,
                   borderRadius: BorderRadius.circular(15),
@@ -55,9 +43,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             const SizedBox(height: 10),
-            Password(
-              color:mainColorPurple
-            ),
+            Password(),
             const SizedBox(height: 30),
             Container(
               color: mainColorPurple,

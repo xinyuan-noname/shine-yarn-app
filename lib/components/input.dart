@@ -137,9 +137,9 @@ class _NumberInputState extends State<NumberInput> {
     String? error;
     if (widget.isRequired) {
       error = "${widget.title}为必填项";
-    } else if (regexp.hasMatch(value)) {
+    } else if (!regexp.hasMatch(value)) {
       error = "${widget.title}必须为数字";
-    } else if (regexp.hasMatch(value)) {
+    } else if (!regexp.hasMatch(value)) {
       error = widget.patternErrorText ?? "格式错误";
     }
     setState(() {
@@ -182,6 +182,80 @@ class _NumberInputState extends State<NumberInput> {
             }
           },
           onSubmitted: _validator,
+        ),
+      ],
+    );
+  }
+}
+
+class CnNameInput extends StatefulWidget {
+  final TextStyle? labelStyle;
+  final OutlineInputBorder? border;
+  final InputDecoration? decoration;
+  final Color? color;
+  final bool isRequired;
+  const CnNameInput({
+    super.key,
+    this.color,
+    this.labelStyle,
+    this.border,
+    this.decoration,
+    required this.isRequired,
+  });
+  @override
+  State<CnNameInput> createState() => _CnNameInputState();
+}
+
+class _CnNameInputState extends State<CnNameInput> {
+  String? _errorText;
+  static final RegExp regexp = RegExp(
+    r"^[\u4e00-\u9fff]+(?:\u00b7[\u4e00-\u9fff]+)*$",
+  );
+  void _validate(String value) {
+    late String? error;
+    if (!widget.isRequired) {
+      error = "姓名为必填项";
+    } else if (regexp.hasMatch(value)) {
+      error = "不是合法的中文名";
+    }
+    setState(() {
+      _errorText = error;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "密码",
+          style: widget.labelStyle ?? Theme.of(context).textTheme.labelMedium,
+        ),
+        TextField(
+          decoration:
+              widget.decoration ??
+              InputDecoration(
+                hintText: "请输入姓名",
+                contentPadding: EdgeInsets.only(left: 10),
+                filled: true,
+                fillColor:
+                    widget.color ??
+                    Theme.of(context).inputDecorationTheme.fillColor,
+                border:
+                    widget.border ??
+                    Theme.of(context).inputDecorationTheme.border,
+                errorText: _errorText,
+              ),
+          onSubmitted: _validate,
+          onChanged: (value) {
+            if (_errorText != null) {
+              setState(() {
+                _errorText = null;
+              });
+            }
+          },
         ),
       ],
     );

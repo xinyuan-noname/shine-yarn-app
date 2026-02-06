@@ -47,6 +47,12 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         scaffoldBackgroundColor: bgColorLight,
         textTheme: TextTheme(labelMedium: TextStyle(fontSize: 14)),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderSide: BorderSide.none,
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
       ),
       home: SplashPage(slot: firstViewLight),
     );
