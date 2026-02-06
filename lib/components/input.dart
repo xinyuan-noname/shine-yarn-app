@@ -54,10 +54,29 @@ class _PasswordState extends State<Password> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "密码",
-          style: widget.labelStyle ?? Theme.of(context).textTheme.labelMedium,
-        ),
+        widget.isRequired
+            ? Text.rich(
+                TextSpan(
+                  children: [
+                    const TextSpan(
+                      text: "*",
+                      style: TextStyle(color: Colors.red),
+                    ),
+                    TextSpan(
+                      text: "密码",
+                      style:
+                          widget.labelStyle ??
+                          Theme.of(context).textTheme.labelMedium,
+                    ),
+                  ],
+                ),
+              )
+            : Text(
+                "密码",
+                style:
+                    widget.labelStyle ??
+                    Theme.of(context).textTheme.labelMedium,
+              ),
         TextField(
           keyboardType: TextInputType.visiblePassword,
           textInputAction: widget.isLast
@@ -160,10 +179,29 @@ class _NumberInputState extends State<NumberInput> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          widget.title,
-          style: widget.labelStyle ?? Theme.of(context).textTheme.labelMedium,
-        ),
+        widget.isRequired
+            ? Text.rich(
+                TextSpan(
+                  children: [
+                    const TextSpan(
+                      text: "*",
+                      style: TextStyle(color: Colors.red),
+                    ),
+                    TextSpan(
+                      text: widget.title,
+                      style:
+                          widget.labelStyle ??
+                          Theme.of(context).textTheme.labelMedium,
+                    ),
+                  ],
+                ),
+              )
+            : Text(
+                widget.title,
+                style:
+                    widget.labelStyle ??
+                    Theme.of(context).textTheme.labelMedium,
+              ),
         TextField(
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -242,10 +280,29 @@ class _CnNameInputState extends State<CnNameInput> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "密码",
-          style: widget.labelStyle ?? Theme.of(context).textTheme.labelMedium,
-        ),
+        widget.isRequired
+            ? Text.rich(
+                TextSpan(
+                  children: [
+                    const TextSpan(
+                      text: "*",
+                      style: TextStyle(color: Colors.red),
+                    ),
+                    TextSpan(
+                      text: "姓名",
+                      style:
+                          widget.labelStyle ??
+                          Theme.of(context).textTheme.labelMedium,
+                    ),
+                  ],
+                ),
+              )
+            : Text(
+                "姓名",
+                style:
+                    widget.labelStyle ??
+                    Theme.of(context).textTheme.labelMedium,
+              ),
         TextField(
           keyboardType: TextInputType.text,
           textInputAction: widget.isLast
