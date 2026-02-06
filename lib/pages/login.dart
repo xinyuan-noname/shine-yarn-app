@@ -25,7 +25,19 @@ class _LoginPageState extends State<LoginPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
-              child: const Text("学号姓名密码登录", style: TextStyle(fontSize: 24)),
+              child: const Text(
+                "学号姓名密码登录",
+                style: TextStyle(
+                  color: Colors.white30,
+                  fontFamily: "SmileySans",
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                  shadows: [
+                    Shadow(offset: Offset(1, 1), color: mainColorPurple),
+                    Shadow(offset: Offset(-1, -1), color: mainColorPurple),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 40),
             NumberInput(title: "学号", color: mainColorPurple, isRequired: true),
@@ -34,11 +46,26 @@ class _LoginPageState extends State<LoginPage> {
             const SizedBox(height: 10),
             Password(color: mainColorPurple),
             const SizedBox(height: 30),
-            Container(
-              color: mainColorPurple,
-              width: double.infinity,
+            SizedBox(
               height: 48,
-              child: TextButton(onPressed: () {}, child: const Text("登录")),
+              child: Align(
+                alignment: Alignment.center,
+                child: TextButton(
+                  onPressed: () {},
+                  style: TextButton.styleFrom(
+                    backgroundColor: mainColorPurple,
+                    padding: EdgeInsets.fromLTRB(20, 5, 20, 5),
+                  ),
+                  child: const Text(
+                    "登录",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: "SmileySans",
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
