@@ -1,10 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class Password extends StatefulWidget {
   final Color? color;
   final String? Function(String?)? validator;
   final TextStyle? labelStyle;
-  const Password({super.key, this.color, this.validator, this.labelStyle});
+  final OutlineInputBorder? border;
+  final InputDecoration? decoration;
+  final int maxLen;
+  final int minLen;
+  final bool isRequired;
+  const Password({
+    super.key,
+    this.color,
+    this.validator,
+    this.labelStyle,
+    this.border,
+    this.decoration,
+    this.isRequired = false,
+    this.maxLen = 32,
+    this.minLen = 8,
+  });
 
   @override
   State<Password> createState() => _PasswordState();
@@ -13,6 +29,22 @@ class Password extends StatefulWidget {
 class _PasswordState extends State<Password> {
   String? _errorText;
   bool _obscureText = true;
+  void _validate(String value) {
+    late String? error;
+    if (!widget.isRequired) {
+      error = "密码为必填项";
+    } else if (widget.validator != null) {
+      error = widget.validator?.call(value);
+    } else if (value.length < widget.minLen) {
+      error = "密码太短";
+    } else if (value.length > widget.maxLen) {
+      error = "密码过长";
+    }
+    setState(() {
+      _errorText = error;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -25,32 +57,36 @@ class _PasswordState extends State<Password> {
         ),
         TextField(
           keyboardType: TextInputType.visiblePassword,
+          textInputAction: TextInputAction.done,
+          autocorrect: false,
+          enableSuggestions: false,
           obscureText: _obscureText,
           obscuringCharacter: '•',
-          decoration: InputDecoration(
-            hintText: "请输入密码",
-            errorText: _errorText,
-            contentPadding: EdgeInsets.only(left: 10),
-            filled: true,
-            fillColor:
-                widget.color ??
-                Theme.of(context).inputDecorationTheme.fillColor,
-            border: OutlineInputBorder(
-              borderSide: BorderSide.none,
-              borderRadius: BorderRadius.circular(15),
-            ),
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscureText ? Icons.visibility_off : Icons.visibility,
-                color: Theme.of(context).iconTheme.color?.withAlpha(135),
+          decoration:
+              widget.decoration ??
+              InputDecoration(
+                hintText: "请输入密码",
+                errorText: _errorText,
+                contentPadding: const EdgeInsets.only(left: 10),
+                filled: true,
+                fillColor:
+                    widget.color ??
+                    Theme.of(context).inputDecorationTheme.fillColor,
+                border:
+                    widget.border ??
+                    Theme.of(context).inputDecorationTheme.border,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureText ? Icons.visibility_off : Icons.visibility,
+                    color: Theme.of(context).iconTheme.color?.withAlpha(135),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscureText = !_obscureText;
+                    });
+                  },
+                ),
               ),
-              onPressed: () {
-                setState(() {
-                  _obscureText = !_obscureText;
-                });
-              },
-            ),
-          ),
           onSubmitted: _validate,
           onChanged: (value) {
             if (_errorText != null) {
@@ -63,23 +99,91 @@ class _PasswordState extends State<Password> {
       ],
     );
   }
+}
 
-  void _validate(String? value) {
-    late String? error;
-    if (widget.validator != null) {
-      error = widget.validator?.call(value);
-    } else {
-      final pswdLen = value?.length ?? 0;
-      if (pswdLen <= 8) {
-        error = "密码太短";
-      } else if (pswdLen >= 32) {
-        error = "密码过长";
-      } else {
-        error = null;
-      }
+class NumberInput extends StatefulWidget {
+  final String title;
+  final TextStyle? labelStyle;
+  final OutlineInputBorder? border;
+  final Color? color;
+  final InputDecoration? decoration;
+  final int maxLen;
+  final int minLen;
+  final RegExp? pattern;
+  final String? patternErrorText;
+  final bool isRequired;
+  const NumberInput({
+    required this.title,
+    super.key,
+    this.labelStyle,
+    this.decoration,
+    this.color,
+    this.border,
+    this.pattern,
+    this.patternErrorText,
+    this.isRequired = false,
+    this.maxLen = 32,
+    this.minLen = 0,
+  });
+
+  @override
+  State<NumberInput> createState() => _NumberInputState();
+}
+
+class _NumberInputState extends State<NumberInput> {
+  static final RegExp regexp = RegExp(r"^\d+$");
+  String? _errorText;
+  _validator(String value) {
+    String? error;
+    if (widget.isRequired) {
+      error = "${widget.title}为必填项";
+    } else if (regexp.hasMatch(value)) {
+      error = "${widget.title}必须为数字";
+    } else if (regexp.hasMatch(value)) {
+      error = widget.patternErrorText ?? "格式错误";
     }
     setState(() {
       _errorText = error;
     });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.title,
+          style: widget.labelStyle ?? Theme.of(context).textTheme.labelMedium,
+        ),
+        TextField(
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          decoration:
+              widget.decoration ??
+              InputDecoration(
+                hintText: "请输入${widget.title}",
+                contentPadding: const EdgeInsets.only(left: 10),
+                filled: true,
+                fillColor:
+                    widget.color ??
+                    Theme.of(context).inputDecorationTheme.fillColor,
+                border:
+                    widget.border ??
+                    Theme.of(context).inputDecorationTheme.border,
+                errorText: _errorText,
+              ),
+          onChanged: (value) {
+            if (_errorText != null) {
+              setState(() {
+                _errorText = null;
+              });
+            }
+          },
+          onSubmitted: _validator,
+        ),
+      ],
+    );
   }
 }
