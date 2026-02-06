@@ -1,6 +1,114 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+class Input extends StatefulWidget {
+  final Color? color;
+  final String? Function(String?)? validator;
+  final TextStyle? labelStyle;
+  final OutlineInputBorder? border;
+  final InputDecoration? decoration;
+  final String title;
+  final int maxLen;
+  final int minLen;
+  final bool isRequired;
+  final bool isLast;
+  const Input({
+    super.key,
+    this.color,
+    this.validator,
+    this.labelStyle,
+    this.border,
+    this.decoration,
+    this.isRequired = false,
+    this.isLast = false,
+    this.maxLen = 100,
+    this.minLen = 1,
+    required this.title,
+  });
+  @override
+  State<Input> createState() => _InputState();
+}
+
+class _InputState extends State<Input> {
+  String? _errorText;
+  void _validate(String value) {
+    String? error;
+    if (widget.isRequired && value.isEmpty) {
+      error = "${widget.title}为必填项";
+    } else if (widget.validator != null) {
+      error = widget.validator?.call(value);
+    } else if (value.length < widget.minLen) {
+      error = "${widget.title}太短";
+    } else if (value.length > widget.maxLen) {
+      error = "${widget.title}过长";
+    }
+    setState(() {
+      _errorText = error;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        widget.isRequired
+            ? Text.rich(
+                TextSpan(
+                  children: [
+                    const TextSpan(
+                      text: "*",
+                      style: TextStyle(color: Colors.red),
+                    ),
+                    TextSpan(
+                      text: widget.title,
+                      style:
+                          widget.labelStyle ??
+                          Theme.of(context).textTheme.labelMedium,
+                    ),
+                  ],
+                ),
+              )
+            : Text(
+                widget.title,
+                style:
+                    widget.labelStyle ??
+                    Theme.of(context).textTheme.labelMedium,
+              ),
+        TextField(
+          keyboardType: TextInputType.text,
+          textInputAction: widget.isLast
+              ? TextInputAction.done
+              : TextInputAction.next,
+          decoration:
+              widget.decoration ??
+              InputDecoration(
+                hintText: "请输入${widget.title}",
+                errorText: _errorText,
+                contentPadding: const EdgeInsets.only(left: 10),
+                filled: true,
+                fillColor:
+                    widget.color ??
+                    Theme.of(context).inputDecorationTheme.fillColor,
+                border:
+                    widget.border ??
+                    Theme.of(context).inputDecorationTheme.border,
+              ),
+          onSubmitted: _validate,
+          onChanged: (value) {
+            if (_errorText != null) {
+              setState(() {
+                _errorText = null;
+              });
+            }
+          },
+        ),
+      ],
+    );
+  }
+}
+
 class Password extends StatefulWidget {
   final Color? color;
   final String? Function(String?)? validator;
@@ -10,7 +118,6 @@ class Password extends StatefulWidget {
   final int maxLen;
   final int minLen;
   final bool isRequired;
-
   final bool isLast;
   const Password({
     super.key,
@@ -148,7 +255,7 @@ class NumberInput extends StatefulWidget {
     this.patternErrorText,
     this.isRequired = false,
     this.maxLen = 32,
-    this.minLen = 0,
+    this.minLen = 1,
     this.isLast = false,
   });
 
@@ -159,7 +266,7 @@ class NumberInput extends StatefulWidget {
 class _NumberInputState extends State<NumberInput> {
   static final RegExp regexp = RegExp(r"^\d+$");
   String? _errorText;
-  _validator(String value) {
+  _validate(String value) {
     String? error;
     if (widget.isRequired && value.isEmpty) {
       error = "${widget.title}为必填项";
@@ -229,7 +336,7 @@ class _NumberInputState extends State<NumberInput> {
               });
             }
           },
-          onSubmitted: _validator,
+          onSubmitted: _validate,
         ),
       ],
     );
