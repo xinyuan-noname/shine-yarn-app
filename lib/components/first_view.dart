@@ -9,25 +9,30 @@ final Column firstViewLight = Column(
       style: TextStyle(
         fontFamily: "SmileySans",
         fontSize: 64,
-        color: mainColorGreenBule,
+        color: Colors.white30,
         shadows: [
-          Shadow(offset: Offset(1, 1), blurRadius: 20, color: Colors.grey),
           Shadow(
-            offset: Offset(2, 2),
-            blurRadius: 10,
-            color: mainColorPurple
+            offset: Offset(1, 1),
+            blurRadius: 20,
+            color: Colors.amberAccent,
           ),
+          Shadow(offset: Offset(3, 3), color: mainColorPurple),
+          Shadow(offset: Offset(-3, -3), color: mainColorPurple),
         ],
       ),
     ),
     Text(
       "by Shine Yarn",
       style: TextStyle(
-        fontSize: 6,
+        fontSize: 12,
         fontWeight: FontWeight.bold,
-        color: Color.fromARGB(255, 190, 130, 255),
+        color: Colors.cyanAccent,
         shadows: [
-          Shadow(offset: Offset(1, 2), blurRadius: 5, color: Colors.redAccent),
+          Shadow(
+            offset: Offset(1, 1),
+            blurRadius: 4,
+            color: Colors.orange.shade200.withAlpha(135),
+          ),
         ],
       ),
     ),
