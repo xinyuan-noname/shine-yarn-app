@@ -28,22 +28,11 @@ class _LoginPageState extends State<LoginPage> {
               child: const Text("学号姓名密码登录", style: TextStyle(fontSize: 24)),
             ),
             const SizedBox(height: 40),
-            NumberInput(title: "学号"),
+            NumberInput(title: "学号", color: mainColorPurple, isRequired: true),
             const SizedBox(height: 10),
-            const Text("姓名", style: TextStyle(fontSize: smallFontSize)),
-            TextField(
-              decoration: InputDecoration(
-                hintText: "请输入姓名",
-                contentPadding: EdgeInsets.only(left: 10),
-                filled: true,
-                border: OutlineInputBorder(
-                  borderSide: BorderSide.none,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
-            ),
+            CnNameInput(color: mainColorPurple, isRequired: true),
             const SizedBox(height: 10),
-            Password(),
+            Password(color: mainColorPurple),
             const SizedBox(height: 30),
             Container(
               color: mainColorPurple,

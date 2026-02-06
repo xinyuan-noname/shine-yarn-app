@@ -10,6 +10,8 @@ class Password extends StatefulWidget {
   final int maxLen;
   final int minLen;
   final bool isRequired;
+
+  final bool isLast;
   const Password({
     super.key,
     this.color,
@@ -20,6 +22,7 @@ class Password extends StatefulWidget {
     this.isRequired = false,
     this.maxLen = 32,
     this.minLen = 8,
+    this.isLast = false,
   });
 
   @override
@@ -31,7 +34,7 @@ class _PasswordState extends State<Password> {
   bool _obscureText = true;
   void _validate(String value) {
     late String? error;
-    if (!widget.isRequired) {
+    if (widget.isRequired && value.isEmpty) {
       error = "密码为必填项";
     } else if (widget.validator != null) {
       error = widget.validator?.call(value);
@@ -57,7 +60,9 @@ class _PasswordState extends State<Password> {
         ),
         TextField(
           keyboardType: TextInputType.visiblePassword,
-          textInputAction: TextInputAction.done,
+          textInputAction: widget.isLast
+              ? TextInputAction.done
+              : TextInputAction.next,
           autocorrect: false,
           enableSuggestions: false,
           obscureText: _obscureText,
@@ -112,6 +117,7 @@ class NumberInput extends StatefulWidget {
   final RegExp? pattern;
   final String? patternErrorText;
   final bool isRequired;
+  final bool isLast;
   const NumberInput({
     required this.title,
     super.key,
@@ -124,6 +130,7 @@ class NumberInput extends StatefulWidget {
     this.isRequired = false,
     this.maxLen = 32,
     this.minLen = 0,
+    this.isLast = false,
   });
 
   @override
@@ -135,7 +142,7 @@ class _NumberInputState extends State<NumberInput> {
   String? _errorText;
   _validator(String value) {
     String? error;
-    if (widget.isRequired) {
+    if (widget.isRequired && value.isEmpty) {
       error = "${widget.title}为必填项";
     } else if (!regexp.hasMatch(value)) {
       error = "${widget.title}必须为数字";
@@ -160,6 +167,9 @@ class _NumberInputState extends State<NumberInput> {
         TextField(
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          textInputAction: widget.isLast
+              ? TextInputAction.done
+              : TextInputAction.next,
           decoration:
               widget.decoration ??
               InputDecoration(
@@ -194,13 +204,16 @@ class CnNameInput extends StatefulWidget {
   final InputDecoration? decoration;
   final Color? color;
   final bool isRequired;
+
+  final bool isLast;
   const CnNameInput({
     super.key,
     this.color,
     this.labelStyle,
     this.border,
     this.decoration,
-    required this.isRequired,
+    this.isRequired = false,
+    this.isLast = false,
   });
   @override
   State<CnNameInput> createState() => _CnNameInputState();
@@ -213,7 +226,7 @@ class _CnNameInputState extends State<CnNameInput> {
   );
   void _validate(String value) {
     late String? error;
-    if (!widget.isRequired) {
+    if (widget.isRequired && value.isEmpty) {
       error = "姓名为必填项";
     } else if (regexp.hasMatch(value)) {
       error = "不是合法的中文名";
@@ -234,6 +247,10 @@ class _CnNameInputState extends State<CnNameInput> {
           style: widget.labelStyle ?? Theme.of(context).textTheme.labelMedium,
         ),
         TextField(
+          keyboardType: TextInputType.text,
+          textInputAction: widget.isLast
+              ? TextInputAction.done
+              : TextInputAction.next,
           decoration:
               widget.decoration ??
               InputDecoration(
