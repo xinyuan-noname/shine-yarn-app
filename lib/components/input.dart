@@ -33,7 +33,7 @@ class _PasswordState extends State<Password> {
   String? _errorText;
   bool _obscureText = true;
   void _validate(String value) {
-    late String? error;
+    String? error;
     if (widget.isRequired && value.isEmpty) {
       error = "密码为必填项";
     } else if (widget.validator != null) {
@@ -225,10 +225,10 @@ class _CnNameInputState extends State<CnNameInput> {
     r"^[\u4e00-\u9fff]+(?:\u00b7[\u4e00-\u9fff]+)*$",
   );
   void _validate(String value) {
-    late String? error;
+    String? error;
     if (widget.isRequired && value.isEmpty) {
       error = "姓名为必填项";
-    } else if (regexp.hasMatch(value)) {
+    } else if (!regexp.hasMatch(value)) {
       error = "不是合法的中文名";
     }
     setState(() {
