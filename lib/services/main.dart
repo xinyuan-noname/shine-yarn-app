@@ -5,11 +5,19 @@ class ApiService {
   static String? baseUrl;
   static getBaseUrl() async {
     final response = await Dio().get(
-      "https://cdn.jsdelivr.net/gh/xinyuan-noname/asset@main/url.txt",
+      "https://gitee.com/xinyuanwm/asset/raw/main/url.txt",
+      options: Options(
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
+      ),
     );
     final url = response.data;
     URLStorage.setBaseUrl(url as String);
     baseUrl = url;
-    print(url);
+    print(response);
+    print(response.headers);
   }
 }

@@ -38,6 +38,7 @@ class _MyAppState extends State<MyApp> {
       ts != null
           ? globalNavigatorKey.currentState?.pushReplacementNamed("/home")
           : globalNavigatorKey.currentState?.pushReplacementNamed("/login");
+      print("jump");
     });
   }
 
