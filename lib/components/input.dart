@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -515,5 +517,14 @@ extension TextEditingControllerMap on Map<String, TextEditingController> {
       map[name] = controller.text;
     }
     return map;
+  }
+
+  String get asTextJSON {
+    final map = <String, String>{};
+    for (final entry in entries) {
+      final name = entry.key, controller = entry.value;
+      map[name] = controller.text;
+    }
+    return jsonEncode(map);
   }
 }

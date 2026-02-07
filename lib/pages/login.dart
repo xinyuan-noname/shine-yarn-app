@@ -83,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         // 验证通过！可以提交数据
-                        print(_controllers.asTextMap);
+                        print(_controllers.asTextJSON);
                       }
                     },
                     style: ElevatedButton.styleFrom(
