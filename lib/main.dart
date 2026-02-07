@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:shine/components/first_view.dart';
 import 'package:shine/pages/splash.dart';
 import 'package:shine/routes.dart';
+import 'package:shine/services/main.dart';
 import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
 
@@ -31,7 +32,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   _prepare() {
-    Future.delayed(const Duration(seconds: 3), () async {
+    ApiService.getBaseUrl();
+    Future.delayed(const Duration(seconds: 2), () async {
       final ts = await TokenStorage.getAccessToken();
       ts != null
           ? globalNavigatorKey.currentState?.pushReplacementNamed("/home")
