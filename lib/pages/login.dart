@@ -40,31 +40,37 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 15),
               Input.number(
-                title: "学号",
+                label: "学号",
+                name: "id",
                 color: mainColorPurple,
                 isRequired: true,
               ),
-              const SizedBox(height: 10),
-              Input.cnName(color: mainColorPurple, isRequired: true),
-              const SizedBox(height: 10),
+              const SizedBox(height: 5),
+              Input.cnName(
+                label: "姓名",
+                name: "username",
+                color: mainColorPurple,
+                isRequired: true,
+              ),
+              const SizedBox(height: 5),
               Input.password(color: mainColorPurple),
-              const SizedBox(height: 30),
+              const SizedBox(height: 10),
               SizedBox(
                 height: 48,
                 child: Align(
                   alignment: Alignment.center,
-                  child: TextButton(
+                  child: ElevatedButton(
                     onPressed: () {},
-                    style: TextButton.styleFrom(
+                    style: ElevatedButton.styleFrom(
                       backgroundColor: mainColorPurple,
                       padding: EdgeInsets.fromLTRB(20, 5, 20, 5),
                     ),
                     child: const Text(
                       "登录",
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         fontFamily: "SmileySans",
                       ),

@@ -2,14 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class Input extends StatefulWidget {
+  static final TextInputFormatter _textInputFormatterNoEmptyCharacter =
+      FilteringTextInputFormatter.deny(RegExp(r"\s"));
+  static final TextInputFormatter _textInputFormatterAllowCnNameCharacter =
+      FilteringTextInputFormatter.allow(RegExp(r"[\u4e00-\u9fff\u00b7]"));
+  final String label;
+  final String name;
   final Color? color;
   final String? Function(String?)? validator;
   final TextStyle? labelStyle;
   final OutlineInputBorder? border;
   final InputDecoration? decoration;
-  final String title;
-  final int maxLen;
-  final int minLen;
+  final int maxLength;
+  final int minLength;
   final RegExp? pattern;
   final String? patternErrorText;
   final bool isRequired;
@@ -31,21 +36,25 @@ class Input extends StatefulWidget {
     this.isPassword = false,
     this.pattern,
     this.patternErrorText,
-    this.maxLen = 100,
-    this.minLen = 1,
+    this.maxLength = 100,
+    this.minLength = 1,
     this.keyboardType = TextInputType.text,
-    required this.title,
     this.inputFormatters,
+    required this.label,
+    required this.name,
   });
   @override
   State<Input> createState() => _InputState();
 
   factory Input.password({
     Key? key,
+    String label = '密码',
+    String name = 'password',
     bool isRequired = false,
-    int minLen = 8,
-    int maxLen = 32,
+    int minLength = 8,
+    int maxLength = 32,
     String? Function(String?)? validator,
+    List<TextInputFormatter>? inputFormatters,
     TextStyle? labelStyle,
     Color? color,
     OutlineInputBorder? border,
@@ -54,13 +63,15 @@ class Input extends StatefulWidget {
   }) {
     return Input(
       key: key,
-      title: '密码',
+      label: label,
+      name: name,
       isPassword: true,
       isRequired: isRequired,
-      minLen: minLen,
-      maxLen: maxLen,
+      minLength: minLength,
+      maxLength: maxLength,
       validator: validator,
       keyboardType: TextInputType.visiblePassword,
+      inputFormatters: inputFormatters ?? [_textInputFormatterNoEmptyCharacter],
       autocorrect: false,
       isLast: isLast,
       labelStyle: labelStyle,
@@ -72,19 +83,25 @@ class Input extends StatefulWidget {
 
   factory Input.cnName({
     Key? key,
+    String label = '姓名',
+    String name = 'cnName',
     bool isRequired = false,
     TextStyle? labelStyle,
     Color? color,
     OutlineInputBorder? border,
     InputDecoration? decoration,
     bool isLast = false,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return Input(
       key: key,
-      title: '姓名',
+      label: label,
+      name: name,
       isRequired: isRequired,
       pattern: RegExp(r"^[\u4e00-\u9fff]+(?:\u00b7[\u4e00-\u9fff]+)*$"),
       patternErrorText: '不是合法的中文名',
+      inputFormatters:
+          inputFormatters ?? [_textInputFormatterAllowCnNameCharacter],
       isLast: isLast,
       labelStyle: labelStyle,
       color: color,
@@ -95,27 +112,31 @@ class Input extends StatefulWidget {
 
   factory Input.number({
     Key? key,
-    required String title,
+    String label = '编号',
+    String name = 'number',
     bool isRequired = false,
-    int minLen = 1,
-    int maxLen = 32,
+    int minLength = 1,
+    int maxLength = 32,
     String? patternErrorText,
     TextStyle? labelStyle,
     Color? color,
     OutlineInputBorder? border,
+    List<TextInputFormatter>? inputFormatters,
     InputDecoration? decoration,
     bool isLast = false,
   }) {
     return Input(
       key: key,
-      title: title,
+      label: label,
+      name: name,
       isRequired: isRequired,
-      minLen: minLen,
-      maxLen: maxLen,
+      minLength: minLength,
+      maxLength: maxLength,
       pattern: RegExp(r'^\d+$'),
-      patternErrorText: patternErrorText ?? '$title必须为数字',
+      patternErrorText: patternErrorText ?? '$label必须为数字',
       keyboardType: TextInputType.number,
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      inputFormatters:
+          inputFormatters ?? [FilteringTextInputFormatter.digitsOnly],
       isLast: isLast,
       labelStyle: labelStyle,
       color: color,
@@ -140,15 +161,15 @@ class _InputState extends State<Input> {
   void _validate(String value) {
     String? error;
     if (widget.isRequired && value.isEmpty) {
-      error = "${widget.title}为必填项";
+      error = "${widget.label}为必填项";
     } else if (widget.validator != null) {
       error = widget.validator?.call(value) ?? "非法输入";
     } else if (widget.pattern != null && !widget.pattern!.hasMatch(value)) {
       error = widget.patternErrorText ?? '格式不正确';
-    } else if (value.length < widget.minLen) {
-      error = "${widget.title}太短";
-    } else if (value.length > widget.maxLen) {
-      error = "${widget.title}过长";
+    } else if (value.length < widget.minLength) {
+      error = "${widget.label}太短";
+    } else if (value.length > widget.maxLength) {
+      error = "${widget.label}过长";
     }
     setState(() {
       _errorText = error;
@@ -170,7 +191,7 @@ class _InputState extends State<Input> {
                       style: TextStyle(color: Colors.red),
                     ),
                     TextSpan(
-                      text: widget.title,
+                      text: widget.label,
                       style:
                           widget.labelStyle ??
                           Theme.of(context).textTheme.labelMedium,
@@ -179,7 +200,7 @@ class _InputState extends State<Input> {
                 ),
               )
             : Text(
-                widget.title,
+                widget.label,
                 style:
                     widget.labelStyle ??
                     Theme.of(context).textTheme.labelMedium,
@@ -195,7 +216,7 @@ class _InputState extends State<Input> {
           decoration:
               widget.decoration ??
               InputDecoration(
-                hintText: "请输入${widget.title}",
+                hintText: "请输入${widget.label}",
                 errorText: _errorText,
                 contentPadding: const EdgeInsets.only(left: 10),
                 filled: true,
