@@ -10,8 +10,14 @@ class Input extends StatefulWidget {
   final String title;
   final int maxLen;
   final int minLen;
+  final RegExp? pattern;
+  final String? patternErrorText;
   final bool isRequired;
   final bool isLast;
+  final TextInputType keyboardType;
+  final bool autocorrect;
+  final bool isPassword;
+  final List<TextInputFormatter>? inputFormatters;
   const Input({
     super.key,
     this.color,
@@ -21,22 +27,124 @@ class Input extends StatefulWidget {
     this.decoration,
     this.isRequired = false,
     this.isLast = false,
+    this.autocorrect = false,
+    this.isPassword = false,
+    this.pattern,
+    this.patternErrorText,
     this.maxLen = 100,
     this.minLen = 1,
+    this.keyboardType = TextInputType.text,
     required this.title,
+    this.inputFormatters,
   });
   @override
   State<Input> createState() => _InputState();
+
+  factory Input.password({
+    Key? key,
+    bool isRequired = false,
+    int minLen = 8,
+    int maxLen = 32,
+    String? Function(String?)? validator,
+    TextStyle? labelStyle,
+    Color? color,
+    OutlineInputBorder? border,
+    InputDecoration? decoration,
+    bool isLast = false,
+  }) {
+    return Input(
+      key: key,
+      title: '密码',
+      isPassword: true,
+      isRequired: isRequired,
+      minLen: minLen,
+      maxLen: maxLen,
+      validator: validator,
+      keyboardType: TextInputType.visiblePassword,
+      autocorrect: false,
+      isLast: isLast,
+      labelStyle: labelStyle,
+      color: color,
+      border: border,
+      decoration: decoration,
+    );
+  }
+
+  factory Input.cnName({
+    Key? key,
+    bool isRequired = false,
+    TextStyle? labelStyle,
+    Color? color,
+    OutlineInputBorder? border,
+    InputDecoration? decoration,
+    bool isLast = false,
+  }) {
+    return Input(
+      key: key,
+      title: '姓名',
+      isRequired: isRequired,
+      pattern: RegExp(r"^[\u4e00-\u9fff]+(?:\u00b7[\u4e00-\u9fff]+)*$"),
+      patternErrorText: '不是合法的中文名',
+      isLast: isLast,
+      labelStyle: labelStyle,
+      color: color,
+      border: border,
+      decoration: decoration,
+    );
+  }
+
+  factory Input.number({
+    Key? key,
+    required String title,
+    bool isRequired = false,
+    int minLen = 1,
+    int maxLen = 32,
+    String? patternErrorText,
+    TextStyle? labelStyle,
+    Color? color,
+    OutlineInputBorder? border,
+    InputDecoration? decoration,
+    bool isLast = false,
+  }) {
+    return Input(
+      key: key,
+      title: title,
+      isRequired: isRequired,
+      minLen: minLen,
+      maxLen: maxLen,
+      pattern: RegExp(r'^\d+$'),
+      patternErrorText: patternErrorText ?? '$title必须为数字',
+      keyboardType: TextInputType.number,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      isLast: isLast,
+      labelStyle: labelStyle,
+      color: color,
+      border: border,
+      decoration: decoration,
+    );
+  }
 }
 
 class _InputState extends State<Input> {
   String? _errorText;
+  // ignore: prefer_final_fields
+  bool _obscureText = false;
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      _obscureText = widget.isPassword;
+    });
+  }
+
   void _validate(String value) {
     String? error;
     if (widget.isRequired && value.isEmpty) {
       error = "${widget.title}为必填项";
     } else if (widget.validator != null) {
-      error = widget.validator?.call(value);
+      error = widget.validator?.call(value) ?? "非法输入";
+    } else if (widget.pattern != null && !widget.pattern!.hasMatch(value)) {
+      error = widget.patternErrorText ?? '格式不正确';
     } else if (value.length < widget.minLen) {
       error = "${widget.title}太短";
     } else if (value.length > widget.maxLen) {
@@ -77,248 +185,18 @@ class _InputState extends State<Input> {
                     Theme.of(context).textTheme.labelMedium,
               ),
         TextField(
-          keyboardType: TextInputType.text,
+          keyboardType: widget.keyboardType,
           textInputAction: widget.isLast
               ? TextInputAction.done
               : TextInputAction.next,
-          decoration:
-              widget.decoration ??
-              InputDecoration(
-                hintText: "请输入${widget.title}",
-                errorText: _errorText,
-                contentPadding: const EdgeInsets.only(left: 10),
-                filled: true,
-                fillColor:
-                    widget.color ??
-                    Theme.of(context).inputDecorationTheme.fillColor,
-                border:
-                    widget.border ??
-                    Theme.of(context).inputDecorationTheme.border,
-              ),
-          onSubmitted: _validate,
-          onChanged: (value) {
-            if (_errorText != null) {
-              setState(() {
-                _errorText = null;
-              });
-            }
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class Password extends StatefulWidget {
-  final Color? color;
-  final String? Function(String?)? validator;
-  final TextStyle? labelStyle;
-  final OutlineInputBorder? border;
-  final InputDecoration? decoration;
-  final int maxLen;
-  final int minLen;
-  final bool isRequired;
-  final bool isLast;
-  const Password({
-    super.key,
-    this.color,
-    this.validator,
-    this.labelStyle,
-    this.border,
-    this.decoration,
-    this.isRequired = false,
-    this.maxLen = 32,
-    this.minLen = 8,
-    this.isLast = false,
-  });
-
-  @override
-  State<Password> createState() => _PasswordState();
-}
-
-class _PasswordState extends State<Password> {
-  String? _errorText;
-  bool _obscureText = true;
-  void _validate(String value) {
-    String? error;
-    if (widget.isRequired && value.isEmpty) {
-      error = "密码为必填项";
-    } else if (widget.validator != null) {
-      error = widget.validator?.call(value);
-    } else if (value.length < widget.minLen) {
-      error = "密码太短";
-    } else if (value.length > widget.maxLen) {
-      error = "密码过长";
-    }
-    setState(() {
-      _errorText = error;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        widget.isRequired
-            ? Text.rich(
-                TextSpan(
-                  children: [
-                    const TextSpan(
-                      text: "*",
-                      style: TextStyle(color: Colors.red),
-                    ),
-                    TextSpan(
-                      text: "密码",
-                      style:
-                          widget.labelStyle ??
-                          Theme.of(context).textTheme.labelMedium,
-                    ),
-                  ],
-                ),
-              )
-            : Text(
-                "密码",
-                style:
-                    widget.labelStyle ??
-                    Theme.of(context).textTheme.labelMedium,
-              ),
-        TextField(
-          keyboardType: TextInputType.visiblePassword,
-          textInputAction: widget.isLast
-              ? TextInputAction.done
-              : TextInputAction.next,
-          autocorrect: false,
-          enableSuggestions: false,
+          autocorrect: widget.autocorrect,
+          inputFormatters: widget.inputFormatters,
           obscureText: _obscureText,
-          obscuringCharacter: '•',
-          decoration:
-              widget.decoration ??
-              InputDecoration(
-                hintText: "请输入密码",
-                errorText: _errorText,
-                contentPadding: const EdgeInsets.only(left: 10),
-                filled: true,
-                fillColor:
-                    widget.color ??
-                    Theme.of(context).inputDecorationTheme.fillColor,
-                border:
-                    widget.border ??
-                    Theme.of(context).inputDecorationTheme.border,
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureText ? Icons.visibility_off : Icons.visibility,
-                    color: Theme.of(context).iconTheme.color?.withAlpha(135),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _obscureText = !_obscureText;
-                    });
-                  },
-                ),
-              ),
-          onSubmitted: _validate,
-          onChanged: (value) {
-            if (_errorText != null) {
-              setState(() {
-                _errorText = null;
-              });
-            }
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class NumberInput extends StatefulWidget {
-  final String title;
-  final TextStyle? labelStyle;
-  final OutlineInputBorder? border;
-  final Color? color;
-  final InputDecoration? decoration;
-  final int maxLen;
-  final int minLen;
-  final RegExp? pattern;
-  final String? patternErrorText;
-  final bool isRequired;
-  final bool isLast;
-  const NumberInput({
-    required this.title,
-    super.key,
-    this.labelStyle,
-    this.decoration,
-    this.color,
-    this.border,
-    this.pattern,
-    this.patternErrorText,
-    this.isRequired = false,
-    this.maxLen = 32,
-    this.minLen = 1,
-    this.isLast = false,
-  });
-
-  @override
-  State<NumberInput> createState() => _NumberInputState();
-}
-
-class _NumberInputState extends State<NumberInput> {
-  static final RegExp regexp = RegExp(r"^\d+$");
-  String? _errorText;
-  _validate(String value) {
-    String? error;
-    if (widget.isRequired && value.isEmpty) {
-      error = "${widget.title}为必填项";
-    } else if (!regexp.hasMatch(value)) {
-      error = "${widget.title}必须为数字";
-    } else if (!regexp.hasMatch(value)) {
-      error = widget.patternErrorText ?? "格式错误";
-    }
-    setState(() {
-      _errorText = error;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        widget.isRequired
-            ? Text.rich(
-                TextSpan(
-                  children: [
-                    const TextSpan(
-                      text: "*",
-                      style: TextStyle(color: Colors.red),
-                    ),
-                    TextSpan(
-                      text: widget.title,
-                      style:
-                          widget.labelStyle ??
-                          Theme.of(context).textTheme.labelMedium,
-                    ),
-                  ],
-                ),
-              )
-            : Text(
-                widget.title,
-                style:
-                    widget.labelStyle ??
-                    Theme.of(context).textTheme.labelMedium,
-              ),
-        TextField(
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          textInputAction: widget.isLast
-              ? TextInputAction.done
-              : TextInputAction.next,
           decoration:
               widget.decoration ??
               InputDecoration(
                 hintText: "请输入${widget.title}",
+                errorText: _errorText,
                 contentPadding: const EdgeInsets.only(left: 10),
                 filled: true,
                 fillColor:
@@ -327,107 +205,23 @@ class _NumberInputState extends State<NumberInput> {
                 border:
                     widget.border ??
                     Theme.of(context).inputDecorationTheme.border,
-                errorText: _errorText,
-              ),
-          onChanged: (value) {
-            if (_errorText != null) {
-              setState(() {
-                _errorText = null;
-              });
-            }
-          },
-          onSubmitted: _validate,
-        ),
-      ],
-    );
-  }
-}
-
-class CnNameInput extends StatefulWidget {
-  final TextStyle? labelStyle;
-  final OutlineInputBorder? border;
-  final InputDecoration? decoration;
-  final Color? color;
-  final bool isRequired;
-
-  final bool isLast;
-  const CnNameInput({
-    super.key,
-    this.color,
-    this.labelStyle,
-    this.border,
-    this.decoration,
-    this.isRequired = false,
-    this.isLast = false,
-  });
-  @override
-  State<CnNameInput> createState() => _CnNameInputState();
-}
-
-class _CnNameInputState extends State<CnNameInput> {
-  String? _errorText;
-  static final RegExp regexp = RegExp(
-    r"^[\u4e00-\u9fff]+(?:\u00b7[\u4e00-\u9fff]+)*$",
-  );
-  void _validate(String value) {
-    String? error;
-    if (widget.isRequired && value.isEmpty) {
-      error = "姓名为必填项";
-    } else if (!regexp.hasMatch(value)) {
-      error = "不是合法的中文名";
-    }
-    setState(() {
-      _errorText = error;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        widget.isRequired
-            ? Text.rich(
-                TextSpan(
-                  children: [
-                    const TextSpan(
-                      text: "*",
-                      style: TextStyle(color: Colors.red),
-                    ),
-                    TextSpan(
-                      text: "姓名",
-                      style:
-                          widget.labelStyle ??
-                          Theme.of(context).textTheme.labelMedium,
-                    ),
-                  ],
-                ),
-              )
-            : Text(
-                "姓名",
-                style:
-                    widget.labelStyle ??
-                    Theme.of(context).textTheme.labelMedium,
-              ),
-        TextField(
-          keyboardType: TextInputType.text,
-          textInputAction: widget.isLast
-              ? TextInputAction.done
-              : TextInputAction.next,
-          decoration:
-              widget.decoration ??
-              InputDecoration(
-                hintText: "请输入姓名",
-                contentPadding: EdgeInsets.only(left: 10),
-                filled: true,
-                fillColor:
-                    widget.color ??
-                    Theme.of(context).inputDecorationTheme.fillColor,
-                border:
-                    widget.border ??
-                    Theme.of(context).inputDecorationTheme.border,
-                errorText: _errorText,
+                suffixIcon: widget.isPassword
+                    ? IconButton(
+                        icon: Icon(
+                          _obscureText
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Theme.of(
+                            context,
+                          ).iconTheme.color?.withAlpha(135),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureText = !_obscureText;
+                          });
+                        },
+                      )
+                    : null,
               ),
           onSubmitted: _validate,
           onChanged: (value) {

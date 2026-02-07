@@ -41,15 +41,15 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 40),
-              NumberInput(
+              Input.number(
                 title: "学号",
                 color: mainColorPurple,
                 isRequired: true,
               ),
               const SizedBox(height: 10),
-              CnNameInput(color: mainColorPurple, isRequired: true),
+              Input.cnName(color: mainColorPurple, isRequired: true),
               const SizedBox(height: 10),
-              Password(color: mainColorPurple),
+              Input.password(color: mainColorPurple),
               const SizedBox(height: 30),
               SizedBox(
                 height: 48,
