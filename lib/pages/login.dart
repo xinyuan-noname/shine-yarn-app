@@ -83,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         // 验证通过！可以提交数据
-                        print(_formKey.toString());
+                        print(_controllers.asTextMap);
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -111,8 +111,6 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void dispose() {
     super.dispose();
-    for (var controller in _controllers.values) {
-      controller.dispose();
-    }
+    _controllers.disposeAll();
   }
 }
