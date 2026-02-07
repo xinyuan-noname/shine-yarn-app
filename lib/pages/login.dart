@@ -11,6 +11,30 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
+  final _controllers = <String, TextEditingController>{};
+  late final List<Input> _inputs;
+  @override
+  void initState() {
+    super.initState();
+    _inputs = [
+      InputProps.number(
+        label: "学号",
+        name: "id",
+        color: mainColorPurple,
+        isRequired: true,
+        gap:5
+      ),
+      InputProps.cnName(
+        label: "姓名",
+        name: "username",
+        color: mainColorPurple,
+        isRequired: true,
+        gap:5
+      ),
+      InputProps.password(color: mainColorPurple, isLast: true),
+    ].generateAndAssignController(_controllers);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,21 +70,7 @@ class _LoginPageState extends State<LoginPage> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    Input.number(
-                      label: "学号",
-                      name: "id",
-                      color: mainColorPurple,
-                      isRequired: true,
-                    ),
-                    const SizedBox(height: 5),
-                    Input.cnName(
-                      label: "姓名",
-                      name: "username",
-                      color: mainColorPurple,
-                      isRequired: true,
-                    ),
-                    const SizedBox(height: 5),
-                    Input.password(color: mainColorPurple, isLast: true),
+                    ..._inputs
                   ],
                 ),
               ),
@@ -96,5 +106,13 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    for (var controller in _controllers.values) {
+      controller.dispose();
+    }
   }
 }

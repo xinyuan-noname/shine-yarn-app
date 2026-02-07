@@ -10,10 +10,12 @@ class InputProps {
   final String label;
   final String name;
   final Color? color;
-  final String? Function(String?)? validator;
   final TextStyle? labelStyle;
   final OutlineInputBorder? border;
   final InputDecoration? decoration;
+  final double? gap;
+
+  final String? Function(String?)? validator;
   final int maxLength;
   final int minLength;
   final RegExp? pattern;
@@ -45,6 +47,7 @@ class InputProps {
     this.isPassword = false,
     this.inputFormatters,
     this.autovalidateMode = AutovalidateMode.onUserInteraction,
+    this.gap,
   });
 
   factory InputProps.password({
@@ -62,6 +65,7 @@ class InputProps {
     InputDecoration? decoration,
     bool isLast = false,
     AutovalidateMode? autovalidateMode,
+    double? gap,
   }) {
     return InputProps(
       label: label,
@@ -80,6 +84,7 @@ class InputProps {
       border: border,
       decoration: decoration,
       autovalidateMode: autovalidateMode,
+      gap: gap,
     );
   }
   factory InputProps.cnName({
@@ -93,6 +98,7 @@ class InputProps {
     bool isLast = false,
     List<TextInputFormatter>? inputFormatters,
     AutovalidateMode? autovalidateMode,
+    double? gap,
   }) {
     return InputProps(
       label: label,
@@ -108,6 +114,7 @@ class InputProps {
       border: border,
       decoration: decoration,
       autovalidateMode: autovalidateMode,
+      gap: gap,
     );
   }
   factory InputProps.number({
@@ -124,6 +131,7 @@ class InputProps {
     InputDecoration? decoration,
     bool isLast = false,
     AutovalidateMode? autovalidateMode,
+    double? gap,
   }) {
     return InputProps(
       label: label,
@@ -142,6 +150,7 @@ class InputProps {
       border: border,
       decoration: decoration,
       autovalidateMode: autovalidateMode,
+      gap: gap,
     );
   }
   InputProps copyWith({
@@ -189,8 +198,9 @@ class InputProps {
 
 class Input extends StatefulWidget {
   final InputProps props;
+  final TextEditingController? controller;
 
-  const Input._({super.key, required this.props});
+  const Input._({super.key, required this.props, required this.controller});
   @override
   State<Input> createState() => _InputState();
 
@@ -214,6 +224,8 @@ class Input extends StatefulWidget {
     bool isPassword = false,
     List<TextInputFormatter>? inputFormatters,
     AutovalidateMode? autovalidateMode,
+    TextEditingController? controller,
+    double? gap,
   }) {
     return Input.fromProps(
       InputProps(
@@ -235,12 +247,18 @@ class Input extends StatefulWidget {
         isPassword: isPassword,
         inputFormatters: inputFormatters,
         autovalidateMode: autovalidateMode,
+        gap: gap,
       ),
       key: key,
+      controller: controller,
     );
   }
-  factory Input.fromProps(InputProps props, {Key? key}) {
-    return Input._(key: key, props: props);
+  factory Input.fromProps(
+    InputProps props, {
+    Key? key,
+    TextEditingController? controller,
+  }) {
+    return Input._(key: key, props: props, controller: controller);
   }
   factory Input.password({
     Key? key,
@@ -257,6 +275,8 @@ class Input extends StatefulWidget {
     InputDecoration? decoration,
     bool isLast = false,
     AutovalidateMode? autovalidateMode,
+    TextEditingController? controller,
+    double? gap,
   }) {
     return Input.fromProps(
       InputProps(
@@ -276,8 +296,10 @@ class Input extends StatefulWidget {
         border: border,
         decoration: decoration,
         autovalidateMode: autovalidateMode,
+        gap: gap,
       ),
       key: key,
+      controller: controller,
     );
   }
 
@@ -293,6 +315,8 @@ class Input extends StatefulWidget {
     bool isLast = false,
     List<TextInputFormatter>? inputFormatters,
     AutovalidateMode? autovalidateMode,
+    TextEditingController? controller,
+    double? gap,
   }) {
     return Input.fromProps(
       InputProps.cnName(
@@ -306,8 +330,10 @@ class Input extends StatefulWidget {
         border: border,
         decoration: decoration,
         autovalidateMode: autovalidateMode,
+        gap: gap,
       ),
       key: key,
+      controller: controller,
     );
   }
 
@@ -326,6 +352,8 @@ class Input extends StatefulWidget {
     InputDecoration? decoration,
     bool isLast = false,
     AutovalidateMode? autovalidateMode,
+    TextEditingController? controller,
+    double? gap,
   }) {
     return Input.fromProps(
       InputProps.number(
@@ -342,8 +370,10 @@ class Input extends StatefulWidget {
         border: border,
         decoration: decoration,
         autovalidateMode: autovalidateMode,
+        gap: gap,
       ),
       key: key,
+      controller: controller,
     );
   }
 }
@@ -359,97 +389,114 @@ class _InputState extends State<Input> {
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> children = [
+      widget.props.isRequired
+          ? Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(
+                    text: "*",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  TextSpan(
+                    text: widget.props.label,
+                    style:
+                        widget.props.labelStyle ??
+                        Theme.of(context).textTheme.labelMedium,
+                  ),
+                ],
+              ),
+            )
+          : Text(
+              widget.props.label,
+              style:
+                  widget.props.labelStyle ??
+                  Theme.of(context).textTheme.labelMedium,
+            ),
+      TextFormField(
+        controller: widget.controller,
+        autovalidateMode: widget.props.autovalidateMode,
+        keyboardType: widget.props.keyboardType,
+        textInputAction: widget.props.isLast
+            ? TextInputAction.done
+            : TextInputAction.next,
+        autocorrect: widget.props.autocorrect,
+        inputFormatters: widget.props.inputFormatters,
+        obscureText: _obscureText,
+        decoration:
+            widget.props.decoration ??
+            InputDecoration(
+              hintText: "请输入${widget.props.label}",
+              contentPadding: const EdgeInsets.only(left: 10),
+              filled: true,
+              fillColor:
+                  widget.props.color ??
+                  Theme.of(context).inputDecorationTheme.fillColor,
+              border:
+                  widget.props.border ??
+                  Theme.of(context).inputDecorationTheme.border,
+              suffixIcon: widget.props.isPassword
+                  ? IconButton(
+                      icon: Icon(
+                        _obscureText ? Icons.visibility_off : Icons.visibility,
+                        color: Theme.of(
+                          context,
+                        ).iconTheme.color?.withAlpha(135),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureText = !_obscureText;
+                        });
+                      },
+                    )
+                  : null,
+            ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            if (widget.props.isRequired) {
+              return "${widget.props.label}为必填项";
+            }
+            return null;
+          } else {
+            if (value.length < widget.props.minLength) {
+              return "${widget.props.label}太短";
+            }
+            if (value.length > widget.props.maxLength) {
+              return "${widget.props.label}过长";
+            }
+          }
+          if (widget.props.validator != null) {
+            return widget.props.validator?.call(value) ?? "非法输入";
+          }
+          if (widget.props.pattern != null &&
+              !widget.props.pattern!.hasMatch(value)) {
+            return widget.props.patternErrorText ?? '格式不正确';
+          }
+          return null;
+        },
+      ),
+    ];
+    if (widget.props.gap != null && widget.props.gap! > 0) {
+      children.add(SizedBox(height: widget.props.gap));
+    }
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        widget.props.isRequired
-            ? Text.rich(
-                TextSpan(
-                  children: [
-                    const TextSpan(
-                      text: "*",
-                      style: TextStyle(color: Colors.red),
-                    ),
-                    TextSpan(
-                      text: widget.props.label,
-                      style:
-                          widget.props.labelStyle ??
-                          Theme.of(context).textTheme.labelMedium,
-                    ),
-                  ],
-                ),
-              )
-            : Text(
-                widget.props.label,
-                style:
-                    widget.props.labelStyle ??
-                    Theme.of(context).textTheme.labelMedium,
-              ),
-        TextFormField(
-          autovalidateMode: widget.props.autovalidateMode,
-          keyboardType: widget.props.keyboardType,
-          textInputAction: widget.props.isLast
-              ? TextInputAction.done
-              : TextInputAction.next,
-          autocorrect: widget.props.autocorrect,
-          inputFormatters: widget.props.inputFormatters,
-          obscureText: _obscureText,
-          decoration:
-              widget.props.decoration ??
-              InputDecoration(
-                hintText: "请输入${widget.props.label}",
-                contentPadding: const EdgeInsets.only(left: 10),
-                filled: true,
-                fillColor:
-                    widget.props.color ??
-                    Theme.of(context).inputDecorationTheme.fillColor,
-                border:
-                    widget.props.border ??
-                    Theme.of(context).inputDecorationTheme.border,
-                suffixIcon: widget.props.isPassword
-                    ? IconButton(
-                        icon: Icon(
-                          _obscureText
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                          color: Theme.of(
-                            context,
-                          ).iconTheme.color?.withAlpha(135),
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscureText = !_obscureText;
-                          });
-                        },
-                      )
-                    : null,
-              ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              if (widget.props.isRequired) {
-                return "${widget.props.label}为必填项";
-              }
-              return null;
-            } else {
-              if (value.length < widget.props.minLength) {
-                return "${widget.props.label}太短";
-              }
-              if (value.length > widget.props.maxLength) {
-                return "${widget.props.label}过长";
-              }
-            }
-            if (widget.props.validator != null) {
-              return widget.props.validator?.call(value) ?? "非法输入";
-            }
-            if (widget.props.pattern != null &&
-                !widget.props.pattern!.hasMatch(value)) {
-              return widget.props.patternErrorText ?? '格式不正确';
-            }
-            return null;
-          },
-        ),
-      ],
+      children: children,
     );
+  }
+}
+
+extension InputPropsList on List<InputProps> {
+  List<Input> generateAndAssignController(
+    Map<String, TextEditingController> map,
+  ) {
+    final List<Input> list = [];
+    for (final item in this) {
+      final controller = TextEditingController();
+      map[item.name] = controller;
+      list.add(Input.fromProps(item, controller: controller));
+    }
+    return list;
   }
 }
