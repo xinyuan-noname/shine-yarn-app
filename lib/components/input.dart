@@ -188,7 +188,7 @@ class InputProps {
 }
 
 class Input extends StatefulWidget {
- final InputProps props;
+  final InputProps props;
 
   const Input._({super.key, required this.props});
   @override
@@ -426,12 +426,12 @@ class _InputState extends State<Input> {
                     : null,
               ),
           validator: (value) {
-            if (widget.props.isRequired) {
-              if (value == null || value.isEmpty) {
+            if (value == null || value.isEmpty) {
+              if (widget.props.isRequired) {
                 return "${widget.props.label}为必填项";
               }
+              return null;
             } else {
-              if (value == null || value.isEmpty) return null;
               if (value.length < widget.props.minLength) {
                 return "${widget.props.label}太短";
               }
@@ -446,7 +446,6 @@ class _InputState extends State<Input> {
                 !widget.props.pattern!.hasMatch(value)) {
               return widget.props.patternErrorText ?? '格式不正确';
             }
-
             return null;
           },
         ),
