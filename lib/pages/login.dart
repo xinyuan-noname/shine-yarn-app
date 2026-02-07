@@ -60,7 +60,7 @@ class _LoginPageState extends State<LoginPage> {
                       isRequired: true,
                     ),
                     const SizedBox(height: 5),
-                    Input.password(color: mainColorPurple),
+                    Input.password(color: mainColorPurple, isLast: true),
                   ],
                 ),
               ),
@@ -73,7 +73,7 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         // 验证通过！可以提交数据
-                        print('✅ 所有输入有效，准备登录...');
+                        print(_formKey.toString());
                       }
                     },
                     style: ElevatedButton.styleFrom(

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class Input extends StatefulWidget {
+class InputProps {
   static final TextInputFormatter _textInputFormatterNoEmptyCharacter =
       FilteringTextInputFormatter.deny(RegExp(r"\s"));
   static final TextInputFormatter _textInputFormatterAllowCnNameCharacter =
       FilteringTextInputFormatter.allow(RegExp(r"[\u4e00-\u9fff\u00b7]"));
+
   final String label;
   final String name;
   final Color? color;
@@ -24,31 +25,29 @@ class Input extends StatefulWidget {
   final bool isPassword;
   final List<TextInputFormatter>? inputFormatters;
   final AutovalidateMode? autovalidateMode;
-  const Input({
-    super.key,
+
+  const InputProps({
+    required this.label,
+    required this.name,
     this.color,
     this.validator,
     this.labelStyle,
     this.border,
     this.decoration,
-    this.isRequired = false,
-    this.isLast = false,
-    this.autocorrect = false,
-    this.isPassword = false,
-    this.pattern,
-    this.patternErrorText,
     this.maxLength = 100,
     this.minLength = 1,
+    this.pattern,
+    this.patternErrorText,
+    this.isRequired = false,
+    this.isLast = false,
     this.keyboardType = TextInputType.text,
+    this.autocorrect = false,
+    this.isPassword = false,
     this.inputFormatters,
-    required this.label,
-    required this.name,
-    this.autovalidateMode,
+    this.autovalidateMode = AutovalidateMode.onUserInteraction,
   });
-  @override
-  State<Input> createState() => _InputState();
 
-  factory Input.password({
+  factory InputProps.password({
     Key? key,
     String label = '密码',
     String name = 'password',
@@ -62,10 +61,9 @@ class Input extends StatefulWidget {
     OutlineInputBorder? border,
     InputDecoration? decoration,
     bool isLast = false,
-    AutovalidateMode autovalidateMode = AutovalidateMode.onUserInteraction,
+    AutovalidateMode? autovalidateMode,
   }) {
-    return Input(
-      key: key,
+    return InputProps(
       label: label,
       name: name,
       isPassword: true,
@@ -84,9 +82,7 @@ class Input extends StatefulWidget {
       autovalidateMode: autovalidateMode,
     );
   }
-
-  factory Input.cnName({
-    Key? key,
+  factory InputProps.cnName({
     String label = '姓名',
     String name = 'cnName',
     bool isRequired = false,
@@ -96,10 +92,9 @@ class Input extends StatefulWidget {
     InputDecoration? decoration,
     bool isLast = false,
     List<TextInputFormatter>? inputFormatters,
-    AutovalidateMode autovalidateMode = AutovalidateMode.onUserInteraction,
+    AutovalidateMode? autovalidateMode,
   }) {
-    return Input(
-      key: key,
+    return InputProps(
       label: label,
       name: name,
       isRequired: isRequired,
@@ -115,9 +110,7 @@ class Input extends StatefulWidget {
       autovalidateMode: autovalidateMode,
     );
   }
-
-  factory Input.number({
-    Key? key,
+  factory InputProps.number({
     String label = '编号',
     String name = 'number',
     bool isRequired = false,
@@ -130,10 +123,9 @@ class Input extends StatefulWidget {
     List<TextInputFormatter>? inputFormatters,
     InputDecoration? decoration,
     bool isLast = false,
-    AutovalidateMode autovalidateMode = AutovalidateMode.onUserInteraction,
+    AutovalidateMode? autovalidateMode,
   }) {
-    return Input(
-      key: key,
+    return InputProps(
       label: label,
       name: name,
       isRequired: isRequired,
@@ -152,15 +144,217 @@ class Input extends StatefulWidget {
       autovalidateMode: autovalidateMode,
     );
   }
+  InputProps copyWith({
+    String? label,
+    String? name,
+    Color? color,
+    String? Function(String?)? validator,
+    TextStyle? labelStyle,
+    OutlineInputBorder? border,
+    InputDecoration? decoration,
+    int? maxLength,
+    int? minLength,
+    RegExp? pattern,
+    String? patternErrorText,
+    bool? isRequired,
+    bool? isLast,
+    TextInputType? keyboardType,
+    bool? autocorrect,
+    bool? isPassword,
+    List<TextInputFormatter>? inputFormatters,
+    AutovalidateMode? autovalidateMode,
+  }) {
+    return InputProps(
+      label: label ?? this.label,
+      name: name ?? this.name,
+      color: color ?? this.color,
+      validator: validator ?? this.validator,
+      labelStyle: labelStyle ?? this.labelStyle,
+      border: border ?? this.border,
+      decoration: decoration ?? this.decoration,
+      maxLength: maxLength ?? this.maxLength,
+      minLength: minLength ?? this.minLength,
+      pattern: pattern ?? this.pattern,
+      patternErrorText: patternErrorText ?? this.patternErrorText,
+      isRequired: isRequired ?? this.isRequired,
+      isLast: isLast ?? this.isLast,
+      keyboardType: keyboardType ?? this.keyboardType,
+      autocorrect: autocorrect ?? this.autocorrect,
+      isPassword: isPassword ?? this.isPassword,
+      inputFormatters: inputFormatters ?? this.inputFormatters,
+      autovalidateMode: autovalidateMode ?? this.autovalidateMode,
+    );
+  }
+}
+
+class Input extends StatefulWidget {
+ final InputProps props;
+
+  const Input._({super.key, required this.props});
+  @override
+  State<Input> createState() => _InputState();
+
+  factory Input({
+    Key? key,
+    required String label,
+    required String name,
+    Color? color,
+    String? Function(String?)? validator,
+    TextStyle? labelStyle,
+    OutlineInputBorder? border,
+    InputDecoration? decoration,
+    int maxLength = 100,
+    int minLength = 1,
+    RegExp? pattern,
+    String? patternErrorText,
+    bool isRequired = false,
+    bool isLast = false,
+    TextInputType keyboardType = TextInputType.text,
+    bool autocorrect = false,
+    bool isPassword = false,
+    List<TextInputFormatter>? inputFormatters,
+    AutovalidateMode? autovalidateMode,
+  }) {
+    return Input.fromProps(
+      InputProps(
+        label: label,
+        name: name,
+        color: color,
+        validator: validator,
+        labelStyle: labelStyle,
+        border: border,
+        decoration: decoration,
+        maxLength: maxLength,
+        minLength: minLength,
+        pattern: pattern,
+        patternErrorText: patternErrorText,
+        isRequired: isRequired,
+        isLast: isLast,
+        keyboardType: keyboardType,
+        autocorrect: autocorrect,
+        isPassword: isPassword,
+        inputFormatters: inputFormatters,
+        autovalidateMode: autovalidateMode,
+      ),
+      key: key,
+    );
+  }
+  factory Input.fromProps(InputProps props, {Key? key}) {
+    return Input._(key: key, props: props);
+  }
+  factory Input.password({
+    Key? key,
+    String label = '密码',
+    String name = 'password',
+    bool isRequired = false,
+    int minLength = 8,
+    int maxLength = 32,
+    String? Function(String?)? validator,
+    List<TextInputFormatter>? inputFormatters,
+    TextStyle? labelStyle,
+    Color? color,
+    OutlineInputBorder? border,
+    InputDecoration? decoration,
+    bool isLast = false,
+    AutovalidateMode? autovalidateMode,
+  }) {
+    return Input.fromProps(
+      InputProps(
+        label: label,
+        name: name,
+        isPassword: true,
+        isRequired: isRequired,
+        minLength: minLength,
+        maxLength: maxLength,
+        validator: validator,
+        keyboardType: TextInputType.visiblePassword,
+        inputFormatters: inputFormatters,
+        autocorrect: false,
+        isLast: isLast,
+        labelStyle: labelStyle,
+        color: color,
+        border: border,
+        decoration: decoration,
+        autovalidateMode: autovalidateMode,
+      ),
+      key: key,
+    );
+  }
+
+  factory Input.cnName({
+    Key? key,
+    String label = '姓名',
+    String name = 'cnName',
+    bool isRequired = false,
+    TextStyle? labelStyle,
+    Color? color,
+    OutlineInputBorder? border,
+    InputDecoration? decoration,
+    bool isLast = false,
+    List<TextInputFormatter>? inputFormatters,
+    AutovalidateMode? autovalidateMode,
+  }) {
+    return Input.fromProps(
+      InputProps.cnName(
+        label: label,
+        name: name,
+        isRequired: isRequired,
+        inputFormatters: inputFormatters,
+        isLast: isLast,
+        labelStyle: labelStyle,
+        color: color,
+        border: border,
+        decoration: decoration,
+        autovalidateMode: autovalidateMode,
+      ),
+      key: key,
+    );
+  }
+
+  factory Input.number({
+    Key? key,
+    String label = '编号',
+    String name = 'number',
+    bool isRequired = false,
+    int minLength = 1,
+    int maxLength = 32,
+    String? patternErrorText,
+    TextStyle? labelStyle,
+    Color? color,
+    OutlineInputBorder? border,
+    List<TextInputFormatter>? inputFormatters,
+    InputDecoration? decoration,
+    bool isLast = false,
+    AutovalidateMode? autovalidateMode,
+  }) {
+    return Input.fromProps(
+      InputProps.number(
+        label: label,
+        name: name,
+        isRequired: isRequired,
+        minLength: minLength,
+        maxLength: maxLength,
+        patternErrorText: patternErrorText,
+        inputFormatters: inputFormatters,
+        isLast: isLast,
+        labelStyle: labelStyle,
+        color: color,
+        border: border,
+        decoration: decoration,
+        autovalidateMode: autovalidateMode,
+      ),
+      key: key,
+    );
+  }
 }
 
 class _InputState extends State<Input> {
   // ignore: prefer_final_fields
-  bool _obscureText = false;
+  late bool _obscureText;
   @override
   void initState() {
     super.initState();
-    _obscureText = widget.isPassword;
+    _obscureText = widget.props.isPassword;
   }
 
   @override
@@ -169,7 +363,7 @@ class _InputState extends State<Input> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        widget.isRequired
+        widget.props.isRequired
             ? Text.rich(
                 TextSpan(
                   children: [
@@ -178,42 +372,42 @@ class _InputState extends State<Input> {
                       style: TextStyle(color: Colors.red),
                     ),
                     TextSpan(
-                      text: widget.label,
+                      text: widget.props.label,
                       style:
-                          widget.labelStyle ??
+                          widget.props.labelStyle ??
                           Theme.of(context).textTheme.labelMedium,
                     ),
                   ],
                 ),
               )
             : Text(
-                widget.label,
+                widget.props.label,
                 style:
-                    widget.labelStyle ??
+                    widget.props.labelStyle ??
                     Theme.of(context).textTheme.labelMedium,
               ),
         TextFormField(
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          keyboardType: widget.keyboardType,
-          textInputAction: widget.isLast
+          autovalidateMode: widget.props.autovalidateMode,
+          keyboardType: widget.props.keyboardType,
+          textInputAction: widget.props.isLast
               ? TextInputAction.done
               : TextInputAction.next,
-          autocorrect: widget.autocorrect,
-          inputFormatters: widget.inputFormatters,
+          autocorrect: widget.props.autocorrect,
+          inputFormatters: widget.props.inputFormatters,
           obscureText: _obscureText,
           decoration:
-              widget.decoration ??
+              widget.props.decoration ??
               InputDecoration(
-                hintText: "请输入${widget.label}",
+                hintText: "请输入${widget.props.label}",
                 contentPadding: const EdgeInsets.only(left: 10),
                 filled: true,
                 fillColor:
-                    widget.color ??
+                    widget.props.color ??
                     Theme.of(context).inputDecorationTheme.fillColor,
                 border:
-                    widget.border ??
+                    widget.props.border ??
                     Theme.of(context).inputDecorationTheme.border,
-                suffixIcon: widget.isPassword
+                suffixIcon: widget.props.isPassword
                     ? IconButton(
                         icon: Icon(
                           _obscureText
@@ -232,22 +426,27 @@ class _InputState extends State<Input> {
                     : null,
               ),
           validator: (value) {
-            if (value == null) return null;
-            if (widget.isRequired && value.isEmpty) {
-              return "${widget.label}为必填项";
+            if (widget.props.isRequired) {
+              if (value == null || value.isEmpty) {
+                return "${widget.props.label}为必填项";
+              }
+            } else {
+              if (value == null || value.isEmpty) return null;
+              if (value.length < widget.props.minLength) {
+                return "${widget.props.label}太短";
+              }
+              if (value.length > widget.props.maxLength) {
+                return "${widget.props.label}过长";
+              }
             }
-            if (widget.validator != null) {
-              return widget.validator?.call(value) ?? "非法输入";
+            if (widget.props.validator != null) {
+              return widget.props.validator?.call(value) ?? "非法输入";
             }
-            if (widget.pattern != null && !widget.pattern!.hasMatch(value)) {
-              return widget.patternErrorText ?? '格式不正确';
+            if (widget.props.pattern != null &&
+                !widget.props.pattern!.hasMatch(value)) {
+              return widget.props.patternErrorText ?? '格式不正确';
             }
-            if (value.length < widget.minLength) {
-              return "${widget.label}太短";
-            }
-            if (value.length > widget.maxLength) {
-              return "${widget.label}过长";
-            }
+
             return null;
           },
         ),
