@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:shine/components/first_view.dart';
 import 'package:shine/pages/splash.dart';
 import 'package:shine/routes.dart';
-import 'package:shine/services/main.dart';
+import 'package:shine/services/api.dart';
 import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
 
@@ -31,15 +31,25 @@ class _MyAppState extends State<MyApp> {
     _prepare();
   }
 
-  _prepare() {
-    ApiService.getBaseUrl();
-    Future.delayed(const Duration(seconds: 2), () async {
-      final ts = await TokenStorage.getAccessToken();
-      ts != null
-          ? globalNavigatorKey.currentState?.pushReplacementNamed("/home")
-          : globalNavigatorKey.currentState?.pushReplacementNamed("/login");
-      print("jump");
-    });
+  _prepare() async {
+    ApiService.getBaseUrl(); 
+    final tokenFuture = TokenStorage.getAccessToken();
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    String? accessToken;
+    try {
+      accessToken = await tokenFuture; 
+    } catch (e) {
+      accessToken = null;
+    }
+
+    if (accessToken != null) {
+      ApiService.accessToken = accessToken;
+      globalNavigatorKey.currentState?.pushReplacementNamed("/home");
+    } else {
+      globalNavigatorKey.currentState?.pushReplacementNamed("/login");
+    }
   }
 
   @override

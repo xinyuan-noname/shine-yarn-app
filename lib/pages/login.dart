@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shine/components/input.dart';
+import 'package:shine/services/auth.dart';
 import 'package:shine/theme.dart';
 
 class LoginPage extends StatefulWidget {
@@ -82,8 +83,7 @@ class _LoginPageState extends State<LoginPage> {
                   child: ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        // 验证通过！可以提交数据
-                        print(_controllers.asTextJSON);
+                        ApiAuth.login(_controllers.asTextMap);
                       }
                     },
                     style: ElevatedButton.styleFrom(
