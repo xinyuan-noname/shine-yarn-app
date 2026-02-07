@@ -10,6 +10,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,28 +42,40 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 15),
-              Input.number(
-                label: "学号",
-                name: "id",
-                color: mainColorPurple,
-                isRequired: true,
+              Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    Input.number(
+                      label: "学号",
+                      name: "id",
+                      color: mainColorPurple,
+                      isRequired: true,
+                    ),
+                    const SizedBox(height: 5),
+                    Input.cnName(
+                      label: "姓名",
+                      name: "username",
+                      color: mainColorPurple,
+                      isRequired: true,
+                    ),
+                    const SizedBox(height: 5),
+                    Input.password(color: mainColorPurple),
+                  ],
+                ),
               ),
-              const SizedBox(height: 5),
-              Input.cnName(
-                label: "姓名",
-                name: "username",
-                color: mainColorPurple,
-                isRequired: true,
-              ),
-              const SizedBox(height: 5),
-              Input.password(color: mainColorPurple),
               const SizedBox(height: 10),
               SizedBox(
                 height: 48,
                 child: Align(
                   alignment: Alignment.center,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        // 验证通过！可以提交数据
+                        print('✅ 所有输入有效，准备登录...');
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: mainColorPurple,
                       padding: EdgeInsets.fromLTRB(20, 5, 20, 5),

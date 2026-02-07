@@ -23,6 +23,7 @@ class Input extends StatefulWidget {
   final bool autocorrect;
   final bool isPassword;
   final List<TextInputFormatter>? inputFormatters;
+  final AutovalidateMode? autovalidateMode;
   const Input({
     super.key,
     this.color,
@@ -42,6 +43,7 @@ class Input extends StatefulWidget {
     this.inputFormatters,
     required this.label,
     required this.name,
+    this.autovalidateMode,
   });
   @override
   State<Input> createState() => _InputState();
@@ -60,6 +62,7 @@ class Input extends StatefulWidget {
     OutlineInputBorder? border,
     InputDecoration? decoration,
     bool isLast = false,
+    AutovalidateMode autovalidateMode = AutovalidateMode.onUserInteraction,
   }) {
     return Input(
       key: key,
@@ -78,6 +81,7 @@ class Input extends StatefulWidget {
       color: color,
       border: border,
       decoration: decoration,
+      autovalidateMode: autovalidateMode,
     );
   }
 
@@ -92,6 +96,7 @@ class Input extends StatefulWidget {
     InputDecoration? decoration,
     bool isLast = false,
     List<TextInputFormatter>? inputFormatters,
+    AutovalidateMode autovalidateMode = AutovalidateMode.onUserInteraction,
   }) {
     return Input(
       key: key,
@@ -107,6 +112,7 @@ class Input extends StatefulWidget {
       color: color,
       border: border,
       decoration: decoration,
+      autovalidateMode: autovalidateMode,
     );
   }
 
@@ -124,6 +130,7 @@ class Input extends StatefulWidget {
     List<TextInputFormatter>? inputFormatters,
     InputDecoration? decoration,
     bool isLast = false,
+    AutovalidateMode autovalidateMode = AutovalidateMode.onUserInteraction,
   }) {
     return Input(
       key: key,
@@ -142,38 +149,18 @@ class Input extends StatefulWidget {
       color: color,
       border: border,
       decoration: decoration,
+      autovalidateMode: autovalidateMode,
     );
   }
 }
 
 class _InputState extends State<Input> {
-  String? _errorText;
   // ignore: prefer_final_fields
   bool _obscureText = false;
   @override
   void initState() {
     super.initState();
-    setState(() {
-      _obscureText = widget.isPassword;
-    });
-  }
-
-  void _validate(String value) {
-    String? error;
-    if (widget.isRequired && value.isEmpty) {
-      error = "${widget.label}为必填项";
-    } else if (widget.validator != null) {
-      error = widget.validator?.call(value) ?? "非法输入";
-    } else if (widget.pattern != null && !widget.pattern!.hasMatch(value)) {
-      error = widget.patternErrorText ?? '格式不正确';
-    } else if (value.length < widget.minLength) {
-      error = "${widget.label}太短";
-    } else if (value.length > widget.maxLength) {
-      error = "${widget.label}过长";
-    }
-    setState(() {
-      _errorText = error;
-    });
+    _obscureText = widget.isPassword;
   }
 
   @override
@@ -205,7 +192,8 @@ class _InputState extends State<Input> {
                     widget.labelStyle ??
                     Theme.of(context).textTheme.labelMedium,
               ),
-        TextField(
+        TextFormField(
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           keyboardType: widget.keyboardType,
           textInputAction: widget.isLast
               ? TextInputAction.done
@@ -217,7 +205,6 @@ class _InputState extends State<Input> {
               widget.decoration ??
               InputDecoration(
                 hintText: "请输入${widget.label}",
-                errorText: _errorText,
                 contentPadding: const EdgeInsets.only(left: 10),
                 filled: true,
                 fillColor:
@@ -244,13 +231,24 @@ class _InputState extends State<Input> {
                       )
                     : null,
               ),
-          onSubmitted: _validate,
-          onChanged: (value) {
-            if (_errorText != null) {
-              setState(() {
-                _errorText = null;
-              });
+          validator: (value) {
+            if (value == null) return null;
+            if (widget.isRequired && value.isEmpty) {
+              return "${widget.label}为必填项";
             }
+            if (widget.validator != null) {
+              return widget.validator?.call(value) ?? "非法输入";
+            }
+            if (widget.pattern != null && !widget.pattern!.hasMatch(value)) {
+              return widget.patternErrorText ?? '格式不正确';
+            }
+            if (value.length < widget.minLength) {
+              return "${widget.label}太短";
+            }
+            if (value.length > widget.maxLength) {
+              return "${widget.label}过长";
+            }
+            return null;
           },
         ),
       ],
