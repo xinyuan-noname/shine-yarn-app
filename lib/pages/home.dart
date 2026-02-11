@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shine/components/avatar.dart';
+import 'package:shine/components/line.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,7 +12,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String? _avatarPath;
-  late String _username;
+  String _username = "???";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,6 +21,7 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 InkWell(
                   onTap: () {
@@ -28,16 +30,22 @@ class _HomePageState extends State<HomePage> {
                   child: _avatarPath != null
                       ? CircleAvatar(
                           backgroundColor: Colors.transparent,
-                          radius: 68,
+                          radius: 25,
                           backgroundImage: FileImage(File(_avatarPath!)),
                         )
-                      : defaultAvatar,
+                      : defaultAvatar25,
                 ),
-                Text(_username),
+                SizedBox(width: 5),
+                Column(
+                  children: [
+                    Text(_username, style: TextStyle(letterSpacing: 1.0)),
+                  ],
+                ),
               ],
             ),
           ],
         ),
+        bottom: bottomLine,
       ),
     );
   }

@@ -23,3 +23,4 @@ final inputDecorationLight = InputDecoration(
 );
 
 const double smallFontSize = 14;
+const TextStyle titleTextStyle = TextStyle(fontWeight: FontWeight.w600);
