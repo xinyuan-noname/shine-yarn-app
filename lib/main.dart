@@ -32,14 +32,18 @@ class _MyAppState extends State<MyApp> {
   }
 
   _prepare() async {
-    ApiService.getBaseUrl(); 
+    Future(() async {
+      ApiService.setDeviceInfo();
+      final baseUrl = await ApiService.getBaseUrl();
+      ApiService.setBaseUrl(baseUrl);
+    });
     final tokenFuture = TokenStorage.getAccessToken();
 
     await Future.delayed(const Duration(seconds: 2));
 
     String? accessToken;
     try {
-      accessToken = await tokenFuture; 
+      accessToken = await tokenFuture;
     } catch (e) {
       accessToken = null;
     }
