@@ -45,7 +45,7 @@ class _MyAppState extends State<MyApp> {
     }
 
     if (accessToken != null) {
-      ApiService.accessToken = accessToken;
+      ApiService.setAccessToken(accessToken);
       globalNavigatorKey.currentState?.pushReplacementNamed("/home");
     } else {
       globalNavigatorKey.currentState?.pushReplacementNamed("/login");
