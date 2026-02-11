@@ -7,8 +7,8 @@ final Column firstViewLight = Column(
     Text(
       "闪纺",
       style: TextStyle(
-        fontFamily: "SmileySans",
         fontSize: 64,
+        fontFamily: "SmileySans",
         color: Colors.white30,
         shadows: [
           Shadow(

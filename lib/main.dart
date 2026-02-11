@@ -28,15 +28,11 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _prepare();
+    _prepareServer();
   }
 
-  _prepare() async {
-    Future(() async {
-      ApiService.setDeviceInfo();
-      final baseUrl = await ApiService.getBaseUrl();
-      ApiService.setBaseUrl(baseUrl);
-    });
+  _prepareServer() async {
+    ApiService.init();
     final tokenFuture = TokenStorage.getAccessToken();
 
     await Future.delayed(const Duration(seconds: 2));

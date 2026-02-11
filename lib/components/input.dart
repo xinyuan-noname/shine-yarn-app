@@ -502,29 +502,3 @@ extension InputPropsList on List<InputProps> {
     return list;
   }
 }
-
-extension TextEditingControllerMap on Map<String, TextEditingController> {
-  void disposeAll() {
-    for (final controller in values) {
-      controller.dispose();
-    }
-  }
-
-  Map<String, String> get asTextMap {
-    final map = <String, String>{};
-    for (final entry in entries) {
-      final name = entry.key, controller = entry.value;
-      map[name] = controller.text;
-    }
-    return map;
-  }
-
-  String get asTextJSON {
-    final map = <String, String>{};
-    for (final entry in entries) {
-      final name = entry.key, controller = entry.value;
-      map[name] = controller.text;
-    }
-    return jsonEncode(map);
-  }
-}
