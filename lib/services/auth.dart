@@ -49,6 +49,7 @@ class ApiAuth {
       await TokenStorage.deleteRefreshToken();
       await Worker.stopRefresh();
     } catch (e) {
+      Worker.scheduleRefreshNow();
       return false;
     }
     return true;

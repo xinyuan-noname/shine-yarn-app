@@ -47,10 +47,10 @@ class _MyAppState extends State<MyApp> {
 
     if (accessToken != null) {
       ApiService.setAccessToken(accessToken);
-      Worker.scheduleRefresh(Duration(seconds: 0));
+      // 开启refresh定时任务
+      Worker.scheduleRefreshNow();
       globalNavigatorKey.currentState?.pushReplacementNamed("/home");
     } else {
-      // 开启refresh定时任务
       globalNavigatorKey.currentState?.pushReplacementNamed("/login");
     }
   }

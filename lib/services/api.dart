@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:shine/services/dio.dart';
 import 'package:shine/utils/device_info.dart';
+import 'package:shine/worker/worker.dart';
 
 class ApiService {
   static getBaseUrl() async {
@@ -12,9 +13,15 @@ class ApiService {
     final url = response.data;
     return url;
   }
-  static bool get isOk{
+
+  static bool get isOk {
     return dio.options.baseUrl.isNotEmpty;
   }
+
+  static String get url {
+    return dio.options.baseUrl;
+  }
+
   static setBaseUrl(String url) {
     dio.options.baseUrl = url;
     print(url);
@@ -31,27 +38,52 @@ class ApiService {
     print(dio.options.headers);
   }
 
-  static useJson() {
+  static void useJson() {
     dio.interceptors.add(
       InterceptorsWrapper(
         onResponse: (Response response, handler) {
-          final contentType = response.headers.map['Content-Type'];
-          if (contentType == 'application/json') {
+          final contentType = response.headers.value('content-type');
+          if (contentType != null && contentType.contains('application/json')) {
             if (response.data is String) {
               try {
                 response.data = jsonDecode(response.data);
               } catch (e) {
-                // 解析失败保留原数据或抛出错误
                 print('JSON decode failed: $e');
               }
             }
           }
-          return handler.next(response); // 继续传递响应
+          return handler.next(response);
         },
+      ),
+    );
+  }
+
+  static useError() {
+    dio.interceptors.add(
+      InterceptorsWrapper(
         onError: (DioException err, handler) {
-          // 统一错误处理（比如 token 过期、网络错误等）
-          print('Request error: ${err.message}');
-          return handler.next(err);
+          final res = err.response;
+          final code = res?.statusCode;
+          if (code == 401) {
+            final Map<String, dynamic> data = jsonDecode(res?.data);
+            if (data["error"] != null) {
+              switch (data["error"]) {
+                case "Invalid Access Token":
+                  {
+                    Worker.scheduleRefreshNow();
+                  }
+                  break;
+              }
+            }
+          } else if (err.type == DioExceptionType.connectionError) {
+            print('网络异常');
+          } else if (code != null && code >= 500) {
+            print('服务器开小差了');
+          }
+          // 其他错误...
+
+          // 👇 关键：决定是否继续抛出错误
+          handler.next(err);
         },
       ),
     );
@@ -59,6 +91,7 @@ class ApiService {
 
   static init() async {
     ApiService.useJson();
+    ApiService.useError();
     ApiService.setDeviceInfo();
     final url = await getBaseUrl();
     ApiService.setBaseUrl(url);
