@@ -85,11 +85,23 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: () async {
                       if (_formKey.currentState!.validate() &&
                           ApiService.isOk()) {
+                        _toLogin().then((success) {
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                          }
+                          if (success && context.mounted) {
+                            globalNavigatorKey.currentState
+                                ?.pushNamedAndRemoveUntil(
+                                  '/home',
+                                  clearOldRouter,
+                                );
+                          }
+                        });
                         showDialog(
                           context: context,
                           barrierDismissible: false,
                           builder: (_) => ValueListenableBuilder<String>(
-                            valueListenable: _message, 
+                            valueListenable: _message,
                             builder: (_, text, __) => Dialog(
                               child: Container(
                                 height: 64,
@@ -99,18 +111,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                         );
-                        final success = await _excuteLogin();
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                        }
-                        // 跳转
-                        if (success && context.mounted) {
-                          globalNavigatorKey.currentState
-                              ?.pushNamedAndRemoveUntil(
-                                '/home',
-                                clearOldRouter,
-                              );
-                        }
+                        final success = await _toLogin();
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -135,7 +136,8 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  _excuteLogin() async {
+  Future _toLogin() async {
+    _message.value = "正在发送登录请求";
     final result = await Future.wait([
       Future(() async {
         return await ApiAuth.login(_controllers.asTextMap);
@@ -154,6 +156,7 @@ class _LoginPageState extends State<LoginPage> {
     if (result[0] == false) {
       _message.value = "登录失败";
       await Future.delayed(Duration(milliseconds: 500));
+      ApiService.reinit();
       return false;
     } else if (result[0] == true) {
       _message.value = "登录成功";

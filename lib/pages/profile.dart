@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/routes.dart';
+import 'package:shine/services/api.dart';
 import 'package:shine/services/auth.dart';
 import 'package:shine/theme.dart';
 
@@ -16,6 +17,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   String? _avatarPath;
+  final _logoutMessage = ValueNotifier("正在发送登出请求");
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,8 +50,29 @@ class _ProfilePageState extends State<ProfilePage> {
             shadowColor: Colors.transparent,
           ),
           onPressed: () async {
-            await ApiAuth.logout();
-            globalNavigatorKey.currentState?.pushNamedAndRemoveUntil("/login",clearOldRouter);
+            _toLogout().then((success) {
+              if (context.mounted) {
+                Navigator.pop(context);
+              }
+              globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
+                "/login",
+                clearOldRouter,
+              );
+            });
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => ValueListenableBuilder<String>(
+                valueListenable: _logoutMessage,
+                builder: (_, text, __) => Dialog(
+                  child: Container(
+                    height: 64,
+                    alignment: Alignment.center,
+                    child: Text(text),
+                  ),
+                ),
+              ),
+            );
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -70,5 +93,39 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       ),
     );
+  }
+
+  Future _toLogout() async {
+    _logoutMessage.value = "正在发送登出请求";
+    final result = await Future.wait([
+      Future(() async {
+        return await ApiAuth.logout();
+      }),
+      Future(() async {
+        const duration = 800;
+        await Future.delayed(Duration(milliseconds: duration));
+        _logoutMessage.value = "正在吊销访问令牌";
+        await Future.delayed(Duration(milliseconds: duration));
+        _logoutMessage.value = "正在吊销刷新令牌";
+        return true;
+      }),
+    ]);
+    if (result[0] == false) {
+      _logoutMessage.value = "登出失败";
+      await Future.delayed(Duration(milliseconds: 500));
+      ApiService.reinit();
+      return false;
+    } else if (result[0] == true) {
+      _logoutMessage.value = "登出成功";
+      await Future.delayed(Duration(milliseconds: 300));
+      return true;
+    }
+    return;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _logoutMessage.dispose();
   }
 }
