@@ -29,7 +29,7 @@ class Worker {
   }
 
   static scheduleUrl(Duration? duration) {
-    const defaultDuration = Duration(minutes: 1, seconds: 30);
+    const defaultDuration = Duration(minutes: 3);
     _urlTimer?.cancel();
     duration ??= defaultDuration;
     _urlTimer = Timer(duration, () async {

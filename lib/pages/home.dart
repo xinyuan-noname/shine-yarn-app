@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/storage/profile_storage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,7 +13,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String? _avatarPath;
-  String _username = "???";
+  late String _username;
+  @override
+  void initState() async {
+    _username = await ProfileStorage.getName() ?? "???";
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

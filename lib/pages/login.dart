@@ -5,6 +5,7 @@ import 'package:shine/components/input.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/auth.dart';
+import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';
 
 class LoginPage extends StatefulWidget {
@@ -157,6 +158,12 @@ class _LoginPageState extends State<LoginPage> {
       return false;
     } else if (result[0] == true) {
       _message.value = "登录成功";
+      if (_controllers.asTextMap["name"] != null){
+        ProfileStorage.saveName(_controllers.asTextMap["name"]!);
+      }
+      if (_controllers.asTextMap["id"] != null){
+        ProfileStorage.saveId(_controllers.asTextMap["id"]!);
+      }
       await Future.delayed(Duration(milliseconds: 300));
       return true;
     }
