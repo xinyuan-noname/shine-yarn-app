@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shine/components/input.dart';
+import 'package:shine/routes.dart';
 import 'package:shine/services/auth.dart';
 import 'package:shine/theme.dart';
 
@@ -25,14 +26,14 @@ class _LoginPageState extends State<LoginPage> {
         name: "id",
         color: mainColorPurple,
         isRequired: true,
-        gap:5
+        gap: 5,
       ),
       InputProps.cnName(
         label: "姓名",
         name: "username",
         color: mainColorPurple,
         isRequired: true,
-        gap:5
+        gap: 5,
       ),
       InputProps.password(color: mainColorPurple, isLast: true),
     ].generateAndAssignController(_controllers);
@@ -71,11 +72,7 @@ class _LoginPageState extends State<LoginPage> {
               const SizedBox(height: 15),
               Form(
                 key: _formKey,
-                child: Column(
-                  children: [
-                    ..._inputs
-                  ],
-                ),
+                child: Column(children: [..._inputs]),
               ),
               const SizedBox(height: 10),
               SizedBox(
@@ -83,9 +80,10 @@ class _LoginPageState extends State<LoginPage> {
                 child: Align(
                   alignment: Alignment.center,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        ApiAuth.login(_controllers.asTextMap);
+                        await ApiAuth.login(_controllers.asTextMap);
+                        await globalNavigatorKey.currentState?.pushNamedAndRemoveUntil('/home', clearOldRouter);
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -116,6 +114,7 @@ class _LoginPageState extends State<LoginPage> {
     _controllers.disposeAll();
   }
 }
+
 extension TextEditingControllerMap on Map<String, TextEditingController> {
   void disposeAll() {
     for (final controller in values) {
