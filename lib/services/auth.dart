@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/dio.dart';
 import 'package:shine/storage/token_storage.dart';
@@ -46,7 +44,6 @@ class ApiAuth {
       await TokenStorage.deleteAccessToken();
       await TokenStorage.deleteRefreshToken();
       await Worker.stopRefresh();
-      globalNavigatorKey.currentState?.pushReplacementNamed("/login");
     } catch (e) {
       return false;
     }

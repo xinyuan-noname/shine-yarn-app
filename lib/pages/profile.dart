@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/routes.dart';
 import 'package:shine/services/auth.dart';
 import 'package:shine/theme.dart';
 
@@ -46,8 +47,9 @@ class _ProfilePageState extends State<ProfilePage> {
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
           ),
-          onPressed: ()async {
+          onPressed: () async {
             await ApiAuth.logout();
+            globalNavigatorKey.currentState?.pushNamedAndRemoveUntil("/login",clearOldRouter);
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,

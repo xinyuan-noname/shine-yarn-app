@@ -6,6 +6,8 @@ import 'package:shine/pages/profile.dart';
 final Map<String, WidgetBuilder> appRouters = {
   "/login": (_) => LoginPage(),
   "/home": (_) => HomePage(),
-  "/profile":(_)=>ProfilePage(),
+  "/profile": (_) => ProfilePage(),
 };
 final globalNavigatorKey = GlobalKey<NavigatorState>();
+// ignore: prefer_function_declarations_over_variables
+final clearOldRouter = (Route<dynamic> router) => false;
