@@ -12,7 +12,9 @@ class ApiService {
     final url = response.data;
     return url;
   }
-
+  static isOk(){
+    return dio.options.baseUrl.isNotEmpty;
+  }
   static setBaseUrl(String url) {
     dio.options.baseUrl = url;
     print(url);
@@ -58,6 +60,11 @@ class ApiService {
   static init() async {
     ApiService.useJson();
     ApiService.setDeviceInfo();
+    final url = await getBaseUrl();
+    ApiService.setBaseUrl(url);
+  }
+
+  static reinit() async {
     final url = await getBaseUrl();
     ApiService.setBaseUrl(url);
   }

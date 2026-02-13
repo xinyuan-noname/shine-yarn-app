@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:shine/services/api.dart';
 import 'package:shine/services/auth.dart';
 
 class Worker {
@@ -9,7 +10,11 @@ class Worker {
     _refreshTimer?.cancel();
     duration ??= defaultDuration;
     _refreshTimer = Timer(duration, () async {
-      ApiAuth.refresh();
+      try {
+        await ApiAuth.refresh();
+      } catch (e) {
+        await ApiService.reinit();
+      }
       Worker.scheduleRefresh(defaultDuration);
     });
   }

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shine/components/input.dart';
 import 'package:shine/routes.dart';
+import 'package:shine/services/api.dart';
 import 'package:shine/services/auth.dart';
 import 'package:shine/theme.dart';
 
@@ -16,6 +17,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _controllers = <String, TextEditingController>{};
+  final ValueNotifier<String> _message = ValueNotifier("正在发送登录请求");
   late final List<Input> _inputs;
   @override
   void initState() {
@@ -81,9 +83,34 @@ class _LoginPageState extends State<LoginPage> {
                   alignment: Alignment.center,
                   child: ElevatedButton(
                     onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        await ApiAuth.login(_controllers.asTextMap);
-                        await globalNavigatorKey.currentState?.pushNamedAndRemoveUntil('/home', clearOldRouter);
+                      if (_formKey.currentState!.validate() &&
+                          ApiService.isOk()) {
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (_) => ValueListenableBuilder<String>(
+                            valueListenable: _message, // 👈 监听这个 notifier
+                            builder: (_, text, __) => Dialog(
+                              child: Container(
+                                height: 64,
+                                alignment: Alignment.center,
+                                child: Text(text),
+                              ),
+                            ),
+                          ),
+                        );
+                        final success = await _excuteLogin();
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
+                        // 跳转
+                        if (success && context.mounted) {
+                          globalNavigatorKey.currentState
+                              ?.pushNamedAndRemoveUntil(
+                                '/home',
+                                clearOldRouter,
+                              );
+                        }
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -108,10 +135,38 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  _excuteLogin() async {
+    final result = await Future.wait([
+      Future(() async {
+        return await ApiAuth.login(_controllers.asTextMap);
+      }),
+      Future(() async {
+        const duration = 800;
+        await Future.delayed(Duration(milliseconds: duration));
+        _message.value = "正在校验信息";
+        await Future.delayed(Duration(milliseconds: duration));
+        _message.value = "正在签发访问令牌";
+        await Future.delayed(Duration(milliseconds: duration));
+        _message.value = "正在签发刷新令牌";
+        return true;
+      }),
+    ]);
+    if (result[0] == false) {
+      _message.value = "登录失败";
+      await Future.delayed(Duration(milliseconds: 500));
+      return false;
+    } else if (result[0] == true) {
+      _message.value = "登录成功";
+      await Future.delayed(Duration(milliseconds: 300));
+      return true;
+    }
+  }
+
   @override
   void dispose() {
     super.dispose();
     _controllers.disposeAll();
+    _message.dispose();
   }
 }
 
