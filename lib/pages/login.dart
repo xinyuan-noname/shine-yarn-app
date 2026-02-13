@@ -83,36 +83,34 @@ class _LoginPageState extends State<LoginPage> {
                   alignment: Alignment.center,
                   child: ElevatedButton(
                     onPressed: () async {
-                      if (_formKey.currentState!.validate() &&
-                          ApiService.isOk()) {
-                        _toLogin().then((success) {
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                          }
-                          if (success && context.mounted) {
-                            globalNavigatorKey.currentState
-                                ?.pushNamedAndRemoveUntil(
-                                  '/home',
-                                  clearOldRouter,
-                                );
-                          }
-                        });
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (_) => ValueListenableBuilder<String>(
-                            valueListenable: _message,
-                            builder: (_, text, __) => Dialog(
-                              child: Container(
-                                height: 64,
-                                alignment: Alignment.center,
-                                child: Text(text),
-                              ),
+                      if (_formKey.currentState!.validate()) return;
+                      if (!ApiService.isOk) return;
+                      _toLogin().then((success) {
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
+                        if (success && context.mounted) {
+                          globalNavigatorKey.currentState
+                              ?.pushNamedAndRemoveUntil(
+                                '/home',
+                                clearOldRouter,
+                              );
+                        }
+                      });
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (_) => ValueListenableBuilder<String>(
+                          valueListenable: _message,
+                          builder: (_, text, __) => Dialog(
+                            child: Container(
+                              height: 64,
+                              alignment: Alignment.center,
+                              child: Text(text),
                             ),
                           ),
-                        );
-                        final success = await _toLogin();
-                      }
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: mainColorPurple,

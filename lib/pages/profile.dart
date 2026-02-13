@@ -50,14 +50,17 @@ class _ProfilePageState extends State<ProfilePage> {
             shadowColor: Colors.transparent,
           ),
           onPressed: () async {
+            if (!ApiService.isOk) return;
             _toLogout().then((success) {
               if (context.mounted) {
                 Navigator.pop(context);
               }
-              globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
-                "/login",
-                clearOldRouter,
-              );
+              if (success) {
+                globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
+                  "/login",
+                  clearOldRouter,
+                );
+              }
             });
             showDialog(
               context: context,

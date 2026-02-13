@@ -12,7 +12,7 @@ class ApiService {
     final url = response.data;
     return url;
   }
-  static isOk(){
+  static bool get isOk{
     return dio.options.baseUrl.isNotEmpty;
   }
   static setBaseUrl(String url) {
