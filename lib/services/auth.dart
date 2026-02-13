@@ -5,17 +5,21 @@ import 'package:shine/worker/worker.dart';
 
 class ApiAuth {
   static login(input) async {
-    final response = await dio.post("/auth/login", data: input);
-    final Map<String, dynamic> data = response.data;
-    final String? accessToken = data['accessToken'];
-    final String? refreshToken = data['refreshToken'];
-    if (accessToken != null && refreshToken != null) {
-      ApiService.setAccessToken(accessToken);
-      TokenStorage.setAccessToken(accessToken);
-      TokenStorage.setRefreshToken(refreshToken);
-      return true;
+    try {
+      final response = await dio.post("/auth/login", data: input);
+      final Map<String, dynamic> data = response.data;
+      final String? accessToken = data['accessToken'];
+      final String? refreshToken = data['refreshToken'];
+      if (accessToken != null && refreshToken != null) {
+        ApiService.setAccessToken(accessToken);
+        TokenStorage.setAccessToken(accessToken);
+        TokenStorage.setRefreshToken(refreshToken);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
     }
-    return false;
   }
 
   static refresh() async {

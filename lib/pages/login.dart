@@ -89,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
                           context: context,
                           barrierDismissible: false,
                           builder: (_) => ValueListenableBuilder<String>(
-                            valueListenable: _message, // 👈 监听这个 notifier
+                            valueListenable: _message, 
                             builder: (_, text, __) => Dialog(
                               child: Container(
                                 height: 64,
