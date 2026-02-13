@@ -1,6 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/dio.dart';
 import 'package:shine/storage/token_storage.dart';
+import 'package:shine/worker/worker.dart';
 
 class ApiAuth {
   static login(input) async {
@@ -18,13 +21,35 @@ class ApiAuth {
   }
 
   static refresh() async {
-    final response = await dio.post("/auth/refresh", data: {"refreshToken"});
-    final Map<String, dynamic> data = response.data;
-    final String? accessToken = data['accessToken'];
-    if (accessToken != null) {
-      ApiService.setAccessToken(accessToken);
-      return true;
+    final refreshToken = await TokenStorage.getRefreshToken();
+    try {
+      final response = await dio.post(
+        "/auth/refresh",
+        data: {"refreshToken": refreshToken},
+      );
+      final Map<String, dynamic> data = response.data;
+      final String? accessToken = data['accessToken'];
+      if (accessToken != null) {
+        ApiService.setAccessToken(accessToken);
+        TokenStorage.setAccessToken(accessToken);
+        return true;
+      }
+    } catch (e) {
+      return false;
     }
-    return false;
+  }
+
+  static logout() async {
+    final refreshToken = await TokenStorage.getRefreshToken();
+    try {
+      await dio.post("/auth/logout", data: {"refreshToken": refreshToken});
+      await TokenStorage.deleteAccessToken();
+      await TokenStorage.deleteRefreshToken();
+      await Worker.stopRefresh();
+      globalNavigatorKey.currentState?.pushReplacementNamed("/login");
+    } catch (e) {
+      return false;
+    }
+    return true;
   }
 }

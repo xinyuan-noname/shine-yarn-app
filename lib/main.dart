@@ -6,6 +6,7 @@ import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/worker/worker.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,10 +29,10 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _prepareServer();
+    _prepare();
   }
 
-  _prepareServer() async {
+  _prepare() async {
     ApiService.init();
     final tokenFuture = TokenStorage.getAccessToken();
 
@@ -46,8 +47,10 @@ class _MyAppState extends State<MyApp> {
 
     if (accessToken != null) {
       ApiService.setAccessToken(accessToken);
+      Worker.scheduleRefresh(Duration(seconds: 0));
       globalNavigatorKey.currentState?.pushReplacementNamed("/home");
     } else {
+      // 开启refresh定时任务
       globalNavigatorKey.currentState?.pushReplacementNamed("/login");
     }
   }

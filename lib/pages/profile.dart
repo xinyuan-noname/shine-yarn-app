@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/services/auth.dart';
 import 'package:shine/theme.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -41,13 +42,28 @@ class _ProfilePageState extends State<ProfilePage> {
         color: bgColorLight60,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
+            side: BorderSide(color: Colors.red, width: 1.0),
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
           ),
-          onPressed: () {},
+          onPressed: ()async {
+            await ApiAuth.logout();
+          },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [Text('退出登录')],
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(Icons.logout, size: 20, color: Colors.redAccent),
+              SizedBox(width: 10),
+              Text(
+                '退出登录',
+                style: TextStyle(
+                  color: Colors.redAccent,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w100,
+                ),
+              ),
+            ],
           ),
         ),
       ),
