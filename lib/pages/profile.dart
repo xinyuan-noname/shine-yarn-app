@@ -116,7 +116,6 @@ class _ProfilePageState extends State<ProfilePage> {
     if (result[0] == false) {
       _logoutMessage.value = "登出失败";
       await Future.delayed(Duration(milliseconds: 500));
-      ApiService.reinit();
       return false;
     } else if (result[0] == true) {
       _logoutMessage.value = "登出成功";

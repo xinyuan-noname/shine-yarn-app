@@ -78,11 +78,8 @@ class ApiService {
           } else if (err.type == DioExceptionType.connectionError) {
             print('网络异常');
           } else if (code != null && code >= 500) {
-            print('服务器开小差了');
+            Worker.scheduleUrlNow();
           }
-          // 其他错误...
-
-          // 👇 关键：决定是否继续抛出错误
           handler.next(err);
         },
       ),
@@ -93,12 +90,6 @@ class ApiService {
     ApiService.useJson();
     ApiService.useError();
     ApiService.setDeviceInfo();
-    final url = await getBaseUrl();
-    ApiService.setBaseUrl(url);
-  }
-
-  static reinit() async {
-    final url = await getBaseUrl();
-    ApiService.setBaseUrl(url);
+    await Worker.scheduleUrlNow();
   }
 }

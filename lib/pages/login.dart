@@ -83,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
                   alignment: Alignment.center,
                   child: ElevatedButton(
                     onPressed: () async {
-                      if (_formKey.currentState!.validate()) return;
+                      if (!_formKey.currentState!.validate()) return;
                       if (!ApiService.isOk) return;
                       _toLogin().then((success) {
                         if (context.mounted) {
@@ -154,7 +154,6 @@ class _LoginPageState extends State<LoginPage> {
     if (result[0] == false) {
       _message.value = "登录失败";
       await Future.delayed(Duration(milliseconds: 500));
-      ApiService.reinit();
       return false;
     } else if (result[0] == true) {
       _message.value = "登录成功";
