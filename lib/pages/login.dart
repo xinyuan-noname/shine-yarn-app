@@ -158,11 +158,11 @@ class _LoginPageState extends State<LoginPage> {
       return false;
     } else if (result[0] == true) {
       _message.value = "登录成功";
-      if (_controllers.asTextMap["name"] != null){
-        ProfileStorage.saveName(_controllers.asTextMap["name"]!);
+      if (_controllers.asTextMap["username"] != null){
+        await ProfileStorage.saveName(_controllers.asTextMap["username"]!);
       }
       if (_controllers.asTextMap["id"] != null){
-        ProfileStorage.saveId(_controllers.asTextMap["id"]!);
+        await ProfileStorage.saveId(_controllers.asTextMap["id"]!);
       }
       await Future.delayed(Duration(milliseconds: 300));
       return true;

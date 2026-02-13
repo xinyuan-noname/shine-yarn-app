@@ -13,10 +13,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String? _avatarPath;
-  late String _username;
+  String _username = "???";
   @override
-  void initState() async {
-    _username = await ProfileStorage.getName() ?? "???";
+  void initState() {
+    Future(() async {
+      _username = await ProfileStorage.getName() ?? "???";
+      setState(() {});
+    });
     super.initState();
   }
 
@@ -45,7 +48,14 @@ class _HomePageState extends State<HomePage> {
                 SizedBox(width: 5),
                 Column(
                   children: [
-                    Text(_username, style: TextStyle(letterSpacing: 1.0)),
+                    Text(
+                      _username,
+                      style: TextStyle(
+                        letterSpacing: 1.0,
+                        fontFamily: "SmileySans",
+                        fontWeight: FontWeight.w300
+                      ),
+                    ),
                   ],
                 ),
               ],
