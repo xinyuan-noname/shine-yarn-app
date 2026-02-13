@@ -6,6 +6,29 @@ import 'package:shine/utils/device_info.dart';
 import 'package:shine/worker/worker.dart';
 
 class ApiService {
+  static final _errorInterceptor = InterceptorsWrapper(
+    onError: (DioException err, handler) {
+      final res = err.response;
+      final code = res?.statusCode;
+      if (code == 401) {
+        final Map<String, dynamic> data = jsonDecode(res?.data);
+        if (data["error"] != null) {
+          switch (data["error"]) {
+            case "Invalid Access Token":
+              {
+                Worker.scheduleRefreshNow();
+              }
+              break;
+          }
+        }
+      } else if (err.type == DioExceptionType.connectionError) {
+        print('网络异常');
+      } else if (code != null && code >= 500) {
+        Worker.scheduleUrlNow();
+      }
+      handler.next(err);
+    },
+  );
   static getBaseUrl() async {
     final response = await Dio().get(
       "https://gitee.com/xinyuanwm/asset/raw/main/url.txt",
@@ -24,18 +47,18 @@ class ApiService {
 
   static setBaseUrl(String url) {
     dio.options.baseUrl = url;
-    print(url);
+    uploadDio.options.baseUrl = url;
   }
 
   static setAccessToken(String accessToken) {
     dio.options.headers['Authorization'] = 'Bearer $accessToken';
-    print(dio.options.headers);
+    uploadDio.options.headers['Authorization'] = 'Bear $accessToken';
   }
 
   static setDeviceInfo() async {
     final headers = await getDeviceHeadersForApi();
     dio.options.headers.addAll(headers);
-    print(dio.options.headers);
+    uploadDio.options.headers.addAll(headers);
   }
 
   static void useJson() {
@@ -59,31 +82,8 @@ class ApiService {
   }
 
   static useError() {
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onError: (DioException err, handler) {
-          final res = err.response;
-          final code = res?.statusCode;
-          if (code == 401) {
-            final Map<String, dynamic> data = jsonDecode(res?.data);
-            if (data["error"] != null) {
-              switch (data["error"]) {
-                case "Invalid Access Token":
-                  {
-                    Worker.scheduleRefreshNow();
-                  }
-                  break;
-              }
-            }
-          } else if (err.type == DioExceptionType.connectionError) {
-            print('网络异常');
-          } else if (code != null && code >= 500) {
-            Worker.scheduleUrlNow();
-          }
-          handler.next(err);
-        },
-      ),
-    );
+    dio.interceptors.add(ApiService._errorInterceptor);
+    uploadDio.interceptors.add(ApiService._errorInterceptor);
   }
 
   static init() async {

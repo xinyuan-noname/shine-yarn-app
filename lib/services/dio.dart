@@ -7,3 +7,8 @@ Dio dio = Dio(
     headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
   ),
 );
+
+final uploadDio = Dio(BaseOptions(
+  connectTimeout: Duration(seconds: 15),
+  receiveTimeout: Duration(seconds: 60), 
+));

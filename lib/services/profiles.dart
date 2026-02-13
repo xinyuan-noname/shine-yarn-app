@@ -1,30 +1,23 @@
-import 'package:dio/dio.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:shine/services/api.dart';
-import 'package:shine/services/dio.dart';
-class ApiProfiles {
-  static Future<void> uploadXFileWithDio(XFile xFile) async {
-    final bytes = await xFile.readAsBytes();
+import 'dart:typed_data';
 
+import 'package:dio/dio.dart';
+import 'package:shine/services/dio.dart';
+
+class ApiProfiles {
+  static Future<void> uploadAvatar(Uint8List bytes) async {
     final formData = FormData.fromMap({
       'file': MultipartFile.fromBytes(
         bytes,
-        filename: xFile.name,
-        contentType: ApiService.parseContentType(xFile.mimeType),
+        filename: 'avatar.jpg',
+        contentType: DioMediaType('image', 'jpeg'),
       ),
     });
-
     try {
-      final response = await dio.post(
-        '/profiles/avatar',
-        data: formData,
-        onSendProgress: (sent, total) {
-          print('上传进度: ${sent / total * 100}%');
-        },
-      );
-      print('成功: ${response.data}');
+      final response = await uploadDio.post('/profiles/avatar', data: formData);
+      print('✅ 头像上传成功');
     } catch (e) {
-      print('失败: $e');
+      print('❌ 上传失败: $e');
+      rethrow; // 让上层处理错误
     }
   }
 }

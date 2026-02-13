@@ -11,6 +11,7 @@ import 'package:shine/services/auth.dart';
 import 'package:shine/services/profiles.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/image.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -171,8 +172,10 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   _onUpload() {
-    pickImage(context, (XFile xfile) async {
-      await ApiProfiles.uploadXFileWithDio(xfile);
+    pickImage(context, (XFile image) async {
+      final jpgData = await cropAvatar(image);
+      if (jpgData == null) return;
+      await ApiProfiles.uploadAvatar(jpgData);
     });
   }
 
