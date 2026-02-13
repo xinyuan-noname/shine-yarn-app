@@ -92,4 +92,13 @@ class ApiService {
     ApiService.setDeviceInfo();
     await Worker.scheduleUrlNow();
   }
+
+  static DioMediaType? parseContentType(String? mimeType) {
+    if (mimeType == null) return null;
+    try {
+      return DioMediaType.parse(mimeType);
+    } catch (e) {
+      return DioMediaType('application', 'octet-stream');
+    }
+  }
 }

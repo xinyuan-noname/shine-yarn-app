@@ -1,11 +1,15 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/components/pick_image.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/auth.dart';
+import 'package:shine/services/profiles.dart';
+import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -19,6 +23,15 @@ class _ProfilePageState extends State<ProfilePage> {
   String? _avatarPath;
   final _logoutMessage = ValueNotifier("正在发送登出请求");
   @override
+  void initState() {
+    super.initState();
+    Future(() async {
+      _avatarPath = await ProfileStorage.getAvatarPath();
+      setState(() {});
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -28,17 +41,49 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       body: SafeArea(
         top: false,
-        child: Column(
-          children: [
-            Padding(padding: EdgeInsetsGeometry.only(top: 5)),
-            _avatarPath != null
-                ? CircleAvatar(
-                    backgroundColor: Colors.transparent,
-                    radius: 50,
-                    backgroundImage: FileImage(File(_avatarPath!)),
-                  )
-                : defaultAvatar50,
-          ],
+        child: Container(
+          alignment: Alignment.center,
+          child: Column(
+            children: [
+              Padding(padding: EdgeInsetsGeometry.only(top: 5)),
+              Stack(
+                children: [
+                  SizedBox(
+                    width: 100,
+                    height: 100,
+                    child: Center(
+                      child: _avatarPath != null
+                          ? CircleAvatar(
+                              backgroundColor: Colors.transparent,
+                              radius: 50,
+                              backgroundImage: FileImage(File(_avatarPath!)),
+                            )
+                          : defaultAvatar50,
+                    ),
+                  ),
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: GestureDetector(
+                      onTap: _onUpload,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomAppBar(
@@ -123,6 +168,12 @@ class _ProfilePageState extends State<ProfilePage> {
       return true;
     }
     return;
+  }
+
+  _onUpload() {
+    pickImage(context, (XFile xfile) async {
+      await ApiProfiles.uploadXFileWithDio(xfile);
+    });
   }
 
   @override
