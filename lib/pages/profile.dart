@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -173,9 +174,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   _onUpload() {
     pickImage(context, (XFile image) async {
-      final jpgData = await cropAvatar(image);
-      if (jpgData == null) return;
-      await ApiProfiles.uploadAvatar(jpgData);
+      Uint8List? imageData = await cropAvatar(image);
+      if (imageData == null) return;
+      await ApiProfiles.uploadAvatar(imageData, image.mimeType);
     });
   }
 

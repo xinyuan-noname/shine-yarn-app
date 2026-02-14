@@ -4,20 +4,20 @@ import 'package:dio/dio.dart';
 import 'package:shine/services/dio.dart';
 
 class ApiProfiles {
-  static Future<void> uploadAvatar(Uint8List bytes) async {
+  static Future<bool> uploadAvatar(Uint8List bytes, String? subMimeType) async {
+    subMimeType ??= 'jpeg';
     final formData = FormData.fromMap({
-      'file': MultipartFile.fromBytes(
+      'avatar': MultipartFile.fromBytes(
         bytes,
         filename: 'avatar.jpg',
-        contentType: DioMediaType('image', 'jpeg'),
+        contentType: DioMediaType('image', subMimeType),
       ),
     });
     try {
       final response = await uploadDio.post('/profiles/avatar', data: formData);
-      print('✅ 头像上传成功');
+      return true;
     } catch (e) {
-      print('❌ 上传失败: $e');
-      rethrow; // 让上层处理错误
+      return false;
     }
   }
 }

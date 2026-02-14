@@ -52,7 +52,7 @@ class ApiService {
 
   static setAccessToken(String accessToken) {
     dio.options.headers['Authorization'] = 'Bearer $accessToken';
-    uploadDio.options.headers['Authorization'] = 'Bear $accessToken';
+    uploadDio.options.headers['Authorization'] = 'Bearer $accessToken';
   }
 
   static setDeviceInfo() async {
