@@ -160,7 +160,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return;
   }
 
-  Future _toUpload(bytes) async {
+  Future _toUpload(Uint8List bytes) async {
     final result = await Future.any([
       Future(() async {
         return await ApiProfiles.uploadAvatar(bytes);
@@ -201,7 +201,7 @@ class _ProfilePageState extends State<ProfilePage> {
         });
         return;
       }
-      final success = await _toUpload(image);
+      final success = await _toUpload(imageData);
       if (context.mounted) {
         Navigator.pop(context);
       }
