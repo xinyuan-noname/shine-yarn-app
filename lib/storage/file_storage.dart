@@ -1,3 +1,41 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+
 class FileStorage {
-  
+  static Future<File> saveBytesToAppFolder({
+    required String relativePath,
+    required Uint8List data,
+  }) async {
+    final String fullPath = await FileStorage.getPath(relativePath);
+    final File file = File(fullPath);
+    await file.parent.create(recursive: true);
+    return await file.writeAsBytes(data);
+  }
+
+  /// 将字符串（文本）保存到应用文档目录
+  static Future<File> saveStringToAppFolder({
+    required String relativePath,
+    required String content,
+    Encoding encoding = utf8,
+  }) async {
+    final String fullPath = await FileStorage.getPath(relativePath);
+    final File file = File(fullPath);
+    await file.parent.create(recursive: true);
+    return await file.writeAsString(content, encoding: encoding);
+  }
+
+  static Future<String> getPath(String relativePath) async {
+    final Directory appDocDir = await getApplicationDocumentsDirectory();
+    final String fullPath = path.join(appDocDir.path, relativePath);
+    return fullPath;
+  }
+
+  static Future<bool> existsFile(String relativePath) async {
+    final String fullPath = await FileStorage.getPath(relativePath);
+    final File file = File(fullPath);
+    return file.exists();
+  }
 }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:shine/components/dialog.dart';
 import 'package:shine/components/input.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
@@ -98,20 +99,7 @@ class _LoginPageState extends State<LoginPage> {
                               );
                         }
                       });
-                      showDialog(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (_) => ValueListenableBuilder<String>(
-                          valueListenable: _message,
-                          builder: (_, text, __) => Dialog(
-                            child: Container(
-                              height: 64,
-                              alignment: Alignment.center,
-                              child: Text(text),
-                            ),
-                          ),
-                        ),
-                      );
+                      showMessageDialog(context, _message);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: mainColorPurple,
@@ -158,10 +146,10 @@ class _LoginPageState extends State<LoginPage> {
       return false;
     } else if (result[0] == true) {
       _message.value = "登录成功";
-      if (_controllers.asTextMap["username"] != null){
+      if (_controllers.asTextMap["username"] != null) {
         await ProfileStorage.saveName(_controllers.asTextMap["username"]!);
       }
-      if (_controllers.asTextMap["id"] != null){
+      if (_controllers.asTextMap["id"] != null) {
         await ProfileStorage.saveId(_controllers.asTextMap["id"]!);
       }
       await Future.delayed(Duration(milliseconds: 300));

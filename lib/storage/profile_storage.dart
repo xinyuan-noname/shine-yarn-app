@@ -1,9 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shine/storage/file_storage.dart';
 
 class ProfileStorage {
   static final String _nameKey = 'name_key';
   static final String _idKey = 'id_key';
-  static final String _avatarPathKey = 'avatar_path';
+  static final String _avatarRelativePath = 'profiles/avatar';
   static Future<void> saveName(String name) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_nameKey, name);
@@ -34,18 +37,18 @@ class ProfileStorage {
     await prefs.remove(_idKey);
   }
 
-  static Future<void> saveAvatarPath(String saveAvatarPath) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_avatarPathKey, saveAvatarPath);
+  static Future<void> saveAvatar(Uint8List data) async {
+    FileStorage.saveBytesToAppFolder(
+      relativePath: _avatarRelativePath,
+      data: data,
+    );
   }
 
   static Future<String?> getAvatarPath() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_avatarPathKey);
-  }
-
-  static Future delAvatarPath() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_avatarPathKey);
+    final fullpath = await FileStorage.getPath(_avatarRelativePath);
+    if (await FileStorage.existsFile(fullpath)) {
+      return fullpath;
+    }
+    return null;
   }
 }

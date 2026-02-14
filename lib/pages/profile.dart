@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shine/components/avatar.dart';
+import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/pick_image.dart';
 import 'package:shine/routes.dart';
@@ -100,20 +101,7 @@ class _ProfilePageState extends State<ProfilePage> {
           onPressed: () async {
             if (!ApiService.isOk) return;
             _logoutMessage.value = "正在发送登出请求";
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (_) => ValueListenableBuilder<String>(
-                valueListenable: _logoutMessage,
-                builder: (_, text, __) => Dialog(
-                  child: Container(
-                    height: 64,
-                    alignment: Alignment.center,
-                    child: Text(text),
-                  ),
-                ),
-              ),
-            );
+            showMessageDialog(context, _logoutMessage);
             final success = await _toLogout();
             if (context.mounted) {
               Navigator.pop(context);
@@ -172,7 +160,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return;
   }
 
-  Future toUpload(bytes) async {
+  Future _toUpload(bytes) async {
     final result = await Future.any([
       Future(() async {
         return await ApiProfiles.uploadAvatar(bytes);
@@ -204,20 +192,7 @@ class _ProfilePageState extends State<ProfilePage> {
   _onUpload() {
     pickImage(context, (XFile image) async {
       _avatarUploadMessage.value = "正在上传头像文件";
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => ValueListenableBuilder<String>(
-          valueListenable: _avatarUploadMessage,
-          builder: (_, text, __) => Dialog(
-            child: Container(
-              height: 64,
-              alignment: Alignment.center,
-              child: Text(text),
-            ),
-          ),
-        ),
-      );
+      showMessageDialog(context, _avatarUploadMessage);
       Uint8List? imageData = await cropAvatar(image);
       if (imageData == null) {
         _avatarUploadMessage.value = "没有检测文件数据";
@@ -225,6 +200,15 @@ class _ProfilePageState extends State<ProfilePage> {
           Navigator.pop(context);
         });
         return;
+      }
+      final success = await _toUpload(image);
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
+      if (success) {
+        await ProfileStorage.saveAvatar(imageData);
+        _avatarPath = await ProfileStorage.getAvatarPath();
+        setState(() {});
       }
     });
   }
