@@ -168,21 +168,21 @@ class _ProfilePageState extends State<ProfilePage> {
       Future(() async {
         const duration = 500;
         while (true) {
-          _logoutMessage.value = "正在上传中.";
+          _avatarUploadMessage.value = "正在上传中.";
           await Future.delayed(Duration(milliseconds: duration));
-          _logoutMessage.value = "正在上传中..";
+          _avatarUploadMessage.value = "正在上传中..";
           await Future.delayed(Duration(milliseconds: duration));
-          _logoutMessage.value = "正在上传中...";
+          _avatarUploadMessage.value = "正在上传中...";
           await Future.delayed(Duration(milliseconds: duration));
         }
       }),
     ]);
     if (result == false) {
-      _logoutMessage.value = "上传失败";
+      _avatarUploadMessage.value = "上传失败";
       await Future.delayed(Duration(milliseconds: 500));
       return false;
     } else if (result == true) {
-      _logoutMessage.value = "上传成功";
+      _avatarUploadMessage.value = "上传成功";
       await Future.delayed(Duration(milliseconds: 300));
       return true;
     }

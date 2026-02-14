@@ -38,7 +38,7 @@ class ProfileStorage {
   }
 
   static Future<void> saveAvatar(Uint8List data) async {
-    FileStorage.saveBytesToAppFolder(
+    await FileStorage.saveBytesToAppFolder(
       relativePath: _avatarRelativePath,
       data: data,
     );

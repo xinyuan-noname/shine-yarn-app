@@ -18,6 +18,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     Future(() async {
       _username = await ProfileStorage.getName() ?? "???";
+      _avatarPath = await ProfileStorage.getAvatarPath();
       setState(() {});
     });
     super.initState();
