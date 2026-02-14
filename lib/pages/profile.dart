@@ -24,6 +24,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   String? _avatarPath;
   final _logoutMessage = ValueNotifier("正在发送登出请求");
+  final _avatarUploadMessage = ValueNotifier("正在上传头像文件");
   @override
   void initState() {
     super.initState();
@@ -98,17 +99,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           onPressed: () async {
             if (!ApiService.isOk) return;
-            _toLogout().then((success) {
-              if (context.mounted) {
-                Navigator.pop(context);
-              }
-              if (success) {
-                globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
-                  "/login",
-                  clearOldRouter,
-                );
-              }
-            });
+            _logoutMessage.value = "正在发送登出请求";
             showDialog(
               context: context,
               barrierDismissible: false,
@@ -123,6 +114,16 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             );
+            final success = await _toLogout();
+            if (context.mounted) {
+              Navigator.pop(context);
+            }
+            if (success) {
+              globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
+                "/login",
+                clearOldRouter,
+              );
+            }
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -146,7 +147,6 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future _toLogout() async {
-    _logoutMessage.value = "正在发送登出请求";
     final result = await Future.wait([
       Future(() async {
         return await ApiAuth.logout();
@@ -172,11 +172,60 @@ class _ProfilePageState extends State<ProfilePage> {
     return;
   }
 
+  Future toUpload(bytes) async {
+    final result = await Future.any([
+      Future(() async {
+        return await ApiProfiles.uploadAvatar(bytes);
+      }),
+      Future(() async {
+        const duration = 500;
+        while (true) {
+          _logoutMessage.value = "正在上传中.";
+          await Future.delayed(Duration(milliseconds: duration));
+          _logoutMessage.value = "正在上传中..";
+          await Future.delayed(Duration(milliseconds: duration));
+          _logoutMessage.value = "正在上传中...";
+          await Future.delayed(Duration(milliseconds: duration));
+        }
+      }),
+    ]);
+    if (result == false) {
+      _logoutMessage.value = "上传失败";
+      await Future.delayed(Duration(milliseconds: 500));
+      return false;
+    } else if (result == true) {
+      _logoutMessage.value = "上传成功";
+      await Future.delayed(Duration(milliseconds: 300));
+      return true;
+    }
+    return;
+  }
+
   _onUpload() {
     pickImage(context, (XFile image) async {
+      _avatarUploadMessage.value = "正在上传头像文件";
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => ValueListenableBuilder<String>(
+          valueListenable: _avatarUploadMessage,
+          builder: (_, text, __) => Dialog(
+            child: Container(
+              height: 64,
+              alignment: Alignment.center,
+              child: Text(text),
+            ),
+          ),
+        ),
+      );
       Uint8List? imageData = await cropAvatar(image);
-      if (imageData == null) return;
-      await ApiProfiles.uploadAvatar(imageData, image.mimeType);
+      if (imageData == null) {
+        _avatarUploadMessage.value = "没有检测文件数据";
+        Future(() {
+          Navigator.pop(context);
+        });
+        return;
+      }
     });
   }
 
@@ -184,5 +233,6 @@ class _ProfilePageState extends State<ProfilePage> {
   void dispose() {
     super.dispose();
     _logoutMessage.dispose();
+    _avatarUploadMessage.dispose();
   }
 }

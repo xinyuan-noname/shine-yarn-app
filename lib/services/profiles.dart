@@ -4,8 +4,10 @@ import 'package:dio/dio.dart';
 import 'package:shine/services/dio.dart';
 
 class ApiProfiles {
-  static Future<bool> uploadAvatar(Uint8List bytes, String? subMimeType) async {
-    subMimeType ??= 'jpeg';
+  static Future<bool> uploadAvatar(
+    Uint8List bytes, {
+    String subMimeType = "jepg",
+  }) async {
     final formData = FormData.fromMap({
       'avatar': MultipartFile.fromBytes(
         bytes,
