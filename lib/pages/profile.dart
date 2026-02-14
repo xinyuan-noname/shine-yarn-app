@@ -102,16 +102,14 @@ class _ProfilePageState extends State<ProfilePage> {
             if (!ApiService.isOk) return;
             _logoutMessage.value = "正在发送登出请求";
             showMessageDialog(context, _logoutMessage);
-            final success = await _toLogout();
+            await _toLogout();
             if (context.mounted) {
               Navigator.pop(context);
             }
-            if (success) {
-              globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
-                "/login",
-                clearOldRouter,
-              );
-            }
+            globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
+              "/login",
+              clearOldRouter,
+            );
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -149,7 +147,7 @@ class _ProfilePageState extends State<ProfilePage> {
       }),
     ]);
     if (result[0] == false) {
-      _logoutMessage.value = "登出失败";
+      _logoutMessage.value = "令牌吊销失败";
       await Future.delayed(Duration(milliseconds: 500));
       return false;
     } else if (result[0] == true) {
@@ -161,22 +159,26 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future _toUpload(Uint8List bytes) async {
+    bool animate = true;
     final result = await Future.any([
       Future(() async {
         return await ApiProfiles.uploadAvatar(bytes);
       }),
       Future(() async {
         const duration = 500;
-        while (true) {
+        while (animate) {
           _avatarUploadMessage.value = "正在上传中.";
           await Future.delayed(Duration(milliseconds: duration));
+          if (!animate) break;
           _avatarUploadMessage.value = "正在上传中..";
           await Future.delayed(Duration(milliseconds: duration));
+          if (!animate) break;
           _avatarUploadMessage.value = "正在上传中...";
           await Future.delayed(Duration(milliseconds: duration));
         }
       }),
     ]);
+    animate = false;
     if (result == false) {
       _avatarUploadMessage.value = "上传失败";
       await Future.delayed(Duration(milliseconds: 500));
@@ -186,7 +188,6 @@ class _ProfilePageState extends State<ProfilePage> {
       await Future.delayed(Duration(milliseconds: 300));
       return true;
     }
-    return;
   }
 
   _onUpload() {

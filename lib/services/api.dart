@@ -12,6 +12,7 @@ class ApiService {
       final code = res?.statusCode;
       if (code == 401) {
         final Map<String, dynamic> data = jsonDecode(res?.data);
+        print(data);
         if (data["error"] != null) {
           switch (data["error"]) {
             case "Invalid Access Token":

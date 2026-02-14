@@ -15,7 +15,6 @@ class FileStorage {
     return await file.writeAsBytes(data);
   }
 
-  /// 将字符串（文本）保存到应用文档目录
   static Future<File> saveStringToAppFolder({
     required String relativePath,
     required String content,

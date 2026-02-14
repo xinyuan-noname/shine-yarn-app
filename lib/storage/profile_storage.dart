@@ -6,7 +6,7 @@ import 'package:shine/storage/file_storage.dart';
 class ProfileStorage {
   static final String _nameKey = 'name_key';
   static final String _idKey = 'id_key';
-  static final String _avatarRelativePath = 'profiles/avatar';
+  static final String _avatarPathKey = 'avatar_path_key';
   static Future<void> saveName(String name) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_nameKey, name);
@@ -38,14 +38,21 @@ class ProfileStorage {
   }
 
   static Future<void> saveAvatar(Uint8List data) async {
+    final prefs = await SharedPreferences.getInstance();
+    final avatarRelativePath =
+        'profiles/avatar-${DateTime.now().millisecondsSinceEpoch}.jpeg';
+    await prefs.setString(_avatarPathKey, avatarRelativePath);
     await FileStorage.saveBytesToAppFolder(
-      relativePath: _avatarRelativePath,
+      relativePath: avatarRelativePath,
       data: data,
     );
   }
 
   static Future<String?> getAvatarPath() async {
-    final fullpath = await FileStorage.getPath(_avatarRelativePath);
+    final prefs = await SharedPreferences.getInstance();
+    final avatarRelativePath = prefs.getString(_avatarPathKey);
+    if (avatarRelativePath == null) return null;
+    final fullpath = await FileStorage.getPath(avatarRelativePath);
     if (await FileStorage.existsFile(fullpath)) {
       return fullpath;
     }
