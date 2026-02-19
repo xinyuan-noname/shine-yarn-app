@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shine/routes.dart';
 
 void showMessageDialog(
   BuildContext context,
@@ -18,5 +19,36 @@ void showMessageDialog(
         ),
       ),
     ),
+  );
+}
+
+void gotoAdminDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(
+          '即将进入超级管理员界面!',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+        ),
+        content: Text('确定要进入吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('取消'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
+                '/admin',
+                clearOldRouter,
+              );
+            },
+            child: Text('确定'),
+          ),
+        ],
+      );
+    },
   );
 }

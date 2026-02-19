@@ -5,7 +5,7 @@ import 'package:shine/storage/token_storage.dart';
 import 'package:shine/worker/worker.dart';
 
 class ApiAuth {
-  static login(input) async {
+  static Future<String?> login(input) async {
     try {
       final response = await dio.post("/auth/login", data: input);
       final Map<String, dynamic> data = response.data;
@@ -15,9 +15,9 @@ class ApiAuth {
         ApiService.setAccessToken(accessToken);
         TokenStorage.setAccessToken(accessToken);
         TokenStorage.setRefreshToken(refreshToken);
-        return true;
+        return null;
       }
-      return false;
+      return "登陆失败";
     } on DioException catch (e) {
       Worker.scheduleRefreshNow();
       return e.message ?? "登陆失败";

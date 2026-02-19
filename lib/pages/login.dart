@@ -21,6 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   final _controllers = <String, TextEditingController>{};
   final ValueNotifier<String> _message = ValueNotifier("正在发送登录请求");
   late final List<Input> _inputs;
+  int _titleTapCount = 0;
   @override
   void initState() {
     super.initState();
@@ -58,18 +59,26 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: const Text(
-                  "学号姓名密码登录",
-                  style: TextStyle(
-                    color: Colors.white30,
-                    fontFamily: "SmileySans",
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    shadows: [
-                      Shadow(offset: Offset(1, 1), color: mainColorPurple),
-                      Shadow(offset: Offset(-1, -1), color: mainColorPurple),
-                    ],
+              GestureDetector(
+                onTap: () {
+                  _titleTapCount++;
+                  if (_titleTapCount >= 5) {
+                    gotoAdminDialog(context);
+                  }
+                },
+                child: Center(
+                  child: const Text(
+                    "学号姓名密码登录",
+                    style: TextStyle(
+                      color: Colors.white30,
+                      fontFamily: "SmileySans",
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      shadows: [
+                        Shadow(offset: Offset(1, 1), color: mainColorPurple),
+                        Shadow(offset: Offset(-1, -1), color: mainColorPurple),
+                      ],
+                    ),
                   ),
                 ),
               ),

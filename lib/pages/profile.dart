@@ -218,38 +218,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   onTap: () {
                     _tapVersionCount++;
                     if (_tapVersionCount >= 5) {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text(
-                              '即将进入超级管理员界面!',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            content: Text('确定要进入吗？'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: Text('取消'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  globalNavigatorKey.currentState
-                                      ?.pushNamedAndRemoveUntil(
-                                        '/admin',
-                                        clearOldRouter,
-                                      );
-                                },
-                                child: Text('确定'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
+                      gotoAdminDialog(context);
                     }
                   },
                   child: Container(
