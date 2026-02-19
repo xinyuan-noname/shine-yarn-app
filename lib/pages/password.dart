@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shine/components/dialog.dart';
 import 'package:shine/components/input.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/extensions/text_editing.dart';
@@ -91,6 +92,7 @@ class _PasswordPageState extends State<PasswordPage> {
           onPressed: () async {
             if (!_formKey.currentState!.validate()) return;
             if (!ApiService.isOk) return;
+            showMessageDialog(context, _message);
             final result = await _toChangePassword();
             if (context.mounted) {
               Navigator.pop(context);
