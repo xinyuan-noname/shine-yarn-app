@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:shine/services/dio.dart';
 
 class ApiProfiles {
-  static Future<bool> uploadAvatar(
+  static Future<String?> uploadAvatar(
     Uint8List bytes, {
     String subMimeType = "jepg",
   }) async {
@@ -16,10 +16,12 @@ class ApiProfiles {
       ),
     });
     try {
-      final response = await uploadDio.post('/profiles/avatar', data: formData);
-      return true;
+      await uploadDio.post('/profiles/avatar', data: formData);
+      return null;
+    } on DioException catch (e) {
+      return e.message;
     } catch (e) {
-      return false;
+      return "头像上传失败";
     }
   }
 }

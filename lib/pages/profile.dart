@@ -320,14 +320,14 @@ class _ProfilePageState extends State<ProfilePage> {
       }),
     ]);
     animate = false;
-    if (result == false) {
-      _avatarUploadMessage.value = "上传失败";
-      await Future.delayed(Duration(milliseconds: 500));
-      return false;
-    } else if (result == true) {
+    if (result == null) {
       _avatarUploadMessage.value = "上传成功";
       await Future.delayed(Duration(milliseconds: 300));
       return true;
+    } else {
+      _avatarUploadMessage.value = result;
+      await Future.delayed(Duration(milliseconds: 500));
+      return false;
     }
   }
 

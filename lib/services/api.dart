@@ -22,7 +22,11 @@ class ApiService {
           }
         }
       } else if (err.type == DioExceptionType.connectionError) {
-        print('网络异常');
+        err = DioException(
+          requestOptions: err.requestOptions,
+          message: '网络连接超时，请检查网络',
+          type: DioExceptionType.connectionTimeout,
+        );
       } else if (code != null && code >= 500) {
         Worker.scheduleUrlNow();
       }
