@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:image/image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/dialog.dart';
@@ -14,6 +13,7 @@ import 'package:shine/services/auth.dart';
 import 'package:shine/services/profiles.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/device_info.dart';
 import 'package:shine/utils/image.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -29,6 +29,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String _gender = "?";
   String _id = "??????????";
   String _isPaswRequired = "否";
+  String _version = "?";
   final _logoutMessage = ValueNotifier("正在发送登出请求");
   final _avatarUploadMessage = ValueNotifier("正在上传头像文件");
   @override
@@ -40,6 +41,7 @@ class _ProfilePageState extends State<ProfilePage> {
       _gender = await ProfileStorage.getGender();
       _id = await ProfileStorage.getId();
       _isPaswRequired = await ProfileStorage.getPasswordRequired();
+      _version = await getVersionInfo();
       setState(() {});
     });
   }
@@ -95,8 +97,17 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              SizedBox(height: 20),
               Container(
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.only(left: 20, bottom: 5),
+                child: const Text(
+                  "用户",
+                  style: TextStyle(color: Colors.grey, fontSize: 16),
+                ),
+              ),
+              Container(
+                color: Colors.white,
                 padding: profilePadding,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -106,8 +117,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                 ),
               ),
-              bottomLine,
+              bottomLineSmall,
               Container(
+                color: Colors.white,
                 padding: profilePadding,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -117,8 +129,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                 ),
               ),
-              bottomLine,
+              bottomLineSmall,
               Container(
+                color: Colors.white,
                 padding: profilePadding,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -128,10 +141,11 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                 ),
               ),
-              bottomLine,
+              bottomLineSmall,
               InkWell(
                 onTap: () => {},
                 child: Container(
+                  color: Colors.white,
                   padding: profilePadding,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -146,10 +160,11 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
-              bottomLine,
+              bottomLineSmall,
               InkWell(
                 onTap: () => {},
                 child: Container(
+                  color: Colors.white,
                   padding: profilePadding,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -169,9 +184,28 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
-              bottomLine,
-              bottomLine,
-              bottomLine,
+              Container(
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.only(left: 20, top: 5, bottom: 5),
+                child: const Text(
+                  "应用",
+                  style: TextStyle(color: Colors.grey, fontSize: 16),
+                ),
+              ),
+              InkWell(
+                onTap: () {},
+                child: Container(
+                  color: Colors.white,
+                  padding: profilePadding,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("版本号", style: profileKeyTextStyle),
+                      Text(_version, style: profileValueTextStyle),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),

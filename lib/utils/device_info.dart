@@ -33,12 +33,16 @@ Future<Map<String, String>> getDeviceHeadersForApi() async {
       headers['X-OS-Version'] = osVersion;
     }
 
-    final packageInfo = await PackageInfo.fromPlatform();
-    final appVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
-    headers['X-App-Version'] = appVersion;
+    headers['X-App-Version'] = await getVersionInfo();
   } catch (e) {
     // 安静失败：不阻塞请求
   }
 
   return headers;
+}
+
+Future<String> getVersionInfo() async {
+  final packageInfo = await PackageInfo.fromPlatform();
+  final appVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
+  return appVersion;
 }
