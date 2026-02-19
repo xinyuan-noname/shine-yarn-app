@@ -53,10 +53,20 @@ class ApiAuth {
     try {
       await dio.post("/auth/logout", data: {"refreshToken": refreshToken});
     } on DioException catch (e) {
-      Worker.scheduleRefreshNow();
       return e.message ?? "吊销令牌失败";
     } catch (e) {
       return "吊销令牌失败";
+    }
+  }
+
+  static Future<String?> changePassword(input) async {
+    try {
+      await dio.patch("/auth/password", data: input);
+      return null;
+    } on DioException catch (e) {
+      return e.message ?? "更改密码失败";
+    } catch (e) {
+      return "更改密码失败";
     }
   }
 }

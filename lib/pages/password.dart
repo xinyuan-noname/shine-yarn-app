@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shine/components/input.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/extensions/text_editing.dart';
-import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
+import 'package:shine/services/auth.dart';
 import 'package:shine/theme.dart';
 
 class PasswordPage extends StatefulWidget {
@@ -91,10 +91,13 @@ class _PasswordPageState extends State<PasswordPage> {
           onPressed: () async {
             if (!_formKey.currentState!.validate()) return;
             if (!ApiService.isOk) return;
+            final result = await _toChangePassword();
             if (context.mounted) {
               Navigator.pop(context);
             }
-            Navigator.pop(context);
+            if (result) {
+              Navigator.pop(context);
+            }
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -115,7 +118,39 @@ class _PasswordPageState extends State<PasswordPage> {
     );
   }
 
-  _toChangePassword() async {}
+  Future<bool> _toChangePassword() async {
+    _message.value = "正在发送更改密码请求";
+    bool animate = true;
+    final result = await Future.any([
+      Future(() async {
+        return await ApiAuth.changePassword(_controllers.asTextMap);
+      }),
+      Future(() async {
+        const duration = 500;
+        while (animate) {
+          _message.value = "更改密码中.";
+          await Future.delayed(Duration(milliseconds: duration));
+          if (!animate) break;
+          _message.value = "更改密码中..";
+          await Future.delayed(Duration(milliseconds: duration));
+          if (!animate) break;
+          _message.value = "更改密码中...";
+          await Future.delayed(Duration(milliseconds: duration));
+        }
+      }),
+    ]);
+    animate = false;
+    if (result == null) {
+      _message.value = "密码更改成功";
+      await Future.delayed(Duration(milliseconds: 300));
+      return true;
+    } else {
+      _message.value = result;
+      await Future.delayed(Duration(milliseconds: 500));
+      return false;
+    }
+  }
+
   @override
   void dispose() {
     super.dispose();
