@@ -25,7 +25,7 @@ class ApiService {
       } else if (err.type == DioExceptionType.connectionError) {
         err = DioException(
           requestOptions: err.requestOptions,
-          message: '连接超时',
+          message: '网络连接出错',
           type: DioExceptionType.connectionTimeout,
         );
       } else if (code != null && code >= 500) {

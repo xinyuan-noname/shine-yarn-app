@@ -17,9 +17,8 @@ class ApiProfiles {
     });
     try {
       await uploadDio.post('/profiles/avatar', data: formData);
-      return null;
     } on DioException catch (e) {
-      return e.message;
+      return e.message ?? "头像上传失败";
     } catch (e) {
       return "头像上传失败";
     }

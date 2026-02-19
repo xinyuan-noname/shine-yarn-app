@@ -20,7 +20,7 @@ class ApiAuth {
       return false;
     } on DioException catch (e) {
       Worker.scheduleRefreshNow();
-      return e.message;
+      return e.message ?? "登陆失败";
     } catch (e) {
       return "登陆失败";
     }
@@ -54,7 +54,7 @@ class ApiAuth {
       await dio.post("/auth/logout", data: {"refreshToken": refreshToken});
     } on DioException catch (e) {
       Worker.scheduleRefreshNow();
-      return e.message;
+      return e.message ?? "吊销令牌失败";
     } catch (e) {
       return "吊销令牌失败";
     }
