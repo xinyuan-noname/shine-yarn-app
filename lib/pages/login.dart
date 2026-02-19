@@ -1,8 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/input.dart';
+import 'package:shine/extensions/text_editing.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/auth.dart';
@@ -177,28 +176,4 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-extension TextEditingControllerMap on Map<String, TextEditingController> {
-  void disposeAll() {
-    for (final controller in values) {
-      controller.dispose();
-    }
-  }
 
-  Map<String, String> get asTextMap {
-    final map = <String, String>{};
-    for (final entry in entries) {
-      final name = entry.key, controller = entry.value;
-      map[name] = controller.text;
-    }
-    return map;
-  }
-
-  String get asTextJSON {
-    final map = <String, String>{};
-    for (final entry in entries) {
-      final name = entry.key, controller = entry.value;
-      map[name] = controller.text;
-    }
-    return jsonEncode(map);
-  }
-}

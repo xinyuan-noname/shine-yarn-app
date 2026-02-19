@@ -61,7 +61,7 @@ class _ProfilePageState extends State<ProfilePage> {
           alignment: Alignment.center,
           child: Column(
             children: [
-              Padding(padding: EdgeInsetsGeometry.only(top: 5)),
+              const Padding(padding: EdgeInsetsGeometry.only(top: 5)),
               Stack(
                 children: [
                   SizedBox(
@@ -116,7 +116,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("姓名", style: profileKeyTextStyle),
+                        const Text("姓名", style: profileKeyTextStyle),
                         Text(_username, style: profileValueTextStyle),
                       ],
                     ),
@@ -133,7 +133,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("性别", style: profileKeyTextStyle),
+                        const Text("性别", style: profileKeyTextStyle),
                         Text(_gender, style: profileValueTextStyle),
                       ],
                     ),
@@ -150,7 +150,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("学号", style: profileKeyTextStyle),
+                        const Text("学号", style: profileKeyTextStyle),
                         Text(_id, style: profileValueTextStyle),
                       ],
                     ),
@@ -161,12 +161,16 @@ class _ProfilePageState extends State<ProfilePage> {
               Ink(
                 color: Colors.white,
                 child: InkWell(
-                  onTap: () => {},
+                  onTap: () {
+                    if (context.mounted) {
+                      globalNavigatorKey.currentState?.pushNamed("/password");
+                    }
+                  },
                   child: Container(
                     padding: profilePadding,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
+                      children: const [
                         Text("更改密码", style: profileKeyTextStyle),
                         Icon(
                           Icons.chevron_right,
@@ -239,7 +243,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   onTap: () {},
                   child: Container(
                     padding: profilePadding,
-                    child: Row(
+                    child: const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text("应用框架", style: profileKeyTextStyle),
@@ -258,7 +262,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   onTap: () {},
                   child: Container(
                     padding: profilePadding,
-                    child: Row(
+                    child: const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text("开发设计", style: profileKeyTextStyle),

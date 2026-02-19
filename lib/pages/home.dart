@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/routes.dart';
 import 'package:shine/storage/profile_storage.dart';
 
 class HomePage extends StatefulWidget {
@@ -41,8 +42,12 @@ class _HomePageState extends State<HomePage> {
               children: [
                 InkWell(
                   onTap: () async {
-                    await Navigator.pushNamed(context, '/profile');
-                    await _update();
+                    if (context.mounted) {
+                      await globalNavigatorKey.currentState?.pushNamed(
+                        '/profile',
+                      );
+                      await _update();
+                    }
                   },
                   child: _avatarPath != null
                       ? CircleAvatar(

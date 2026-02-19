@@ -466,7 +466,7 @@ class _InputState extends State<Input> {
             }
           }
           if (widget.props.validator != null) {
-            return widget.props.validator?.call(value) ?? "非法输入";
+            return widget.props.validator?.call(value);
           }
           if (widget.props.pattern != null &&
               !widget.props.pattern!.hasMatch(value)) {
