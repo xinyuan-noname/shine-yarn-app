@@ -43,11 +43,11 @@ class ApiAuth {
 
   static logout() async {
     final refreshToken = await TokenStorage.getRefreshToken();
+    await TokenStorage.deleteAccessToken();
+    await TokenStorage.deleteRefreshToken();
+    await Worker.stopRefresh();
     try {
       await dio.post("/auth/logout", data: {"refreshToken": refreshToken});
-      await TokenStorage.deleteAccessToken();
-      await TokenStorage.deleteRefreshToken();
-      await Worker.stopRefresh();
     } catch (e) {
       Worker.scheduleRefreshNow();
       return false;

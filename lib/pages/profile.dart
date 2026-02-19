@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:image/image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/dialog.dart';
@@ -24,6 +25,10 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   String? _avatarPath;
+  String _username = "???";
+  String _gender = "?";
+  String _id = "??????????";
+  String _isPaswRequired = "否";
   final _logoutMessage = ValueNotifier("正在发送登出请求");
   final _avatarUploadMessage = ValueNotifier("正在上传头像文件");
   @override
@@ -31,6 +36,10 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     Future(() async {
       _avatarPath = await ProfileStorage.getAvatarPath();
+      _username = await ProfileStorage.getName();
+      _gender = await ProfileStorage.getGender();
+      _id = await ProfileStorage.getId();
+      _isPaswRequired = await ProfileStorage.getPasswordRequired();
       setState(() {});
     });
   }
@@ -86,6 +95,83 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ],
               ),
+              SizedBox(height: 10),
+              Container(
+                padding: profilePadding,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("姓名", style: profileKeyTextStyle),
+                    Text(_username, style: profileValueTextStyle),
+                  ],
+                ),
+              ),
+              bottomLine,
+              Container(
+                padding: profilePadding,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("性别", style: profileKeyTextStyle),
+                    Text(_gender, style: profileValueTextStyle),
+                  ],
+                ),
+              ),
+              bottomLine,
+              Container(
+                padding: profilePadding,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("学号", style: profileKeyTextStyle),
+                    Text(_id, style: profileValueTextStyle),
+                  ],
+                ),
+              ),
+              bottomLine,
+              InkWell(
+                onTap: () => {},
+                child: Container(
+                  padding: profilePadding,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("更改密码", style: profileKeyTextStyle),
+                      Icon(
+                        Icons.chevron_right,
+                        size: profileFontSize,
+                        color: Colors.grey,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              bottomLine,
+              InkWell(
+                onTap: () => {},
+                child: Container(
+                  padding: profilePadding,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("强制密码登录", style: profileKeyTextStyle),
+                      Row(
+                        children: [
+                          Text(_isPaswRequired, style: profileValueTextStyle),
+                          Icon(
+                            Icons.chevron_right,
+                            size: profileFontSize,
+                            color: Colors.grey,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              bottomLine,
+              bottomLine,
+              bottomLine,
             ],
           ),
         ),
