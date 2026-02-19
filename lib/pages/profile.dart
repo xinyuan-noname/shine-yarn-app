@@ -30,6 +30,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String _id = "??????????";
   String _isPaswRequired = "否";
   String _version = "?";
+  int _tapVersionCount = 0;
   final _logoutMessage = ValueNotifier("正在发送登出请求");
   final _avatarUploadMessage = ValueNotifier("正在上传头像文件");
   @override
@@ -214,7 +215,15 @@ class _ProfilePageState extends State<ProfilePage> {
               Ink(
                 color: Colors.white,
                 child: InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    _tapVersionCount++;
+                    if (_tapVersionCount >= 5) {
+                      globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
+                        '/admin',
+                        clearOldRouter,
+                      );
+                    }
+                  },
                   child: Container(
                     padding: profilePadding,
                     child: Row(
@@ -222,6 +231,38 @@ class _ProfilePageState extends State<ProfilePage> {
                       children: [
                         Text("版本号", style: profileKeyTextStyle),
                         Text(_version, style: profileValueTextStyle),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Ink(
+                color: Colors.white,
+                child: InkWell(
+                  onTap: () {},
+                  child: Container(
+                    padding: profilePadding,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("应用框架", style: profileKeyTextStyle),
+                        Text("Flutter&Express&SQLite3", style: profileValueTextStyle),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Ink(
+                color: Colors.white,
+                child: InkWell(
+                  onTap: () {},
+                  child: Container(
+                    padding: profilePadding,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("开发设计", style: profileKeyTextStyle),
+                        Text("Shine Yarn", style: profileValueTextStyle),
                       ],
                     ),
                   ),
