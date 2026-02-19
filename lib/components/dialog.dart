@@ -8,7 +8,7 @@ void showMessageDialog(BuildContext context, ValueNotifier<String> message) {
       valueListenable: message,
       builder: (_, text, __) => Dialog(
         child: Container(
-          height: 64,
+          height: 72,
           alignment: Alignment.center,
           child: Text(text),
         ),

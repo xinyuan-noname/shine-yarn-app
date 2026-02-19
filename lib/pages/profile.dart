@@ -274,29 +274,42 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future _toLogout() async {
-    final result = await Future.wait([
+    String? result;
+    await Future.wait([
       Future(() async {
-        return await ApiAuth.logout();
+        result = await ApiAuth.logout();
       }),
       Future(() async {
-        const duration = 800;
+        const duration = 200;
         await Future.delayed(Duration(milliseconds: duration));
-        _logoutMessage.value = "正在吊销访问令牌";
+        if (result != null) return null;
+        _logoutMessage.value = "正在吊销访问令牌.";
         await Future.delayed(Duration(milliseconds: duration));
-        _logoutMessage.value = "正在吊销刷新令牌";
-        return true;
+        if (result != null) return null;
+        _logoutMessage.value = "正在吊销访问令牌..";
+        await Future.delayed(Duration(milliseconds: duration));
+        if (result != null) return null;
+        _logoutMessage.value = "正在吊销访问令牌...";
+        await Future.delayed(Duration(milliseconds: duration));
+        if (result != null) return null;
+        _logoutMessage.value = "正在吊销刷新令牌.";
+        await Future.delayed(Duration(milliseconds: duration));
+        if (result != null) return null;
+        _logoutMessage.value = "正在吊销刷新令牌..";
+        await Future.delayed(Duration(milliseconds: duration));
+        if (result != null) return null;
+        _logoutMessage.value = "正在吊销刷新令牌...";
       }),
     ]);
-    if (result[0] == false) {
-      _logoutMessage.value = "令牌吊销失败";
-      await Future.delayed(Duration(milliseconds: 500));
-      return false;
-    } else if (result[0] == true) {
+    if (result == null) {
       _logoutMessage.value = "登出成功";
       await Future.delayed(Duration(milliseconds: 300));
       return true;
+    } else {
+      _logoutMessage.value = result!;
+      await Future.delayed(Duration(milliseconds: 500));
+      return false;
     }
-    return;
   }
 
   Future _toUpload(Uint8List bytes) async {

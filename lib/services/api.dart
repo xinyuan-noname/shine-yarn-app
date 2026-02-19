@@ -10,6 +10,7 @@ class ApiService {
     onError: (DioException err, handler) {
       final res = err.response;
       final code = res?.statusCode;
+      print(err.message);
       if (code == 401) {
         final Map<String, dynamic> data = jsonDecode(res?.data);
         if (data["error"] != null) {
@@ -24,7 +25,7 @@ class ApiService {
       } else if (err.type == DioExceptionType.connectionError) {
         err = DioException(
           requestOptions: err.requestOptions,
-          message: '网络连接超时，请检查网络',
+          message: '连接超时',
           type: DioExceptionType.connectionTimeout,
         );
       } else if (code != null && code >= 500) {

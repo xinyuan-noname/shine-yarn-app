@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/dio.dart';
 import 'package:shine/storage/token_storage.dart';
@@ -17,8 +18,11 @@ class ApiAuth {
         return true;
       }
       return false;
+    } on DioException catch (e) {
+      Worker.scheduleRefreshNow();
+      return e.message;
     } catch (e) {
-      return false;
+      return "登陆失败";
     }
   }
 
@@ -48,10 +52,11 @@ class ApiAuth {
     await Worker.stopRefresh();
     try {
       await dio.post("/auth/logout", data: {"refreshToken": refreshToken});
-    } catch (e) {
+    } on DioException catch (e) {
       Worker.scheduleRefreshNow();
-      return false;
+      return e.message;
+    } catch (e) {
+      return "吊销令牌失败";
     }
-    return true;
   }
 }

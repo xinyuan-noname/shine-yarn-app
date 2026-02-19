@@ -125,26 +125,25 @@ class _LoginPageState extends State<LoginPage> {
 
   Future _toLogin() async {
     _message.value = "正在发送登录请求";
-    final result = await Future.wait([
+    String? result;
+    await Future.wait([
       Future(() async {
-        return await ApiAuth.login(_controllers.asTextMap);
+        result = await ApiAuth.login(_controllers.asTextMap);
       }),
       Future(() async {
         const duration = 800;
         await Future.delayed(Duration(milliseconds: duration));
+        if (result != null) return null;
         _message.value = "正在校验信息";
         await Future.delayed(Duration(milliseconds: duration));
+        if (result != null) return null;
         _message.value = "正在签发访问令牌";
         await Future.delayed(Duration(milliseconds: duration));
+        if (result != null) return null;
         _message.value = "正在签发刷新令牌";
-        return true;
       }),
     ]);
-    if (result[0] == false) {
-      _message.value = "登录失败";
-      await Future.delayed(Duration(milliseconds: 500));
-      return false;
-    } else if (result[0] == true) {
+    if (result == null) {
       _message.value = "登录成功";
       if (_controllers.asTextMap["username"] != null) {
         await ProfileStorage.saveName(_controllers.asTextMap["username"]!);
@@ -154,6 +153,10 @@ class _LoginPageState extends State<LoginPage> {
       }
       await Future.delayed(Duration(milliseconds: 300));
       return true;
+    } else {
+      _message.value = result!;
+      await Future.delayed(Duration(milliseconds: 500));
+      return false;
     }
   }
 

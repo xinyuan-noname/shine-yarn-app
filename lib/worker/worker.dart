@@ -36,7 +36,6 @@ class Worker {
       final url = await ApiService.getBaseUrl();
       if (url != ApiService.url) {
         ApiService.setBaseUrl(url);
-        print('更新url');
       }
       Worker.scheduleUrl(defaultDuration);
     });
