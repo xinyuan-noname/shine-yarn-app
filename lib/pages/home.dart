@@ -17,11 +17,16 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     Future(() async {
-      _username = await ProfileStorage.getName() ?? "???";
+      _username = await ProfileStorage.getName();
       _avatarPath = await ProfileStorage.getAvatarPath();
       setState(() {});
     });
     super.initState();
+  }
+
+  Future<void> _update() async {
+    _avatarPath = await ProfileStorage.getAvatarPath();
+    setState(() {});
   }
 
   @override
@@ -35,8 +40,9 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/profile');
+                  onTap: () async {
+                    await Navigator.pushNamed(context, '/profile');
+                    await _update();
                   },
                   child: _avatarPath != null
                       ? CircleAvatar(
@@ -54,7 +60,7 @@ class _HomePageState extends State<HomePage> {
                       style: TextStyle(
                         letterSpacing: 1.0,
                         fontFamily: "SmileySans",
-                        fontWeight: FontWeight.w300
+                        fontWeight: FontWeight.w300,
                       ),
                     ),
                   ],
