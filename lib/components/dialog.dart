@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
-void showMessageDialog(BuildContext context, ValueNotifier<String> message) {
+void showMessageDialog(
+  BuildContext context,
+  ValueNotifier<String> message, {
+  bool? barrierDissmissible,
+}) {
   showDialog(
     context: context,
-    barrierDismissible: false,
+    barrierDismissible: barrierDissmissible ?? false,
     builder: (_) => ValueListenableBuilder<String>(
       valueListenable: message,
       builder: (_, text, __) => Dialog(
