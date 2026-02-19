@@ -106,81 +106,100 @@ class _ProfilePageState extends State<ProfilePage> {
                   style: TextStyle(color: Colors.grey, fontSize: 16),
                 ),
               ),
-              Container(
+              Ink(
                 color: Colors.white,
-                padding: profilePadding,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("姓名", style: profileKeyTextStyle),
-                    Text(_username, style: profileValueTextStyle),
-                  ],
-                ),
-              ),
-              bottomLineSmall,
-              Container(
-                color: Colors.white,
-                padding: profilePadding,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("性别", style: profileKeyTextStyle),
-                    Text(_gender, style: profileValueTextStyle),
-                  ],
-                ),
-              ),
-              bottomLineSmall,
-              Container(
-                color: Colors.white,
-                padding: profilePadding,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("学号", style: profileKeyTextStyle),
-                    Text(_id, style: profileValueTextStyle),
-                  ],
-                ),
-              ),
-              bottomLineSmall,
-              InkWell(
-                onTap: () => {},
-                child: Container(
-                  color: Colors.white,
-                  padding: profilePadding,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("更改密码", style: profileKeyTextStyle),
-                      Icon(
-                        Icons.chevron_right,
-                        size: profileFontSize,
-                        color: Colors.grey,
-                      ),
-                    ],
+                child: InkWell(
+                  onTap: () {},
+                  child: Container(
+                    padding: profilePadding,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("姓名", style: profileKeyTextStyle),
+                        Text(_username, style: profileValueTextStyle),
+                      ],
+                    ),
                   ),
                 ),
               ),
               bottomLineSmall,
-              InkWell(
-                onTap: () => {},
-                child: Container(
-                  color: Colors.white,
-                  padding: profilePadding,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("强制密码登录", style: profileKeyTextStyle),
-                      Row(
-                        children: [
-                          Text(_isPaswRequired, style: profileValueTextStyle),
-                          Icon(
-                            Icons.chevron_right,
-                            size: profileFontSize,
-                            color: Colors.grey,
-                          ),
-                        ],
-                      ),
-                    ],
+              Ink(
+                color: Colors.white,
+                child: InkWell(
+                  onTap: () {},
+                  child: Container(
+                    padding: profilePadding,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("性别", style: profileKeyTextStyle),
+                        Text(_gender, style: profileValueTextStyle),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              bottomLineSmall,
+              Ink(
+                color: Colors.white,
+                child: InkWell(
+                  onTap: () {},
+                  child: Container(
+                    padding: profilePadding,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("学号", style: profileKeyTextStyle),
+                        Text(_id, style: profileValueTextStyle),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              bottomLineSmall,
+              Ink(
+                color: Colors.white,
+                child: InkWell(
+                  onTap: () => {},
+                  child: Container(
+                    padding: profilePadding,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("更改密码", style: profileKeyTextStyle),
+                        Icon(
+                          Icons.chevron_right,
+                          size: profileFontSize,
+                          color: Colors.grey,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              bottomLineSmall,
+              Ink(
+                color: Colors.white,
+                child: InkWell(
+                  onTap: () => {},
+                  child: Container(
+                    padding: profilePadding,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("强制密码登录", style: profileKeyTextStyle),
+                        Row(
+                          children: [
+                            Text(_isPaswRequired, style: profileValueTextStyle),
+                            Icon(
+                              Icons.chevron_right,
+                              size: profileFontSize,
+                              color: Colors.grey,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -192,17 +211,19 @@ class _ProfilePageState extends State<ProfilePage> {
                   style: TextStyle(color: Colors.grey, fontSize: 16),
                 ),
               ),
-              InkWell(
-                onTap: () {},
-                child: Container(
-                  color: Colors.white,
-                  padding: profilePadding,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("版本号", style: profileKeyTextStyle),
-                      Text(_version, style: profileValueTextStyle),
-                    ],
+              Ink(
+                color: Colors.white,
+                child: InkWell(
+                  onTap: () {},
+                  child: Container(
+                    padding: profilePadding,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("版本号", style: profileKeyTextStyle),
+                        Text(_version, style: profileValueTextStyle),
+                      ],
+                    ),
                   ),
                 ),
               ),
