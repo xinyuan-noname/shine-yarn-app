@@ -8,7 +8,7 @@ class ProfileStorage {
   static final String _idKey = 'id_key';
   static final String _genderKey = 'gener_key';
   static final String _passwordRequiredKey = 'password_required_key';
-  static final String _avatarPathKey = 'avatar_path_key';
+  static final String _avatarNameKey = 'avatar_name_key';
   static Future<void> saveName(String name) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_nameKey, name);
@@ -71,9 +71,9 @@ class ProfileStorage {
 
   static Future<void> saveAvatar(Uint8List data) async {
     final prefs = await SharedPreferences.getInstance();
-    final avatarRelativePath =
-        'profiles/avatar-${DateTime.now().millisecondsSinceEpoch}.jpeg';
-    await prefs.setString(_avatarPathKey, avatarRelativePath);
+    final avatarName = "${DateTime.now().millisecondsSinceEpoch}.jpeg";
+    final avatarRelativePath = 'profiles/avatars/$avatarName';
+    await prefs.setString(_avatarNameKey, avatarName);
     await FileStorage.saveBytesToAppFolder(
       relativePath: avatarRelativePath,
       data: data,
@@ -82,12 +82,22 @@ class ProfileStorage {
 
   static Future<String?> getAvatarPath() async {
     final prefs = await SharedPreferences.getInstance();
-    final avatarRelativePath = prefs.getString(_avatarPathKey);
-    if (avatarRelativePath == null) return null;
+    final avatarName = prefs.getString(_avatarNameKey);
+    if (avatarName == null) return null;
+    final avatarRelativePath = "profile/avatar/$avatarName";
     final fullpath = await FileStorage.getPath(avatarRelativePath);
     if (await FileStorage.existsFile(fullpath)) {
       return fullpath;
     }
     return null;
+  }
+
+  static Future delOutdatedAvatar() async {
+    final prefs = await SharedPreferences.getInstance();
+    final avatarName = prefs.getString(_avatarNameKey);
+    FileStorage.deleteAllExcept(
+      keepFileNames: avatarName == null ? [] : [avatarName],
+      subDirName: 'profile/avatar',
+    );
   }
 }

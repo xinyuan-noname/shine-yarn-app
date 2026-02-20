@@ -37,4 +37,30 @@ class FileStorage {
     final File file = File(fullPath);
     return file.exists();
   }
+
+  static Future<Directory> getSubDirectory(String subDirName) async {
+    final Directory baseDir = await getApplicationDocumentsDirectory();
+    final String targetPath = path.join(baseDir.path, subDirName);
+    final Directory targetDir = Directory(targetPath);
+    if (!await targetDir.exists()) {
+      await targetDir.create(recursive: true);
+    }
+    return targetDir;
+  }
+
+  static Future<void> deleteAllExcept({
+    required List<String> keepFileNames,
+    required String subDirName,
+  }) async {
+    final dir = await FileStorage.getSubDirectory(subDirName);
+    final List<FileSystemEntity> entities = dir.listSync();
+    for (final entity in entities) {
+      if (entity is File) {
+        final String fileName = entity.uri.pathSegments.last;
+        if (!keepFileNames.contains(fileName)) {
+          await entity.delete();
+        }
+      }
+    }
+  }
 }

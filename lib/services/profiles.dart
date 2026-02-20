@@ -24,4 +24,19 @@ class ApiProfiles {
       return "头像上传失败";
     }
   }
+
+  static Future getAvatar(String id) async {
+    try {
+      final response = await dio.get(
+        '/profiles/avatar/$id',
+        options: Options(
+          headers: {'Accept': 'image/*'},
+          responseType: ResponseType.bytes,
+        ),
+      );
+      return response.data;
+    } catch (e) {
+      return null;
+    }
+  }
 }

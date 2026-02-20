@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/routes.dart';
+import 'package:shine/services/profiles.dart';
 import 'package:shine/storage/profile_storage.dart';
 
 class HomePage extends StatefulWidget {
@@ -15,14 +16,21 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String? _avatarPath;
   String _username = "???";
+  late final String _id;
   @override
   void initState() {
     Future(() async {
       _username = await ProfileStorage.getName();
       _avatarPath = await ProfileStorage.getAvatarPath();
+      _id = await ProfileStorage.getId();
       setState(() {});
     });
     super.initState();
+  }
+
+  Future<void> _fetchData() async {
+    final avatarData = await ApiProfiles.getAvatar(_id);
+    await ProfileStorage.saveAvatar(avatarData);
   }
 
   Future<void> _update() async {
@@ -75,6 +83,21 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         bottom: bottomLine,
+      ),
+      body: SafeArea(
+        child: RefreshIndicator(
+          child: ListView.builder(
+            itemCount: 1, // 列表项数量
+            itemBuilder: (context, index) {
+              return ListTile(title: Text('Item $index'));
+            },
+          ),
+          onRefresh: () async {
+            await _fetchData();
+            await _update();
+            await Future.delayed(Duration(seconds: 1));
+          },
+        ),
       ),
     );
   }

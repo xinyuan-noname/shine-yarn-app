@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:shine/services/api.dart';
 import 'package:shine/services/auth.dart';
+import 'package:shine/services/profiles.dart';
+import 'package:shine/storage/profile_storage.dart';
 
 class Worker {
   static Timer? _refreshTimer;
@@ -43,5 +45,10 @@ class Worker {
 
   static scheduleUrlNow() {
     Worker.scheduleUrl(Duration(milliseconds: 50));
+  }
+
+  static scheduleAvatar(String id) async {
+    final avatarData = await ApiProfiles.getAvatar(id);
+    await ProfileStorage.saveAvatar(avatarData);
   }
 }
