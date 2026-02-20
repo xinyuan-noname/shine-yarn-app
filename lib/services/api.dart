@@ -13,14 +13,14 @@ class ApiService {
       final resBody = res?.data;
       if (code == 401) {
         if (resBody is Map) {
-          if (resBody["error"] != null) {
-            switch (resBody["error"]) {
-              case "Invalid access token":
+          if (resBody["code"] != null) {
+            switch (resBody["code"]) {
+              case "INVALID_ACCESS_TOKEN":
                 {
                   Worker.scheduleRefreshNow();
                 }
                 break;
-              case "Invalid password":
+              case "INVALID_PASSWORD":
                 {
                   err = DioException(
                     requestOptions: err.requestOptions,

@@ -97,7 +97,7 @@ class _HomePageState extends State<HomePage> {
       body: SafeArea(
         child: RefreshIndicator(
           child: ListView.builder(
-            itemCount: 1, // 列表项数量
+            itemCount: 1, 
             itemBuilder: (context, index) {
               return ListTile(title: Text('Item $index'));
             },

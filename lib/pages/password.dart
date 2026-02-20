@@ -6,6 +6,7 @@ import 'package:shine/extensions/text_editing.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/auth.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/server.dart';
 
 class PasswordPage extends StatefulWidget {
   const PasswordPage({super.key});
@@ -122,35 +123,15 @@ class _PasswordPageState extends State<PasswordPage> {
 
   Future<bool> _toChangePassword() async {
     _message.value = "正在发送更改密码请求";
-    bool animate = true;
-    final result = await Future.any([
-      Future(() async {
+    return sendRequestAndChangeMessage(
+      _message,
+      request: Future(() async {
         return await ApiAuth.changePassword(_controllers.asTextMap);
       }),
-      Future(() async {
-        const duration = 500;
-        while (animate) {
-          _message.value = "更改密码中.";
-          await Future.delayed(Duration(milliseconds: duration));
-          if (!animate) break;
-          _message.value = "更改密码中..";
-          await Future.delayed(Duration(milliseconds: duration));
-          if (!animate) break;
-          _message.value = "更改密码中...";
-          await Future.delayed(Duration(milliseconds: duration));
-        }
-      }),
-    ]);
-    animate = false;
-    if (result == null) {
-      _message.value = "密码更改成功";
-      await Future.delayed(Duration(milliseconds: 300));
-      return true;
-    } else {
-      _message.value = result;
-      await Future.delayed(Duration(milliseconds: 500));
-      return false;
-    }
+      initMessageList: [],
+      messageList: ["更改密码中.", "更改密码中..", "更改密码中..."],
+      successMessage: "密码更改成功",
+    );
   }
 
   @override
