@@ -7,7 +7,11 @@ const mainColorGreenBule60 = Color.fromRGBO(7, 247, 255, 0.60);
 const mainColorGreenBule50 = Color.fromRGBO(7, 247, 255, 0.50);
 const mainColorGreenBule40 = Color.fromRGBO(7, 247, 255, 0.40);
 const mainColorGreenBule30 = Color.fromRGBO(7, 247, 255, 0.30);
+const darkColorPurple = Color.fromRGBO(107, 99, 187, 1);
 const mainColorPurple = Color.fromRGBO(167, 157, 255, 1);
+const mainColorPurple90 = Color.fromRGBO(167, 157, 255, 0.9);
+const mainColorPurple80 = Color.fromRGBO(167, 157, 255, 0.8);
+const mainColorPurple70 = Color.fromRGBO(167, 157, 255, 0.7);
 const mainColorPurple60 = Color.fromRGBO(167, 157, 255, 0.6);
 const mainColorPurple50 = Color.fromRGBO(167, 157, 255, 0.5);
 const mainColorPurple40 = Color.fromRGBO(167, 157, 255, 0.4);
@@ -24,7 +28,7 @@ final inputDecorationLight = InputDecoration(
 
 const double smallFontSize = 14;
 const TextStyle titleTextStyle = TextStyle(fontWeight: FontWeight.w600);
-const double profileFontSize = 20;
+const double profileFontSize = 18;
 const TextStyle profileKeyTextStyle = TextStyle(fontSize: profileFontSize);
 const TextStyle profileValueTextStyle = TextStyle(
   fontSize: profileFontSize,

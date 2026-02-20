@@ -161,7 +161,8 @@ class _ProfilePageState extends State<ProfilePage> {
               Ink(
                 color: Colors.white,
                 child: InkWell(
-                  onTap: () {
+                  onTap: () async {
+                    await Future.delayed(Duration(milliseconds: 225));
                     if (context.mounted) {
                       globalNavigatorKey.currentState?.pushNamed("/password");
                     }
@@ -186,7 +187,49 @@ class _ProfilePageState extends State<ProfilePage> {
               Ink(
                 color: Colors.white,
                 child: InkWell(
-                  onTap: () => {},
+                  onTap: () async {
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return SafeArea(
+                          child: Wrap(
+                            children: [
+                              ListTile(
+                                leading: Icon(
+                                  Icons.check_rounded,
+                                  color: Colors.greenAccent,
+                                ),
+                                title: Text('强制密码登录'),
+                                onTap: () async {
+                                  ApiAuth.changePasswordRequired({
+                                    "passwordRequired": 1,
+                                  });
+                                  ProfileStorage.savePasswordRequired(true);
+                                  Navigator.pop(context);
+                                  setState(() {});
+                                },
+                              ),
+                              ListTile(
+                                leading: Icon(
+                                  Icons.error,
+                                  color: Colors.redAccent,
+                                ),
+                                title: Text('可无密码登录'),
+                                onTap: () async {
+                                  ApiAuth.changePasswordRequired({
+                                    "passwordRequired": 0,
+                                  });
+                                  ProfileStorage.savePasswordRequired(false);
+                                  Navigator.pop(context);
+                                  setState(() {});
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
                   child: Container(
                     padding: profilePadding,
                     child: Row(
@@ -237,6 +280,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
+              bottomLineSmall,
               Ink(
                 color: Colors.white,
                 child: InkWell(
@@ -256,6 +300,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
+              bottomLineSmall,
               Ink(
                 color: Colors.white,
                 child: InkWell(

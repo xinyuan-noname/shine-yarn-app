@@ -7,7 +7,6 @@ Future<void> pickImage(
   BuildContext context,
   Function(XFile) handleSelectedImage,
 ) async {
-  // 弹出选项：相册 or 相机
   await showModalBottomSheet(
     context: context,
     builder: (BuildContext context) {

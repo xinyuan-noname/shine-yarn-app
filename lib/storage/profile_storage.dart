@@ -84,7 +84,7 @@ class ProfileStorage {
     final prefs = await SharedPreferences.getInstance();
     final avatarName = prefs.getString(_avatarNameKey);
     if (avatarName == null) return null;
-    final avatarRelativePath = "profile/avatar/$avatarName";
+    final avatarRelativePath = "profiles/avatars/$avatarName";
     final fullpath = await FileStorage.getPath(avatarRelativePath);
     if (await FileStorage.existsFile(fullpath)) {
       return fullpath;
@@ -97,7 +97,7 @@ class ProfileStorage {
     final avatarName = prefs.getString(_avatarNameKey);
     FileStorage.deleteAllExcept(
       keepFileNames: avatarName == null ? [] : [avatarName],
-      subDirName: 'profile/avatar',
+      subDirName: 'profiles/avatars',
     );
   }
 }

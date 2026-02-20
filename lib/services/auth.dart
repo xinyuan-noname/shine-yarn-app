@@ -69,4 +69,14 @@ class ApiAuth {
       return "更改密码失败";
     }
   }
+  static Future<String?> changePasswordRequired(input) async {
+    try {
+      await dio.patch("/auth/password_required", data: input);
+      return null;
+    } on DioException catch (e) {
+      return e.message ?? "更改登录需求成功";
+    } catch (e) {
+      return "更改登录需求失败";
+    }
+  }
 }

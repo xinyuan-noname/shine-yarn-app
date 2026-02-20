@@ -67,6 +67,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 SizedBox(width: 5),
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       _username,
@@ -74,6 +75,15 @@ class _HomePageState extends State<HomePage> {
                         letterSpacing: 1.0,
                         fontFamily: "SmileySans",
                         fontWeight: FontWeight.w300,
+                      ),
+                    ),
+                    Text(
+                      _id,
+                      style: TextStyle(
+                        fontFamily: "SmileySans",
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w300,
+                        fontSize: 12
                       ),
                     ),
                   ],
