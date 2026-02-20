@@ -10,16 +10,26 @@ class ApiService {
     onError: (DioException err, handler) {
       final res = err.response;
       final code = res?.statusCode;
-      print(err.message);
+      final resBody = res?.data;
       if (code == 401) {
-        final Map<String, dynamic> data = jsonDecode(res?.data);
-        if (data["error"] != null) {
-          switch (data["error"]) {
-            case "Invalid Access Token":
-              {
-                Worker.scheduleRefreshNow();
-              }
-              break;
+        if (resBody is Map) {
+          if (resBody["error"] != null) {
+            switch (resBody["error"]) {
+              case "Invalid access token":
+                {
+                  Worker.scheduleRefreshNow();
+                }
+                break;
+              case "Invalid password":
+                {
+                  err = DioException(
+                    requestOptions: err.requestOptions,
+                    message: '密码出错',
+                    type: DioExceptionType.badCertificate,
+                  );
+                }
+                break;
+            }
           }
         }
       } else if (err.type == DioExceptionType.connectionError) {

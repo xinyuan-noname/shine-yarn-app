@@ -31,12 +31,13 @@ class Worker {
   }
 
   static scheduleUrl(Duration? duration) {
-    const defaultDuration = Duration(minutes: 3);
+    const defaultDuration = Duration(seconds: 1, milliseconds: 500);
     _urlTimer?.cancel();
     duration ??= defaultDuration;
     _urlTimer = Timer(duration, () async {
       final url = await ApiService.getBaseUrl();
       if (url != ApiService.url) {
+        print("更换url为:$url");
         ApiService.setBaseUrl(url);
       }
       Worker.scheduleUrl(defaultDuration);

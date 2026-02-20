@@ -16,7 +16,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String? _avatarPath;
   String _username = "???";
-  late final String _id;
+  String _id = "??????????";
   @override
   void initState() {
     Future(() async {

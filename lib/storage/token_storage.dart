@@ -1,4 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 final storage = const FlutterSecureStorage();
 
@@ -27,6 +28,13 @@ class TokenStorage {
 
   static Future<void> deleteRefreshToken() async {
     storage.delete(key: _refreshTokenKey);
+  }
+
+  static Future<String> getTokenUserType() async {
+    final token = await TokenStorage.getAccessToken();
+    if (token == null || token.isEmpty) return "guest";
+    final payload = JwtDecoder.decode(token);
+    return payload["userType"] ?? "guest";
   }
 
   static Future<void> clearAllToken() async {

@@ -163,7 +163,7 @@ class _LoginPageState extends State<LoginPage> {
       return true;
     } else {
       _message.value = result!;
-      await Future.delayed(Duration(milliseconds: 500));
+      await Future.delayed(Duration(milliseconds: 800));
       return false;
     }
   }

@@ -15,6 +15,7 @@ import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/device_info.dart';
 import 'package:shine/utils/image.dart';
+import 'package:shine/utils/server.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -201,11 +202,18 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ),
                                 title: Text('强制密码登录'),
                                 onTap: () async {
-                                  ApiAuth.changePasswordRequired({
+                                  await ApiAuth.changePasswordRequired({
                                     "passwordRequired": 1,
                                   });
-                                  ProfileStorage.savePasswordRequired(true);
+                                  await ProfileStorage.savePasswordRequired(
+                                    true,
+                                  );
                                   Navigator.pop(context);
+                                  globalNavigatorKey.currentState
+                                      ?.pushNamedAndRemoveUntil(
+                                        "/login",
+                                        clearOldRouter,
+                                      );
                                   setState(() {});
                                 },
                               ),
@@ -219,7 +227,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ApiAuth.changePasswordRequired({
                                     "passwordRequired": 0,
                                   });
-                                  ProfileStorage.savePasswordRequired(false);
+                                  await ProfileStorage.savePasswordRequired(
+                                    false,
+                                  );
                                   Navigator.pop(context);
                                   setState(() {});
                                 },
@@ -364,74 +374,27 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future _toLogout() async {
-    String? result;
-    await Future.wait([
-      Future(() async {
-        result = await ApiAuth.logout();
+    return await sendRequestAndChangeMessage(
+      _logoutMessage,
+      request: Future(() async {
+        return await ApiAuth.logout();
       }),
-      Future(() async {
-        const duration = 200;
-        await Future.delayed(Duration(milliseconds: duration));
-        if (result != null) return null;
-        _logoutMessage.value = "正在吊销访问令牌.";
-        await Future.delayed(Duration(milliseconds: duration));
-        if (result != null) return null;
-        _logoutMessage.value = "正在吊销访问令牌..";
-        await Future.delayed(Duration(milliseconds: duration));
-        if (result != null) return null;
-        _logoutMessage.value = "正在吊销访问令牌...";
-        await Future.delayed(Duration(milliseconds: duration));
-        if (result != null) return null;
-        _logoutMessage.value = "正在吊销刷新令牌.";
-        await Future.delayed(Duration(milliseconds: duration));
-        if (result != null) return null;
-        _logoutMessage.value = "正在吊销刷新令牌..";
-        await Future.delayed(Duration(milliseconds: duration));
-        if (result != null) return null;
-        _logoutMessage.value = "正在吊销刷新令牌...";
-      }),
-    ]);
-    if (result == null) {
-      _logoutMessage.value = "登出成功";
-      await Future.delayed(Duration(milliseconds: 300));
-      return true;
-    } else {
-      _logoutMessage.value = result!;
-      await Future.delayed(Duration(milliseconds: 500));
-      return false;
-    }
+      initMessageList: [],
+      messageList: ['正在吊销令牌.', '正在吊销令牌..', '正在吊销令牌...'],
+      successMessage: '登出成功',
+    );
   }
 
   Future _toUpload(Uint8List bytes) async {
-    bool animate = true;
-    final result = await Future.any([
-      Future(() async {
+    return await sendRequestAndChangeMessage(
+      _avatarUploadMessage,
+      request: Future(() async {
         return await ApiProfiles.uploadAvatar(bytes);
       }),
-      Future(() async {
-        const duration = 500;
-        while (animate) {
-          _avatarUploadMessage.value = "正在上传中.";
-          await Future.delayed(Duration(milliseconds: duration));
-          if (!animate) break;
-          _avatarUploadMessage.value = "正在上传中..";
-          await Future.delayed(Duration(milliseconds: duration));
-          if (!animate) break;
-          _avatarUploadMessage.value = "正在上传中...";
-          await Future.delayed(Duration(milliseconds: duration));
-        }
-      }),
-    ]);
-    animate = false;
-    if (result == null) {
-      _avatarUploadMessage.value = "上传成功";
-      await Future.delayed(Duration(milliseconds: 300));
-      return true;
-    } else {
-      _avatarUploadMessage.value = result;
-      await Future.delayed(Duration(milliseconds: 500));
-      return false;
-    }
+      initMessageList: [],
+      messageList: ["正在上传中.", "正在上传中..", "正在上传中..."],
+      successMessage: "上传成功",
+    );
   }
 
   _onUpload() {
