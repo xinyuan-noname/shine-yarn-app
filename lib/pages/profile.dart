@@ -276,6 +276,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     _tapVersionCount++;
                     if (_tapVersionCount >= 5) {
                       gotoAdminDialog(context);
+                      _tapVersionCount = 0;
                     }
                   },
                   child: Container(

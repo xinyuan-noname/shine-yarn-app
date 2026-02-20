@@ -64,6 +64,7 @@ class _LoginPageState extends State<LoginPage> {
                   _titleTapCount++;
                   if (_titleTapCount >= 5) {
                     gotoAdminDialog(context);
+                    _titleTapCount = 0;
                   }
                 },
                 child: Center(

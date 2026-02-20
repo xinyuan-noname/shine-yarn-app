@@ -34,7 +34,9 @@ void gotoAdminDialog(BuildContext context) {
         content: Text('确定要进入吗？'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              Navigator.pop(context);
+            },
             child: Text('取消'),
           ),
           TextButton(
