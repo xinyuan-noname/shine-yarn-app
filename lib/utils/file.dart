@@ -8,7 +8,7 @@ Future<PlatformFile?> pickFile({List<String>? ext}) async {
   );
   if (result != null) {
     final file = result.files.single;
-    if (ext != null && ext.contains(file.extension)) {
+    if (ext == null || ext.contains(file.extension)) {
       return file;
     }
   }
