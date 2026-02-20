@@ -5,6 +5,7 @@ import 'package:shine/components/line.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/profiles.dart';
 import 'package:shine/storage/profile_storage.dart';
+import 'package:shine/theme.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -96,6 +97,8 @@ class _HomePageState extends State<HomePage> {
       ),
       body: SafeArea(
         child: RefreshIndicator(
+          color: mainColorPurple90,
+          backgroundColor: bgColorLight,
           child: ListView.builder(
             itemCount: 1, 
             itemBuilder: (context, index) {

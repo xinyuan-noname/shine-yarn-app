@@ -22,6 +22,30 @@ void showMessageDialog(
   );
 }
 
+void showAlertDialog({
+  required BuildContext context,
+  required Widget title,
+  required Widget content,
+  VoidCallback? onPress,
+}) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: title,
+        content: content,
+        actions: [
+          TextButton(
+            onPressed: onPress ?? () => Navigator.pop(context),
+            child: Text('确定'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 void gotoAdminDialog(BuildContext context) {
   showDialog(
     context: context,

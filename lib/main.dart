@@ -70,6 +70,7 @@ class _MyAppState extends State<MyApp> {
             borderRadius: BorderRadius.circular(15),
           ),
         ),
+        
       ),
       home: SplashPage(slot: firstViewLight),
     );

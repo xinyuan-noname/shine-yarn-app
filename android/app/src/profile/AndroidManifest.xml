@@ -3,15 +3,19 @@
 
     <!-- 网络权限（Flutter 调试需要） -->
     <uses-permission android:name="android.permission.INTERNET" />
-
-    <!-- 👇 必须添加：Android 10 访问相册需要的权限 👇 -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- 读取外部存储 -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <!-- 写入外部存储（如需要） -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <!-- Android 13+ 需要 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
     <application
         android:name="${applicationName}"
         android:label="shine"
         android:icon="@mipmap/ic_launcher"
-        android:requestLegacyExternalStorage="true"> <!-- ⚠️ Android 10 关键！ -->
+        android:requestLegacyExternalStorage="true">
 
         <activity
             android:name=".MainActivity"
