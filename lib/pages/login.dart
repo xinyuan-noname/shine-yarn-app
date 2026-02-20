@@ -7,6 +7,7 @@ import 'package:shine/services/api.dart';
 import 'package:shine/services/auth.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/server.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -95,19 +96,31 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: () async {
                       if (!_formKey.currentState!.validate()) return;
                       if (!ApiService.isOk) return;
-                      _toLogin().then((success) {
+                      _message.value = "正在发送登录请求";
+                      showMessageDialog(context, _message);
+                      final success = await _toLogin();
+                      if (success) {
+                        if (_controllers.asTextMap["username"] != null) {
+                          await ProfileStorage.saveName(
+                            _controllers.asTextMap["username"]!,
+                          );
+                        }
+                        if (_controllers.asTextMap["id"] != null) {
+                          await ProfileStorage.saveId(
+                            _controllers.asTextMap["id"]!,
+                          );
+                        }
                         if (context.mounted) {
                           Navigator.pop(context);
-                        }
-                        if (success && context.mounted) {
                           globalNavigatorKey.currentState
                               ?.pushNamedAndRemoveUntil(
                                 '/home',
                                 clearOldRouter,
                               );
                         }
-                      });
-                      showMessageDialog(context, _message);
+                      } else if (context.mounted) {
+                        Navigator.pop(context);
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: mainColorPurple,
@@ -132,40 +145,17 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future _toLogin() async {
-    _message.value = "正在发送登录请求";
-    String? result;
-    await Future.wait([
-      Future(() async {
-        result = await ApiAuth.login(_controllers.asTextMap);
+    return await sendRequestAndChangeMessage(
+      _message,
+      request: Future(() async {
+        return await ApiAuth.login(_controllers.asTextMap);
       }),
-      Future(() async {
-        const duration = 800;
-        await Future.delayed(Duration(milliseconds: duration));
-        if (result != null) return null;
-        _message.value = "正在校验信息";
-        await Future.delayed(Duration(milliseconds: duration));
-        if (result != null) return null;
-        _message.value = "正在签发访问令牌";
-        await Future.delayed(Duration(milliseconds: duration));
-        if (result != null) return null;
-        _message.value = "正在签发刷新令牌";
-      }),
-    ]);
-    if (result == null) {
-      _message.value = "登录成功";
-      if (_controllers.asTextMap["username"] != null) {
-        await ProfileStorage.saveName(_controllers.asTextMap["username"]!);
-      }
-      if (_controllers.asTextMap["id"] != null) {
-        await ProfileStorage.saveId(_controllers.asTextMap["id"]!);
-      }
-      await Future.delayed(Duration(milliseconds: 300));
-      return true;
-    } else {
-      _message.value = result!;
-      await Future.delayed(Duration(milliseconds: 800));
-      return false;
-    }
+      initMessageList: ["正在校验信息", "正在签发访问令牌", "正在签发刷新令牌"],
+      messageList: ["处理其他登录请求中.", "处理其他登录请求中..", "处理其他登录请求中..."],
+      successMessage: "登录成功",
+      successMessageDuration: Duration(milliseconds: 300),
+      failMessageDuration: Duration(milliseconds: 800),
+    );
   }
 
   @override
@@ -175,5 +165,3 @@ class _LoginPageState extends State<LoginPage> {
     _message.dispose();
   }
 }
-
-
