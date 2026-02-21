@@ -1,9 +1,10 @@
-import 'dart:math';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:crypton/crypton.dart';
 import 'package:dio/dio.dart';
 import 'package:shine/services/dio.dart';
+import 'package:shine/utils/string.dart';
 
 class ApiAdmin {
   static RSAPrivateKey? _rsaPrivateKey;
@@ -11,22 +12,25 @@ class ApiAdmin {
     _rsaPrivateKey = RSAPrivateKey.fromPEM(signature);
   }
 
-  static Map<String, String?> sign(List<String> wordList) {
+  static Map<String, String?>? sign(List<String> wordList) {
+    if (_rsaPrivateKey == null) return null;
     final createdAt = DateTime.now().toIso8601String();
     final linkedWords = [...wordList, createdAt].join("|");
-    final data = Uint8List.fromList(linkedWords.codeUnits);
-    return {
-      "createdAt": createdAt,
-      "signature": _rsaPrivateKey?.createSHA256Signature(data).toString(),
-    };
+    final signatureData = _rsaPrivateKey?.createSHA256Signature(
+      Uint8List.fromList(linkedWords.codeUnits),
+    );
+    final signature = base64Encode(signatureData!.toList());
+    return {"createdAt": createdAt, "signature": signature};
   }
 
   static Future<String?> checkSignatureByRSA() async {
     if (_rsaPrivateKey == null) return "签名出错";
     try {
-      final word = Random.secure().toString();
+      final word = nonce();
       final data = ApiAdmin.sign([word]);
+      if (data == null) return "没有正确配置私钥";
       data.addAll({"word": word});
+      print(data);
       await dio.post('/admin/check', data: data);
       return null;
     } on DioException catch (err) {

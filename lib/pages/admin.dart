@@ -28,8 +28,8 @@ class _AdminPageState extends State<AdminPage> {
   Future<void> _uploadSignature() async {
     showAlertDialog(
       context: context,
-      title: Text("未检测到私钥文件"),
-      content: Text("请立即选取"),
+      title: Text("私钥文件异常"),
+      content: Text("请立即上传"),
       onPress: () async {
         if (context.mounted) {
           Navigator.pop(context);
@@ -37,24 +37,8 @@ class _AdminPageState extends State<AdminPage> {
         bool success = false;
         while (!success) {
           PlatformFile? file = await pickFile();
-          if (file == null || file.bytes == null) {
-            showAlertDialog(
-              context: context,
-              title: Text("选中的私钥文件异常"),
-              content: Text("请重新操作"),
-              onPress: () async {
-                file = await pickFile();
-                if (file != null && file?.bytes != null) {
-                  if (context.mounted) {
-                    Navigator.pop(context);
-                  }
-                }
-              },
-            );
-            return;
-          }
           await AdminStorage.saveSignature(
-            data: file.bytes!,
+            data: file!.bytes!,
             filename: file.name,
           );
           showMessageDialog(context, _checkSignatureMessage);
@@ -76,6 +60,7 @@ class _AdminPageState extends State<AdminPage> {
           ApiAdmin.setRSASignature(signature);
           return await ApiAdmin.checkSignatureByRSA();
         }
+        return null;
       }),
       initMessageList: [],
       messageList: ["正在校验签名.", "正在校验签名..", "正在校验签名..."],
