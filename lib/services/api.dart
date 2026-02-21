@@ -86,7 +86,7 @@ class ApiService {
               try {
                 response.data = jsonDecode(response.data);
               } catch (e) {
-                print('JSON decode failed: $e');
+                response.data = {};
               }
             }
           }

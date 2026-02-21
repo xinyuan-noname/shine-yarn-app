@@ -37,10 +37,7 @@ class _AdminPageState extends State<AdminPage> {
         bool success = false;
         while (!success) {
           PlatformFile? file = await pickFile();
-          await AdminStorage.saveSignature(
-            data: file!.bytes!,
-            filename: file.name,
-          );
+          await AdminStorage.saveSignature(file!.bytes!);
           showMessageDialog(context, _checkSignatureMessage);
           success = await _checkSignature();
           if (context.mounted) {
