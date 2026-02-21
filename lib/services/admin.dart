@@ -26,11 +26,10 @@ class ApiAdmin {
   static Future<String?> checkSignatureByRSA() async {
     if (_rsaPrivateKey == null) return "签名出错";
     try {
-      final word = nonce();
+      final word = nowBase64();
       final data = ApiAdmin.sign([word]);
       if (data == null) return "没有正确配置私钥";
       data.addAll({"word": word});
-      print(data);
       await dio.post('/admin/check', data: data);
       return null;
     } on DioException catch (err) {

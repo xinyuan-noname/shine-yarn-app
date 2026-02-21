@@ -1,5 +1,5 @@
 import 'dart:convert';
 
-String nonce() => base64Encode(
+String nowBase64() => base64Encode(
   DateTime.now().millisecondsSinceEpoch.toRadixString(10).codeUnits,
 );
