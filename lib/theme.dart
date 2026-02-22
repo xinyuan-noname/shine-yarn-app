@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 const bgColorLight = Color.fromRGBO(230, 240, 255, 1);
+const bgColorLight80 = Color.fromRGBO(230, 240, 255, 0.80);
 const bgColorLight60 = Color.fromRGBO(230, 240, 255, 0.60);
 const mainColorGreenBule = Color.fromARGB(255, 7, 247, 255);
 const mainColorGreenBule60 = Color.fromRGBO(7, 247, 255, 0.60);

@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/components/user_info_card.dart';
 import 'package:shine/services/admin.dart';
 import 'package:shine/storage/admin_storage.dart';
 import 'package:shine/theme.dart';
@@ -96,6 +97,7 @@ class _AdminPageState extends State<AdminPage> {
                 backgroundColor: bgColorLight,
                 child: ListView.builder(
                   itemCount: max(_listCount, 1),
+                  padding: EdgeInsets.all(16),
                   itemBuilder: (context, index) {
                     if (_listCount == 0) {
                       return Container(
@@ -107,7 +109,12 @@ class _AdminPageState extends State<AdminPage> {
                       );
                     }
                     final userInfo = _userInfoList[index];
-                    return ListTile(title: Text(userInfo["username"]));
+                    return UserInfoCard(
+                      userInfo: userInfo,
+                      onDelete: () {},
+                      onEdit: () {},
+                      onIssuePswdKey: () {},
+                    );
                   },
                 ),
                 onRefresh: () async {

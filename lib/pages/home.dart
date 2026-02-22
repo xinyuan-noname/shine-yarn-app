@@ -49,7 +49,7 @@ class _HomePageState extends State<HomePage> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                InkWell(
+                GestureDetector(
                   onTap: () async {
                     if (context.mounted) {
                       await globalNavigatorKey.currentState?.pushNamed(
