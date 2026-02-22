@@ -68,7 +68,6 @@ class ApiAdmin {
     try {
       final data = ApiAdmin.sign([id]);
       if (data == null) return null;
-      // gender userType username passwordRequired
       data.addAll({"id": id});
       final response = await dio.post("/admin/issue/password_key", data: data);
       return response.data;
@@ -76,6 +75,21 @@ class ApiAdmin {
       return err.message ?? "签发密码令牌出错";
     } catch (err) {
       return "签名密码令牌出错";
+    }
+  }
+
+  static Future<String?> deleteUser(String id) async {
+    if (_rsaPrivateKey == null) return "签名出错";
+    try {
+      final data = ApiAdmin.sign([id]);
+      if (data == null) return "没有正确配置私钥";
+      data.addAll({"id": id});
+      await dio.delete("/admin/delete", data: data);
+      return null;
+    } on DioException catch (err) {
+      return err.message ?? "删除用户出错";
+    } catch (err) {
+      return "删除用户出错";
     }
   }
 }

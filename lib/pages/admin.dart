@@ -25,6 +25,7 @@ class _AdminPageState extends State<AdminPage> {
   List _userInfoList = [];
   final ValueNotifier<String> _checkSignatureMessage = ValueNotifier("");
   final List<ValueNotifier<String>> _issuePasswordKeyMessageList = [];
+  final List<ValueNotifier<String>> _deleteUserMessageList = [];
   @override
   void initState() {
     super.initState();
@@ -119,14 +120,22 @@ class _AdminPageState extends State<AdminPage> {
                     final userInfo = _userInfoList[index];
                     final issuePasswordKeyMessage = ValueNotifier("");
                     _issuePasswordKeyMessageList.add(issuePasswordKeyMessage);
+                    final deleteUserMessage = ValueNotifier("");
+                    _deleteUserMessageList.add(deleteUserMessage);
+                    final id = userInfo["id"];
                     return UserInfoCard(
                       userInfo: userInfo,
                       onDelete: () {},
-                      onEdit: () {},
+                      onEdit: () async {
+                        await _deleteUser(
+                          deleteUserMessage: deleteUserMessage,
+                          id: id,
+                        );
+                      },
                       onIssuePswdKey: () async {
                         await _issuePasswordKey(
-                          issuePasswordKey: issuePasswordKeyMessage,
-                          id: userInfo["id"],
+                          issuePasswordKeyMessage: issuePasswordKeyMessage,
+                          id: id,
                         );
                       },
                     );
@@ -145,14 +154,37 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
+  Future<void> _deleteUser({
+    required ValueNotifier<String> deleteUserMessage,
+    required String id,
+  }) async {
+    showMessageDialog(context, deleteUserMessage);
+    final success = await sendRequestAndChangeMessage(
+      deleteUserMessage,
+      request: Future(() async {
+        return await ApiAdmin.issuePasswordKey(id);
+      }),
+      initMessageList: [],
+      messageList: ["正在为$id签发密码令牌.", "正在为$id签发密码令牌..", "正在为$id签发密码令牌..."],
+      successMessage: "签发成功",
+    );
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
+    if (success) {
+      _getUserInfo();
+      setState(() {});
+    }
+  }
+
   Future<void> _issuePasswordKey({
-    required ValueNotifier<String> issuePasswordKey,
+    required ValueNotifier<String> issuePasswordKeyMessage,
     required String id,
   }) async {
     late String passwordKey;
-    showMessageDialog(context, issuePasswordKey);
+    showMessageDialog(context, issuePasswordKeyMessage);
     final success = await sendRequestAndChangeMessage(
-      issuePasswordKey,
+      issuePasswordKeyMessage,
       request: Future(() async {
         final result = await ApiAdmin.issuePasswordKey(id);
         if (result is String) return result;
@@ -184,6 +216,11 @@ class _AdminPageState extends State<AdminPage> {
     for (final m in _issuePasswordKeyMessageList) {
       m.dispose();
     }
+    _issuePasswordKeyMessageList.clear();
+    for (final m in _deleteUserMessageList) {
+      m.dispose();
+    }
+    _deleteUserMessageList.clear();
   }
 
   @override
