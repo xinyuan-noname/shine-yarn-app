@@ -70,7 +70,7 @@ class ApiAdmin {
       if (data == null) return null;
       // gender userType username passwordRequired
       data.addAll({"id": id});
-      final response = await dio.post("/issue/password_key", data: data);
+      final response = await dio.post("/admin/issue/password_key", data: data);
       return response.data;
     } on DioException catch (err) {
       return err.message ?? "签发密码令牌出错";

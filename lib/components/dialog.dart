@@ -1,6 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:shine/routes.dart';
+import 'package:shine/theme.dart';
 
+const dialogTitleStyle = TextStyle(
+  fontSize: 20,
+  fontFamily: 'SmileySans',
+  fontWeight: FontWeight.w500,
+);
+const dialogContentStyle = TextStyle(
+  fontSize: 16,
+  fontFamily: 'SmileySans',
+  color: bgColorLight60,
+);
+const dialogActionStyle = TextStyle(
+  fontFamily: 'SmileySans',
+  color: bgColorLight80,
+);
+final dialogButtonStyle = TextButton.styleFrom(
+  backgroundColor: mainColorGreenBule60,
+  foregroundColor: bgColorLight80,
+  textStyle: dialogActionStyle,
+);
 void showMessageDialog(
   BuildContext context,
   ValueNotifier<String> message, {
@@ -24,21 +44,53 @@ void showMessageDialog(
 
 void showAlertDialog({
   required BuildContext context,
-  required Widget title,
-  required Widget content,
-  VoidCallback? onPress,
+  required String title,
+  required String content,
+  VoidCallback? onYes,
 }) {
   showDialog(
     context: context,
     barrierDismissible: false,
     builder: (BuildContext context) {
       return AlertDialog(
-        title: title,
-        content: content,
+        backgroundColor: mainColorPurple,
+        title: Text(title, style: dialogTitleStyle),
+        content: Text(content, style: dialogContentStyle),
         actions: [
           TextButton(
-            onPressed: onPress ?? () => Navigator.pop(context),
-            child: Text('确定'),
+            style: dialogButtonStyle,
+            onPressed: onYes ?? () => Navigator.pop(context),
+            child: const Text('确定'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+void showConfrimDialog({
+  required BuildContext context,
+  required String title,
+  required String content,
+  VoidCallback? onYes,
+}) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: mainColorPurple,
+        title: Text(title, style: dialogTitleStyle),
+        content: Text(content, style: dialogContentStyle),
+        actions: [
+          TextButton(
+            style: dialogButtonStyle,
+            onPressed: () => Navigator.pop(context),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            style: dialogButtonStyle,
+            onPressed: onYes ?? () => Navigator.pop(context),
+            child: const Text('确定'),
           ),
         ],
       );
@@ -47,33 +99,15 @@ void showAlertDialog({
 }
 
 void gotoAdminDialog(BuildContext context) {
-  showDialog(
+  showConfrimDialog(
     context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text(
-          '即将进入超级管理员界面!',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-        ),
-        content: Text('确定要进入吗？'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text('取消'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
-                '/admin',
-                clearOldRouter,
-              );
-            },
-            child: Text('确定'),
-          ),
-        ],
+    title: '即将进入超级管理员界面!',
+    content: '确定要进入吗？',
+    onYes: () {
+      Navigator.pop(context);
+      globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
+        '/admin',
+        clearOldRouter,
       );
     },
   );
