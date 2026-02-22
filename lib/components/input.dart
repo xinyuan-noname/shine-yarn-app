@@ -11,6 +11,8 @@ class InputProps {
   final String name;
   final Color? color;
   final TextStyle? labelStyle;
+  final TextStyle? inputStyle;
+  final TextStyle? hintStyle;
   final OutlineInputBorder? border;
   final InputDecoration? decoration;
   final double? gap;
@@ -33,6 +35,8 @@ class InputProps {
     required this.name,
     this.color,
     this.validator,
+    this.inputStyle,
+    this.hintStyle,
     this.labelStyle,
     this.border,
     this.decoration,
@@ -60,6 +64,8 @@ class InputProps {
     String? Function(String?)? validator,
     List<TextInputFormatter>? inputFormatters,
     TextStyle? labelStyle,
+    TextStyle? inputStyle,
+    TextStyle? hintStyle,
     Color? color,
     OutlineInputBorder? border,
     InputDecoration? decoration,
@@ -80,6 +86,8 @@ class InputProps {
       autocorrect: false,
       isLast: isLast,
       labelStyle: labelStyle,
+      inputStyle: inputStyle,
+      hintStyle: hintStyle,
       color: color,
       border: border,
       decoration: decoration,
@@ -92,6 +100,8 @@ class InputProps {
     String name = 'cnName',
     bool isRequired = false,
     TextStyle? labelStyle,
+    TextStyle? inputStyle,
+    TextStyle? hintStyle,
     Color? color,
     OutlineInputBorder? border,
     InputDecoration? decoration,
@@ -110,6 +120,8 @@ class InputProps {
           inputFormatters ?? [_textInputFormatterAllowCnNameCharacter],
       isLast: isLast,
       labelStyle: labelStyle,
+      inputStyle: inputStyle,
+      hintStyle: hintStyle,
       color: color,
       border: border,
       decoration: decoration,
@@ -125,6 +137,8 @@ class InputProps {
     int maxLength = 32,
     String? patternErrorText,
     TextStyle? labelStyle,
+    TextStyle? inputStyle,
+    TextStyle? hintStyle,
     Color? color,
     OutlineInputBorder? border,
     List<TextInputFormatter>? inputFormatters,
@@ -146,6 +160,8 @@ class InputProps {
           inputFormatters ?? [FilteringTextInputFormatter.digitsOnly],
       isLast: isLast,
       labelStyle: labelStyle,
+      inputStyle: inputStyle,
+      hintStyle: hintStyle,
       color: color,
       border: border,
       decoration: decoration,
@@ -159,6 +175,8 @@ class InputProps {
     Color? color,
     String? Function(String?)? validator,
     TextStyle? labelStyle,
+    TextStyle? inputStyle,
+    TextStyle? hintStyle,
     OutlineInputBorder? border,
     InputDecoration? decoration,
     int? maxLength,
@@ -179,6 +197,7 @@ class InputProps {
       color: color ?? this.color,
       validator: validator ?? this.validator,
       labelStyle: labelStyle ?? this.labelStyle,
+      inputStyle: inputStyle ?? this.inputStyle,
       border: border ?? this.border,
       decoration: decoration ?? this.decoration,
       maxLength: maxLength ?? this.maxLength,
@@ -211,6 +230,8 @@ class Input extends StatefulWidget {
     Color? color,
     String? Function(String?)? validator,
     TextStyle? labelStyle,
+    TextStyle? inputStyle,
+    TextStyle? hintStyle,
     OutlineInputBorder? border,
     InputDecoration? decoration,
     int maxLength = 100,
@@ -234,6 +255,8 @@ class Input extends StatefulWidget {
         color: color,
         validator: validator,
         labelStyle: labelStyle,
+        inputStyle: inputStyle,
+        hintStyle: hintStyle,
         border: border,
         decoration: decoration,
         maxLength: maxLength,
@@ -270,6 +293,8 @@ class Input extends StatefulWidget {
     String? Function(String?)? validator,
     List<TextInputFormatter>? inputFormatters,
     TextStyle? labelStyle,
+    TextStyle? inputStyle,
+    TextStyle? hintStyle,
     Color? color,
     OutlineInputBorder? border,
     InputDecoration? decoration,
@@ -292,6 +317,8 @@ class Input extends StatefulWidget {
         autocorrect: false,
         isLast: isLast,
         labelStyle: labelStyle,
+        inputStyle: inputStyle,
+        hintStyle: hintStyle,
         color: color,
         border: border,
         decoration: decoration,
@@ -309,6 +336,8 @@ class Input extends StatefulWidget {
     String name = 'cnName',
     bool isRequired = false,
     TextStyle? labelStyle,
+    TextStyle? inputStyle,
+    TextStyle? hintStyle,
     Color? color,
     OutlineInputBorder? border,
     InputDecoration? decoration,
@@ -326,6 +355,8 @@ class Input extends StatefulWidget {
         inputFormatters: inputFormatters,
         isLast: isLast,
         labelStyle: labelStyle,
+        inputStyle: inputStyle,
+        hintStyle: hintStyle,
         color: color,
         border: border,
         decoration: decoration,
@@ -346,6 +377,8 @@ class Input extends StatefulWidget {
     int maxLength = 32,
     String? patternErrorText,
     TextStyle? labelStyle,
+    TextStyle? inputStyle,
+    TextStyle? hintStyle,
     Color? color,
     OutlineInputBorder? border,
     List<TextInputFormatter>? inputFormatters,
@@ -366,6 +399,8 @@ class Input extends StatefulWidget {
         inputFormatters: inputFormatters,
         isLast: isLast,
         labelStyle: labelStyle,
+        inputStyle: inputStyle,
+        hintStyle: hintStyle,
         color: color,
         border: border,
         decoration: decoration,
@@ -379,7 +414,6 @@ class Input extends StatefulWidget {
 }
 
 class _InputState extends State<Input> {
-  // ignore: prefer_final_fields
   late bool _obscureText;
   @override
   void initState() {
@@ -423,10 +457,12 @@ class _InputState extends State<Input> {
         autocorrect: widget.props.autocorrect,
         inputFormatters: widget.props.inputFormatters,
         obscureText: _obscureText,
+        style: widget.props.inputStyle,
         decoration:
             widget.props.decoration ??
             InputDecoration(
               hintText: "请输入${widget.props.label}",
+              hintStyle: widget.props.hintStyle,
               contentPadding: const EdgeInsets.only(left: 10),
               filled: true,
               fillColor:

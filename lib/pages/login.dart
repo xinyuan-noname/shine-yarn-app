@@ -9,6 +9,14 @@ import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/server.dart';
 
+const labelStyle = TextStyle(
+  fontFamily: "SmileySans",
+  fontSize: 16,
+  fontWeight: FontWeight.w500,
+);
+const hintStyle = TextStyle(fontFamily: "SmileySans", color: bgColorLight60);
+const inputStyle = TextStyle(fontFamily: "SmileySans", color: bgColorLight);
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -29,18 +37,30 @@ class _LoginPageState extends State<LoginPage> {
       InputProps.number(
         label: "学号",
         name: "id",
-        color: mainColorPurple,
+        labelStyle: labelStyle,
+        hintStyle: hintStyle,
+        inputStyle: inputStyle,
+        color: mainColorPurple90,
         isRequired: true,
         gap: 5,
       ),
       InputProps.cnName(
         label: "姓名",
         name: "username",
-        color: mainColorPurple,
+        labelStyle: labelStyle,
+        hintStyle: hintStyle,
+        inputStyle: inputStyle,
+        color: mainColorPurple90,
         isRequired: true,
         gap: 5,
       ),
-      InputProps.password(color: mainColorPurple, isLast: true),
+      InputProps.password(
+        hintStyle: hintStyle,
+        color: mainColorPurple90,
+        labelStyle: labelStyle,
+        inputStyle: inputStyle,
+        isLast: true,
+      ),
     ].generateAndAssignController(_controllers);
   }
 
