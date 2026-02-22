@@ -12,7 +12,7 @@ class ApiAdmin {
     _rsaPrivateKey = RSAPrivateKey.fromPEM(signature);
   }
 
-  static Map<String, String?>? sign(List<String> wordList) {
+  static Map<String, dynamic>? sign(List<String> wordList) {
     if (_rsaPrivateKey == null) return null;
     final createdAt = DateTime.now().toIso8601String();
     final linkedWords = [...wordList, createdAt].join("|");
@@ -36,6 +36,28 @@ class ApiAdmin {
       return err.message ?? "签名出错";
     } catch (err) {
       return "签名出错";
+    }
+  }
+
+  static Future<List<Map>?> getUserInfo() async {
+    if (_rsaPrivateKey == null) return null;
+    try {
+      final word = nowBase64();
+      final data = ApiAdmin.sign([word]);
+      if (data == null) return null;
+      // gender userType username passwordRequired
+      data.addAll({
+        "word": word,
+        "idList": "all",
+        "gender": true,
+        "userType": true,
+        "username": true,
+        "passwordRequired": true,
+      });
+      final response = await dio.post('/admin/search/user', data: data);
+      return response.data;
+    } catch (err) {
+      return null;
     }
   }
 }

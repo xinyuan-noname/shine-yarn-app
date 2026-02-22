@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
@@ -16,11 +18,14 @@ class AdminPage extends StatefulWidget {
 }
 
 class _AdminPageState extends State<AdminPage> {
+  bool _isOk = false;
+  int _listCount = 0;
+  List<Map> _userInfoList = [];
   final ValueNotifier<String> _checkSignatureMessage = ValueNotifier("");
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       _uploadSignature();
     });
   }
@@ -42,6 +47,8 @@ class _AdminPageState extends State<AdminPage> {
           success = await _checkSignature();
           if (context.mounted) {
             Navigator.pop(context);
+            _isOk = success;
+            setState(() {});
           }
         }
       },
@@ -65,6 +72,14 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
+  Future _getUserInfo() async {
+    final result = await ApiAdmin.getUserInfo();
+    if (result == null) return;
+    print(result);
+    _userInfoList = result;
+    _listCount = result.length;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,19 +89,34 @@ class _AdminPageState extends State<AdminPage> {
         bottom: bottomLine,
       ),
       body: SafeArea(
-        child: RefreshIndicator(
-          color: mainColorPurple90,
-          backgroundColor: bgColorLight,
-          child: ListView.builder(
-            itemCount: 1,
-            itemBuilder: (context, index) {
-              return ListTile(title: Text('Item $index'));
-            },
-          ),
-          onRefresh: () async {
-            await Future.delayed(Duration(seconds: 1));
-          },
-        ),
+        child: _isOk
+            ? RefreshIndicator(
+                color: mainColorPurple90,
+                backgroundColor: bgColorLight,
+                child: ListView.builder(
+                  itemCount: max(_listCount, 1),
+                  itemBuilder: (context, index) {
+                    if (_listCount == 0) {
+                      return Container(
+                        alignment: Alignment.center,
+                        child: Text(
+                          "暂无用户数据",
+                          style: TextStyle(fontSize: 20, color: Colors.grey),
+                        ),
+                      );
+                    }
+                    return ListTile(title: Text('Item $index'));
+                  },
+                ),
+                onRefresh: () async {
+                  await _getUserInfo();
+                  setState(() {});
+                },
+              )
+            : Container(
+                alignment: Alignment.center,
+                child: Icon(Icons.lock, size: 72, color: Colors.grey),
+              ),
       ),
     );
   }
