@@ -41,3 +41,5 @@ const EdgeInsetsGeometry profilePadding = EdgeInsets.only(
   top: 10,
   bottom: 10,
 );
+
+const TextStyle bottomListTitleTextStyle  = TextStyle(fontFamily: "SmileySans", fontSize: 20);

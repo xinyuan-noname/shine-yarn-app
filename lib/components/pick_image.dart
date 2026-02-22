@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shine/components/line.dart';
+import 'package:shine/theme.dart';
 
 final ImagePicker _picker = ImagePicker();
 
@@ -15,22 +17,23 @@ Future<void> pickImage(
           children: [
             ListTile(
               leading: Icon(Icons.photo_album),
-              title: Text('从相册选择'),
+              title: Text('从相册选择', style: bottomListTitleTextStyle),
               onTap: () async {
                 Navigator.pop(context);
                 final XFile? image = await _picker.pickImage(
                   source: ImageSource.gallery,
-                  imageQuality: 80, 
-                  maxWidth: 1000, 
+                  imageQuality: 80,
+                  maxWidth: 1000,
                 );
                 if (image != null) {
                   handleSelectedImage(image);
                 }
               },
             ),
+            bottomLine,
             ListTile(
               leading: Icon(Icons.camera_alt),
-              title: Text('拍照'),
+              title: Text('拍照', style: bottomListTitleTextStyle),
               onTap: () async {
                 Navigator.pop(context);
                 final XFile? image = await _picker.pickImage(

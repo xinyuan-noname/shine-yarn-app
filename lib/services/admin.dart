@@ -92,4 +92,23 @@ class ApiAdmin {
       return "删除用户出错";
     }
   }
+
+  static Future<String?> register(Map<String, dynamic> input) async {
+    if (_rsaPrivateKey == null) return "签名出错";
+    try {
+      final data = ApiAdmin.sign([
+        input["id"],
+        input["username"],
+        input["isAdmin"],
+      ]);
+      if (data == null) return "没有正确配置私钥";
+      data.addAll(input);
+      await dio.delete("/admin/register", data: data);
+      return null;
+    } on DioException catch (err) {
+      return err.message ?? "注册用户失败";
+    } catch (err) {
+      return "注册用户失败";
+    }
+  }
 }

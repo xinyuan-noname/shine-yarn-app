@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/user_info_card.dart';
+import 'package:shine/routes.dart';
 import 'package:shine/services/admin.dart';
 import 'package:shine/storage/admin_storage.dart';
 import 'package:shine/theme.dart';
@@ -21,11 +22,8 @@ class AdminPage extends StatefulWidget {
 
 class _AdminPageState extends State<AdminPage> {
   bool _isOk = false;
-  int _listCount = 0;
   List _userInfoList = [];
-  final ValueNotifier<String> _checkSignatureMessage = ValueNotifier("");
-  final List<ValueNotifier<String>> _issuePasswordKeyMessageList = [];
-  final List<ValueNotifier<String>> _deleteUserMessageList = [];
+  final ValueNotifier<String> _message = ValueNotifier("");
   @override
   void initState() {
     super.initState();
@@ -47,7 +45,7 @@ class _AdminPageState extends State<AdminPage> {
         while (!success) {
           PlatformFile? file = await pickFile();
           await AdminStorage.saveSignature(file!.bytes!);
-          showMessageDialog(context, _checkSignatureMessage);
+          showMessageDialog(context, _message);
           success = await _checkSignature();
           if (context.mounted) {
             Navigator.pop(context);
@@ -62,7 +60,7 @@ class _AdminPageState extends State<AdminPage> {
 
   Future<bool> _checkSignature() async {
     return sendRequestAndChangeMessage(
-      _checkSignatureMessage,
+      _message,
       request: Future(() async {
         final signature = await AdminStorage.getSignature();
         if (signature != null) {
@@ -77,15 +75,11 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
-  Future _getUserInfo() async {
-    for (final m in _issuePasswordKeyMessageList) {
-      m.dispose();
-    }
+  Future<void> _getUserInfo() async {
     final result = await ApiAdmin.getUserInfo();
     print(result);
     if (result == null) return;
     _userInfoList = result;
-    _listCount = result.length;
   }
 
   @override
@@ -94,7 +88,34 @@ class _AdminPageState extends State<AdminPage> {
       appBar: AppBar(
         title: const Text("管理界面", style: titleTextStyle),
         actions: [
-          IconButton(icon: Icon(Icons.add, size: 32), onPressed: () {}),
+          IconButton(
+            icon: Icon(Icons.add, size: 32),
+            onPressed: () async {
+              await showModalBottomSheet(
+                context: context,
+                builder: (BuildContext context) {
+                  return SafeArea(
+                    child: Wrap(
+                      children: [
+                        ListTile(
+                          leading: Icon(Icons.person_2_outlined),
+                          title: Text('创建新用户', style: bottomListTitleTextStyle),
+                          onTap: () async {
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              globalNavigatorKey.currentState?.pushNamed(
+                                "/register",
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
         ],
         centerTitle: true,
         bottom: bottomLine,
@@ -105,10 +126,10 @@ class _AdminPageState extends State<AdminPage> {
                 color: mainColorPurple90,
                 backgroundColor: bgColorLight,
                 child: ListView.builder(
-                  itemCount: max(_listCount, 1),
+                  itemCount: max(_userInfoList.length, 1),
                   padding: EdgeInsets.all(16),
                   itemBuilder: (context, index) {
-                    if (_listCount == 0) {
+                    if (_userInfoList.isEmpty) {
                       return Container(
                         alignment: Alignment.center,
                         child: Text(
@@ -118,25 +139,26 @@ class _AdminPageState extends State<AdminPage> {
                       );
                     }
                     final userInfo = _userInfoList[index];
-                    final issuePasswordKeyMessage = ValueNotifier("");
-                    _issuePasswordKeyMessageList.add(issuePasswordKeyMessage);
-                    final deleteUserMessage = ValueNotifier("");
-                    _deleteUserMessageList.add(deleteUserMessage);
                     final id = userInfo["id"];
+                    final username = userInfo["username"];
                     return UserInfoCard(
                       userInfo: userInfo,
-                      onDelete: () {},
-                      onEdit: () async {
-                        await _deleteUser(
-                          deleteUserMessage: deleteUserMessage,
-                          id: id,
+                      onDelete: () {
+                        showConfrimDialog(
+                          context: context,
+                          title: "确认删除$id($username)吗？",
+                          content: "此操作无法撤回！",
+                          onYes: () {
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                            }
+                            _deleteUser(id);
+                          },
                         );
                       },
-                      onIssuePswdKey: () async {
-                        await _issuePasswordKey(
-                          issuePasswordKeyMessage: issuePasswordKeyMessage,
-                          id: id,
-                        );
+                      onEdit: () {},
+                      onIssuePswdKey: () {
+                        _issuePasswordKey(id);
                       },
                     );
                   },
@@ -154,19 +176,17 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
-  Future<void> _deleteUser({
-    required ValueNotifier<String> deleteUserMessage,
-    required String id,
-  }) async {
-    showMessageDialog(context, deleteUserMessage);
+  Future<void> _deleteUser(id) async {
+    _message.value = "";
+    showMessageDialog(context, _message);
     final success = await sendRequestAndChangeMessage(
-      deleteUserMessage,
+      _message,
       request: Future(() async {
-        return await ApiAdmin.issuePasswordKey(id);
+        return await ApiAdmin.deleteUser(id);
       }),
       initMessageList: [],
-      messageList: ["正在为$id签发密码令牌.", "正在为$id签发密码令牌..", "正在为$id签发密码令牌..."],
-      successMessage: "签发成功",
+      messageList: ["正在删除用户$id.", "正在删除用户$id..", "正在删除用户$id..."],
+      successMessage: "删除成功",
     );
     if (context.mounted) {
       Navigator.pop(context);
@@ -177,14 +197,12 @@ class _AdminPageState extends State<AdminPage> {
     }
   }
 
-  Future<void> _issuePasswordKey({
-    required ValueNotifier<String> issuePasswordKeyMessage,
-    required String id,
-  }) async {
+  Future<void> _issuePasswordKey(id) async {
+    _message.value = "";
     late String passwordKey;
-    showMessageDialog(context, issuePasswordKeyMessage);
+    showMessageDialog(context, _message);
     final success = await sendRequestAndChangeMessage(
-      issuePasswordKeyMessage,
+      _message,
       request: Future(() async {
         final result = await ApiAdmin.issuePasswordKey(id);
         if (result is String) return result;
@@ -212,21 +230,9 @@ class _AdminPageState extends State<AdminPage> {
     }
   }
 
-  _disposeAllUserMessage() {
-    for (final m in _issuePasswordKeyMessageList) {
-      m.dispose();
-    }
-    _issuePasswordKeyMessageList.clear();
-    for (final m in _deleteUserMessageList) {
-      m.dispose();
-    }
-    _deleteUserMessageList.clear();
-  }
-
   @override
   void dispose() {
     super.dispose();
-    _checkSignatureMessage.dispose();
-    _disposeAllUserMessage();
+    _message.dispose();
   }
 }

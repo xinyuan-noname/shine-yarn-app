@@ -4,9 +4,11 @@ import 'package:shine/pages/home.dart';
 import 'package:shine/pages/login.dart';
 import 'package:shine/pages/password.dart';
 import 'package:shine/pages/profile.dart';
+import 'package:shine/pages/register.dart';
 
 final Map<String, WidgetBuilder> appRouters = {
   "/login": (_) => LoginPage(),
+  '/register': (_) => RegisterPage(),
   "/home": (_) => HomePage(),
   "/profile": (_) => ProfilePage(),
   '/admin': (_) => AdminPage(),

@@ -169,50 +169,6 @@ class InputProps {
       gap: gap,
     );
   }
-  InputProps copyWith({
-    String? label,
-    String? name,
-    Color? color,
-    String? Function(String?)? validator,
-    TextStyle? labelStyle,
-    TextStyle? inputStyle,
-    TextStyle? hintStyle,
-    OutlineInputBorder? border,
-    InputDecoration? decoration,
-    int? maxLength,
-    int? minLength,
-    RegExp? pattern,
-    String? patternErrorText,
-    bool? isRequired,
-    bool? isLast,
-    TextInputType? keyboardType,
-    bool? autocorrect,
-    bool? isPassword,
-    List<TextInputFormatter>? inputFormatters,
-    AutovalidateMode? autovalidateMode,
-  }) {
-    return InputProps(
-      label: label ?? this.label,
-      name: name ?? this.name,
-      color: color ?? this.color,
-      validator: validator ?? this.validator,
-      labelStyle: labelStyle ?? this.labelStyle,
-      inputStyle: inputStyle ?? this.inputStyle,
-      border: border ?? this.border,
-      decoration: decoration ?? this.decoration,
-      maxLength: maxLength ?? this.maxLength,
-      minLength: minLength ?? this.minLength,
-      pattern: pattern ?? this.pattern,
-      patternErrorText: patternErrorText ?? this.patternErrorText,
-      isRequired: isRequired ?? this.isRequired,
-      isLast: isLast ?? this.isLast,
-      keyboardType: keyboardType ?? this.keyboardType,
-      autocorrect: autocorrect ?? this.autocorrect,
-      isPassword: isPassword ?? this.isPassword,
-      inputFormatters: inputFormatters ?? this.inputFormatters,
-      autovalidateMode: autovalidateMode ?? this.autovalidateMode,
-    );
-  }
 }
 
 class Input extends StatefulWidget {
@@ -421,9 +377,8 @@ class _InputState extends State<Input> {
     _obscureText = widget.props.isPassword;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    List<Widget> children = [
+  List<Widget> _buildTextChildren() {
+    return [
       widget.props.isRequired
           ? Text.rich(
               TextSpan(
@@ -512,6 +467,11 @@ class _InputState extends State<Input> {
         },
       ),
     ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> children = _buildTextChildren();
     if (widget.props.gap != null && widget.props.gap! > 0) {
       children.add(SizedBox(height: widget.props.gap));
     }

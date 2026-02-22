@@ -108,7 +108,7 @@ class _LoginPageState extends State<LoginPage> {
                 key: _formKey,
                 child: Column(children: [..._inputs]),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 20),
               SizedBox(
                 height: 48,
                 child: Align(
