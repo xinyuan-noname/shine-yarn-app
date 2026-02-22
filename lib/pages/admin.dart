@@ -105,7 +105,8 @@ class _AdminPageState extends State<AdminPage> {
                         ),
                       );
                     }
-                    return ListTile(title: Text('Item $index'));
+                    final userInfo = _userInfoList[index];
+                    return ListTile(title: Text(userInfo["username"]));
                   },
                 ),
                 onRefresh: () async {

@@ -39,7 +39,7 @@ class ApiAdmin {
     }
   }
 
-  static Future<List<Map>?> getUserInfo() async {
+  static Future<List<Map<String, dynamic>>?> getUserInfo() async {
     if (_rsaPrivateKey == null) return null;
     try {
       final word = nowBase64();
