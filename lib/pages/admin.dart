@@ -20,7 +20,7 @@ class AdminPage extends StatefulWidget {
 class _AdminPageState extends State<AdminPage> {
   bool _isOk = false;
   int _listCount = 0;
-  List<Map> _userInfoList = [];
+  List _userInfoList = [];
   final ValueNotifier<String> _checkSignatureMessage = ValueNotifier("");
   @override
   void initState() {
@@ -48,6 +48,7 @@ class _AdminPageState extends State<AdminPage> {
           if (context.mounted) {
             Navigator.pop(context);
             _isOk = success;
+            await _getUserInfo();
             setState(() {});
           }
         }
@@ -74,8 +75,8 @@ class _AdminPageState extends State<AdminPage> {
 
   Future _getUserInfo() async {
     final result = await ApiAdmin.getUserInfo();
-    if (result == null) return;
     print(result);
+    if (result == null) return;
     _userInfoList = result;
     _listCount = result.length;
   }

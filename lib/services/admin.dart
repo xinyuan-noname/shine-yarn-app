@@ -39,7 +39,7 @@ class ApiAdmin {
     }
   }
 
-  static Future<List<Map<String, dynamic>>?> getUserInfo() async {
+  static Future<List<dynamic>?> getUserInfo() async {
     if (_rsaPrivateKey == null) return null;
     try {
       final word = nowBase64();
@@ -49,14 +49,17 @@ class ApiAdmin {
       data.addAll({
         "word": word,
         "idList": "all",
-        "gender": true,
-        "userType": true,
-        "username": true,
-        "passwordRequired": true,
+        "config": {
+          "gender": true,
+          "userType": true,
+          "username": true,
+          "passwordRequired": true,
+        },
       });
       final response = await dio.post('/admin/search/user', data: data);
       return response.data;
     } catch (err) {
+      print(err);
       return null;
     }
   }
