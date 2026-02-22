@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/user_info_card.dart';
@@ -23,6 +24,7 @@ class _AdminPageState extends State<AdminPage> {
   int _listCount = 0;
   List _userInfoList = [];
   final ValueNotifier<String> _checkSignatureMessage = ValueNotifier("");
+  final List<ValueNotifier<String>> _issuePasswordKeyMessageList = [];
   @override
   void initState() {
     super.initState();
@@ -75,6 +77,9 @@ class _AdminPageState extends State<AdminPage> {
   }
 
   Future _getUserInfo() async {
+    for (final m in _issuePasswordKeyMessageList) {
+      m.dispose();
+    }
     final result = await ApiAdmin.getUserInfo();
     print(result);
     if (result == null) return;
@@ -87,6 +92,9 @@ class _AdminPageState extends State<AdminPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("管理界面", style: titleTextStyle),
+        actions: [
+          IconButton(icon: Icon(Icons.add, size: 32), onPressed: () {}),
+        ],
         centerTitle: true,
         bottom: bottomLine,
       ),
@@ -109,11 +117,18 @@ class _AdminPageState extends State<AdminPage> {
                       );
                     }
                     final userInfo = _userInfoList[index];
+                    final issuePasswordKeyMessage = ValueNotifier("");
+                    _issuePasswordKeyMessageList.add(issuePasswordKeyMessage);
                     return UserInfoCard(
                       userInfo: userInfo,
                       onDelete: () {},
                       onEdit: () {},
-                      onIssuePswdKey: () {},
+                      onIssuePswdKey: () async {
+                        await _issuePasswordKey(
+                          issuePasswordKey: issuePasswordKeyMessage,
+                          id: userInfo["id"],
+                        );
+                      },
                     );
                   },
                 ),
@@ -128,5 +143,48 @@ class _AdminPageState extends State<AdminPage> {
               ),
       ),
     );
+  }
+
+  Future<void> _issuePasswordKey({
+    required ValueNotifier<String> issuePasswordKey,
+    required String id,
+  }) async {
+    late String passwordKey;
+    showMessageDialog(context, issuePasswordKey);
+    final success = await sendRequestAndChangeMessage(
+      issuePasswordKey,
+      request: Future(() async {
+        final result = await ApiAdmin.issuePasswordKey(id);
+        if (result is String) return result;
+        if (result is Map) {
+          passwordKey = result["passwordKey"];
+        }
+        return null;
+      }),
+      initMessageList: [],
+      messageList: ["正在为$id签发密码令牌.", "正在为$id签发密码令牌..", "正在为$id签发密码令牌..."],
+      successMessage: "签发成功",
+    );
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
+    if (success) {
+      await Clipboard.setData(ClipboardData(text: passwordKey));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("已经密码令牌复制到剪切板中")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("令牌为:$passwordKey")));
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _checkSignatureMessage.dispose();
+    for (final m in _issuePasswordKeyMessageList) {
+      m.dispose();
+    }
   }
 }

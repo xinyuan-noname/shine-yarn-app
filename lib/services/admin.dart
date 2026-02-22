@@ -59,8 +59,23 @@ class ApiAdmin {
       final response = await dio.post('/admin/search/user', data: data);
       return response.data;
     } catch (err) {
-      print(err);
       return null;
+    }
+  }
+
+  static Future issuePasswordKey(String id) async {
+    if (_rsaPrivateKey == null) return null;
+    try {
+      final data = ApiAdmin.sign([id]);
+      if (data == null) return null;
+      // gender userType username passwordRequired
+      data.addAll({"id": id});
+      final response = await dio.post("/issue/password_key", data: data);
+      return response.data;
+    } on DioException catch (err) {
+      return err.message ?? "签发密码令牌出错";
+    } catch (err) {
+      return "签名密码令牌出错";
     }
   }
 }
