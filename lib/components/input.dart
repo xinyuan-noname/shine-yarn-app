@@ -30,6 +30,8 @@ class InputProps {
   final List<TextInputFormatter>? inputFormatters;
   final AutovalidateMode? autovalidateMode;
 
+  final Map<String, dynamic>? onSavedMap;
+
   const InputProps({
     required this.label,
     required this.name,
@@ -52,6 +54,7 @@ class InputProps {
     this.inputFormatters,
     this.autovalidateMode = AutovalidateMode.onUserInteraction,
     this.gap,
+    this.onSavedMap,
   });
 
   factory InputProps.password({
@@ -72,6 +75,7 @@ class InputProps {
     bool isLast = false,
     AutovalidateMode? autovalidateMode,
     double? gap,
+    Map<String, dynamic>? onSavedMap,
   }) {
     return InputProps(
       label: label,
@@ -93,6 +97,7 @@ class InputProps {
       decoration: decoration,
       autovalidateMode: autovalidateMode,
       gap: gap,
+      onSavedMap: onSavedMap,
     );
   }
   factory InputProps.cnName({
@@ -109,6 +114,7 @@ class InputProps {
     List<TextInputFormatter>? inputFormatters,
     AutovalidateMode? autovalidateMode,
     double? gap,
+    Map<String, dynamic>? onSavedMap,
   }) {
     return InputProps(
       label: label,
@@ -127,6 +133,7 @@ class InputProps {
       decoration: decoration,
       autovalidateMode: autovalidateMode,
       gap: gap,
+      onSavedMap: onSavedMap,
     );
   }
   factory InputProps.number({
@@ -146,6 +153,7 @@ class InputProps {
     bool isLast = false,
     AutovalidateMode? autovalidateMode,
     double? gap,
+    Map<String, dynamic>? onSavedMap,
   }) {
     return InputProps(
       label: label,
@@ -167,6 +175,7 @@ class InputProps {
       decoration: decoration,
       autovalidateMode: autovalidateMode,
       gap: gap,
+      onSavedMap: onSavedMap,
     );
   }
 }
@@ -203,6 +212,7 @@ class Input extends StatefulWidget {
     AutovalidateMode? autovalidateMode,
     TextEditingController? controller,
     double? gap,
+    Map<String, dynamic>? onSavedMap,
   }) {
     return Input.fromProps(
       InputProps(
@@ -227,6 +237,7 @@ class Input extends StatefulWidget {
         inputFormatters: inputFormatters,
         autovalidateMode: autovalidateMode,
         gap: gap,
+        onSavedMap: onSavedMap,
       ),
       key: key,
       controller: controller,
@@ -238,134 +249,6 @@ class Input extends StatefulWidget {
     TextEditingController? controller,
   }) {
     return Input._(key: key, props: props, controller: controller);
-  }
-  factory Input.password({
-    Key? key,
-    String label = '密码',
-    String name = 'password',
-    bool isRequired = false,
-    int minLength = 8,
-    int maxLength = 32,
-    String? Function(String?)? validator,
-    List<TextInputFormatter>? inputFormatters,
-    TextStyle? labelStyle,
-    TextStyle? inputStyle,
-    TextStyle? hintStyle,
-    Color? color,
-    OutlineInputBorder? border,
-    InputDecoration? decoration,
-    bool isLast = false,
-    AutovalidateMode? autovalidateMode,
-    TextEditingController? controller,
-    double? gap,
-  }) {
-    return Input.fromProps(
-      InputProps(
-        label: label,
-        name: name,
-        isPassword: true,
-        isRequired: isRequired,
-        minLength: minLength,
-        maxLength: maxLength,
-        validator: validator,
-        keyboardType: TextInputType.visiblePassword,
-        inputFormatters: inputFormatters,
-        autocorrect: false,
-        isLast: isLast,
-        labelStyle: labelStyle,
-        inputStyle: inputStyle,
-        hintStyle: hintStyle,
-        color: color,
-        border: border,
-        decoration: decoration,
-        autovalidateMode: autovalidateMode,
-        gap: gap,
-      ),
-      key: key,
-      controller: controller,
-    );
-  }
-
-  factory Input.cnName({
-    Key? key,
-    String label = '姓名',
-    String name = 'cnName',
-    bool isRequired = false,
-    TextStyle? labelStyle,
-    TextStyle? inputStyle,
-    TextStyle? hintStyle,
-    Color? color,
-    OutlineInputBorder? border,
-    InputDecoration? decoration,
-    bool isLast = false,
-    List<TextInputFormatter>? inputFormatters,
-    AutovalidateMode? autovalidateMode,
-    TextEditingController? controller,
-    double? gap,
-  }) {
-    return Input.fromProps(
-      InputProps.cnName(
-        label: label,
-        name: name,
-        isRequired: isRequired,
-        inputFormatters: inputFormatters,
-        isLast: isLast,
-        labelStyle: labelStyle,
-        inputStyle: inputStyle,
-        hintStyle: hintStyle,
-        color: color,
-        border: border,
-        decoration: decoration,
-        autovalidateMode: autovalidateMode,
-        gap: gap,
-      ),
-      key: key,
-      controller: controller,
-    );
-  }
-
-  factory Input.number({
-    Key? key,
-    String label = '编号',
-    String name = 'number',
-    bool isRequired = false,
-    int minLength = 1,
-    int maxLength = 32,
-    String? patternErrorText,
-    TextStyle? labelStyle,
-    TextStyle? inputStyle,
-    TextStyle? hintStyle,
-    Color? color,
-    OutlineInputBorder? border,
-    List<TextInputFormatter>? inputFormatters,
-    InputDecoration? decoration,
-    bool isLast = false,
-    AutovalidateMode? autovalidateMode,
-    TextEditingController? controller,
-    double? gap,
-  }) {
-    return Input.fromProps(
-      InputProps.number(
-        label: label,
-        name: name,
-        isRequired: isRequired,
-        minLength: minLength,
-        maxLength: maxLength,
-        patternErrorText: patternErrorText,
-        inputFormatters: inputFormatters,
-        isLast: isLast,
-        labelStyle: labelStyle,
-        inputStyle: inputStyle,
-        hintStyle: hintStyle,
-        color: color,
-        border: border,
-        decoration: decoration,
-        autovalidateMode: autovalidateMode,
-        gap: gap,
-      ),
-      key: key,
-      controller: controller,
-    );
   }
 }
 
@@ -442,6 +325,9 @@ class _InputState extends State<Input> {
                     )
                   : null,
             ),
+        onSaved: widget.props.onSavedMap == null
+            ? null
+            : (v) => widget.props.onSavedMap?[widget.props.name] = v,
         validator: (value) {
           if (value == null || value.isEmpty) {
             if (widget.props.isRequired) {
@@ -492,6 +378,14 @@ extension InputPropsList on List<InputProps> {
       final controller = TextEditingController();
       map[item.name] = controller;
       list.add(Input.fromProps(item, controller: controller));
+    }
+    return list;
+  }
+
+  List<Input> generate() {
+    final List<Input> list = [];
+    for (final item in this) {
+      list.add(Input.fromProps(item));
     }
     return list;
   }

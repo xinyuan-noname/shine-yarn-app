@@ -15,20 +15,18 @@ class Radios<T> extends FormField<T> {
     String? requiredErrorMessage,
     String? Function(T?)? validator,
     super.initialValue,
-    super.onSaved,
+    Map<String, dynamic>? onSavedMap,
     AutovalidateMode super.autovalidateMode =
         AutovalidateMode.onUserInteraction,
   }) : super(
+         onSaved: onSavedMap == null ? null : (v) => onSavedMap[name] = v,
          validator: (value) {
-           // 1. 必填验证
            if (isRequired && (value == null || _isEmpty(value))) {
              return requiredErrorMessage ?? '$label不能为空';
            }
-           // 2. 自定义验证（如果有）
            if (validator != null) {
              return validator(value);
            }
-           // 3. 验证通过
            return null;
          },
          builder: (FormFieldState<T> state) {
@@ -102,6 +100,7 @@ class Radios<T> extends FormField<T> {
     TextStyle? inputStyle,
     Color? color,
     double? gap,
+    Map<String, dynamic>? onSavedMap,
   }) {
     return Radios<String>(
       label: '性别',
@@ -115,6 +114,7 @@ class Radios<T> extends FormField<T> {
       inputStyle: inputStyle,
       color: color,
       gap: gap,
+      onSavedMap: onSavedMap,
     );
   }
 
@@ -126,6 +126,7 @@ class Radios<T> extends FormField<T> {
     TextStyle? inputStyle,
     Color? color,
     double? gap,
+    Map<String, dynamic>? onSavedMap,
   }) {
     return Radios<bool>(
       label: label,
@@ -139,6 +140,7 @@ class Radios<T> extends FormField<T> {
       inputStyle: inputStyle,
       color: color,
       gap: gap,
+      onSavedMap: onSavedMap,
     );
   }
 }

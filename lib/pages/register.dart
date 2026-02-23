@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/input.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/radio.dart';
-import 'package:shine/extensions/text_editing.dart';
 import 'package:shine/services/admin.dart';
-import 'package:shine/services/auth.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/server.dart';
 
@@ -27,9 +24,9 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
-  final _controllers = <String, TextEditingController>{};
   final ValueNotifier<String> _message = ValueNotifier("正在发送注册请求");
   late final List<Input> _inputs;
+  final map = <String, dynamic>{};
   @override
   void initState() {
     super.initState();
@@ -43,6 +40,7 @@ class _RegisterPageState extends State<RegisterPage> {
         color: mainColorPurple90,
         isRequired: true,
         gap: 5,
+        onSavedMap: map,
       ),
       InputProps.cnName(
         label: "姓名",
@@ -53,19 +51,22 @@ class _RegisterPageState extends State<RegisterPage> {
         color: mainColorPurple90,
         isRequired: true,
         gap: 5,
+        onSavedMap: map,
       ),
       InputProps.password(
         hintStyle: hintStyle,
         color: mainColorPurple90,
         labelStyle: labelStyle,
         inputStyle: inputStyle,
+        onSavedMap: map,
       ),
-    ].generateAndAssignController(_controllers);
+    ].generate();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text("注册用户", style: titleTextStyle),
         centerTitle: true,
@@ -91,7 +92,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       labelStyle: labelStyle,
                       inputStyle: inputStyle,
                       color: mainColorPurple,
-                      gap: 5
+                      gap: 5,
+                      onSavedMap: map,
                     ),
                     Radios.comfirm(
                       label: "是否为管理员",
@@ -99,7 +101,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       labelStyle: labelStyle,
                       inputStyle: inputStyle,
                       color: mainColorPurple,
-                      gap: 5
+                      gap: 5,
+                      onSavedMap: map,
                     ),
                   ],
                 ),
@@ -117,10 +120,14 @@ class _RegisterPageState extends State<RegisterPage> {
             shadowColor: Colors.transparent,
           ),
           onPressed: () async {
-            _message.value = "正在发送登出请求";
-            showMessageDialog(context, _message);
-            await _toRegister();
+            if (_formKey.currentState == null) return;
+            if (!_formKey.currentState!.validate()) return;
+            _formKey.currentState?.save();
+            final success = await _toRegister();
             if (context.mounted) {
+              Navigator.pop(context);
+            }
+            if (success) {
               Navigator.pop(context);
             }
           },
@@ -150,11 +157,12 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future _toRegister() async {
+    _message.value = "正在发送登出请求";
+    showMessageDialog(context, _message);
     return await sendRequestAndChangeMessage(
       _message,
       request: Future(() async {
-        final map = _controllers.asTextMap;
-        // return await ApiAdmin.register(map);
+        return await ApiAdmin.register(map);
       }),
       initMessageList: [],
       messageList: ["正在注册中.", "正在注册中..", "正在注册中..."],
@@ -167,7 +175,6 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   void dispose() {
     super.dispose();
-    _controllers.disposeAll();
     _message.dispose();
   }
 }
