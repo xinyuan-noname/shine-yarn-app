@@ -154,6 +154,8 @@ class _AdminPageState extends State<AdminPage> {
                               Navigator.pop(context);
                             }
                             _deleteUser(id);
+                            _getUserInfo();
+                            setState(() {});
                           },
                         );
                       },

@@ -100,6 +100,7 @@ class ApiAdmin {
       final int isAdmin = input["isAdmin"] ? 1 : 0;
       final data = ApiAdmin.sign([id, isAdmin]);
       if (data == null) return "没有正确配置私钥";
+      print(input);
       data.addAll(input);
       data.addAll({"isAdmin": isAdmin});
       await dio.post("/admin/register", data: data);
