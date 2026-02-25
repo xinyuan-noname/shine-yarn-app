@@ -95,7 +95,7 @@ class ApiAdmin {
     }
   }
 
-  static Future<String?> deleteUserBatch(
+  static Future deleteUserBatch(
     List<Map<String, dynamic>> userList,
   ) async {
     if (_rsaPrivateKey == null) return "签名出错";
@@ -108,7 +108,6 @@ class ApiAdmin {
         if (signatureInfo == null) return "没有正确配置私钥";
         user.addAll(signatureInfo);
       }
-      print(data);
       await dio.delete("/admin/delete/batch", data: {"userList": data});
       return null;
     } on DioException catch (err) {

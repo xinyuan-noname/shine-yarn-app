@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shine/components/dialog.dart';
+import 'package:shine/components/icon_button.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/user_info_card.dart';
 import 'package:shine/routes.dart';
@@ -23,8 +24,8 @@ class AdminPage extends StatefulWidget {
 class _AdminPageState extends State<AdminPage> {
   bool _isOk = false;
   bool _batchMode = false;
-  List<int> _selectedIndexList = [];
   List _userInfoList = [];
+  final List<int> _selectedIndexList = [];
   final ValueNotifier<String> _message = ValueNotifier("");
   @override
   void initState() {
@@ -79,7 +80,11 @@ class _AdminPageState extends State<AdminPage> {
 
   Future<void> _getUserInfo() async {
     final result = await ApiAdmin.getUserInfo();
-    if (result == null) return;
+    if (result == null) {
+      Future.delayed(Duration(milliseconds: 500));
+      await ApiAdmin.getUserInfo();
+      return;
+    }
     _userInfoList = result;
   }
 
@@ -158,40 +163,22 @@ class _AdminPageState extends State<AdminPage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _selectedIndexList.length != _userInfoList.length
-                              ? IconButton(
-                                  onPressed: () {
-                                    _selectedIndexList.clear();
-                                    _selectedIndexList.addAll(
-                                      List.generate(
-                                        _userInfoList.length,
-                                        (int index) => index,
-                                      ),
-                                    );
-                                    setState(() {});
-                                  },
-                                  icon: Icon(
-                                    Icons.check_box_outline_blank,
-                                    color: Colors.grey,
-                                  ),
-                                )
-                              : IconButton(
-                                  onPressed: () {
-                                    _selectedIndexList.clear();
-                                    setState(() {});
-                                  },
-                                  icon: Icon(
-                                    Icons.check_box_outlined,
-                                    color: mainColorGreenBule,
-                                  ),
-                                ),
+                          SelectAllButton(
+                            selectedIndexList: _selectedIndexList,
+                            allItemList: _userInfoList,
+                            callback: () {
+                              setState(() {});
+                            },
+                            unselectedColor: Colors.grey,
+                            selectedColor: mainColorGreenBule,
+                          ),
                           IconButton(
                             onPressed: () {
                               _batchMode = false;
                               _selectedIndexList.clear();
                               setState(() {});
                             },
-                            icon: Icon(Icons.close,color: Colors.grey),
+                            icon: Icon(Icons.close, color: Colors.grey),
                           ),
                         ],
                       ),
@@ -226,7 +213,10 @@ class _AdminPageState extends State<AdminPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    IconButton(onPressed: () {}, icon: Icon(Icons.delete)),
+                    IconButton(
+                      onPressed: _deleteUserBatch,
+                      icon: Icon(Icons.delete),
+                    ),
                   ],
                 ),
               ),
@@ -322,8 +312,9 @@ class _AdminPageState extends State<AdminPage> {
       request: Future(() async {
         final result = await ApiAdmin.registerFromExcel(file.bytes!);
         if (result is String) return result;
-        if (result is List<Map>) {
+        if (result is List) {
           for (final map in result) {
+            if (map is! Map) continue;
             if (map["success"] == false && map["id"] is String) {
               errorResultList.add(
                 "${map["id"]}注册出错, 出错原因:${map["error"] ?? "未知"}",
@@ -371,6 +362,51 @@ class _AdminPageState extends State<AdminPage> {
     if (success) {
       await _getUserInfo();
       setState(() {});
+    }
+  }
+
+  Future<void> _deleteUserBatch() async {
+    _message.value = "";
+    showMessageDialog(context, _message);
+    final deleteUserList = List.generate(_selectedIndexList.length, (index) {
+      return {"id": _userInfoList[index]["id"]};
+    });
+    final List<String> errorResultList = [];
+    final success = await sendRequestAndChangeMessage(
+      _message,
+      request: Future(() async {
+        final result = await ApiAdmin.deleteUserBatch(deleteUserList);
+        if (result is String) return result;
+        if (result is List) {
+          for (final map in result) {
+            if (map is! Map) continue;
+            if (map["success"] == false && map["id"] is String) {
+              errorResultList.add(
+                "${map["id"]}注册出错, 出错原因:${map["error"] ?? "未知"}",
+              );
+            }
+          }
+          return null;
+        }
+        return "删除失败";
+      }),
+      initMessageList: [],
+      messageList: ["正在删除用户.", "正在删除用户..", "正在删除用户..."],
+      successMessage: "删除成功",
+    );
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
+    if (success) {
+      _batchMode = false;
+      setState(() {});
+      await _getUserInfo();
+      setState(() {});
+      for (final errorResult in errorResultList) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(errorResult)));
+      }
     }
   }
 
