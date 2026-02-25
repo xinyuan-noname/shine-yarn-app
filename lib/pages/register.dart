@@ -103,6 +103,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       color: mainColorPurple,
                       gap: 5,
                       onSavedMap: map,
+                      initialValue: false
                     ),
                   ],
                 ),

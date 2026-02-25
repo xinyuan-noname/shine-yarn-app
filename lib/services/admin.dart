@@ -107,6 +107,7 @@ class ApiAdmin {
     } on DioException catch (err) {
       return err.message ?? "注册用户失败";
     } catch (err) {
+      print(err);
       return "注册用户失败";
     }
   }

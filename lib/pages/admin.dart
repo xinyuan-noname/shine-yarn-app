@@ -43,7 +43,7 @@ class _AdminPageState extends State<AdminPage> {
         }
         bool success = false;
         while (!success) {
-          PlatformFile? file = await pickFile();
+          PlatformFile? file = await pickFile(exts: ["pem"]);
           await AdminStorage.saveSignature(file!.bytes!);
           showMessageDialog(context, _message);
           success = await _checkSignature();
@@ -77,7 +77,6 @@ class _AdminPageState extends State<AdminPage> {
 
   Future<void> _getUserInfo() async {
     final result = await ApiAdmin.getUserInfo();
-    print(result);
     if (result == null) return;
     _userInfoList = result;
   }
@@ -103,9 +102,11 @@ class _AdminPageState extends State<AdminPage> {
                           onTap: () async {
                             if (context.mounted) {
                               Navigator.pop(context);
-                              globalNavigatorKey.currentState?.pushNamed(
+                              await globalNavigatorKey.currentState?.pushNamed(
                                 "/register",
                               );
+                              await _getUserInfo();
+                              setState(() {});
                             }
                           },
                         ),

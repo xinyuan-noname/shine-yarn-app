@@ -14,10 +14,10 @@ class Radios<T> extends FormField<T> {
     bool isRequired = false,
     String? requiredErrorMessage,
     String? Function(T?)? validator,
-    super.initialValue,
     Map<String, dynamic>? onSavedMap,
     AutovalidateMode super.autovalidateMode =
         AutovalidateMode.onUserInteraction,
+    super.initialValue,
   }) : super(
          onSaved: onSavedMap == null ? null : (v) => onSavedMap[name] = v,
          validator: (value) {
@@ -94,20 +94,22 @@ class Radios<T> extends FormField<T> {
     return false;
   }
 
-  static Radios<String> gender({
+  static Radios<String?> gender({
     bool isRequired = false,
     TextStyle? labelStyle,
     TextStyle? inputStyle,
     Color? color,
     double? gap,
     Map<String, dynamic>? onSavedMap,
+    String? initialValue
   }) {
-    return Radios<String>(
+    return Radios<String?>(
       label: '性别',
       name: "gender",
       options: [
         RadioOption<String>(value: "male", title: "男"),
         RadioOption<String>(value: "female", title: "女"),
+        RadioOption<String?>(value: null, title: "无可奉告"),
       ],
       isRequired: isRequired,
       labelStyle: labelStyle,
@@ -115,6 +117,7 @@ class Radios<T> extends FormField<T> {
       color: color,
       gap: gap,
       onSavedMap: onSavedMap,
+      initialValue: initialValue,
     );
   }
 
@@ -127,6 +130,7 @@ class Radios<T> extends FormField<T> {
     Color? color,
     double? gap,
     Map<String, dynamic>? onSavedMap,
+    bool? initialValue
   }) {
     return Radios<bool>(
       label: label,
@@ -141,6 +145,7 @@ class Radios<T> extends FormField<T> {
       color: color,
       gap: gap,
       onSavedMap: onSavedMap,
+      initialValue: initialValue,
     );
   }
 }

@@ -327,7 +327,11 @@ class _InputState extends State<Input> {
             ),
         onSaved: widget.props.onSavedMap == null
             ? null
-            : (v) => widget.props.onSavedMap?[widget.props.name] = v,
+            : (v) {
+                if (v != null && v.isNotEmpty) {
+                  widget.props.onSavedMap?[widget.props.name] = v;
+                }
+              },
         validator: (value) {
           if (value == null || value.isEmpty) {
             if (widget.props.isRequired) {

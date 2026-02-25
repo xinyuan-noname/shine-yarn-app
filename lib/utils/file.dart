@@ -1,16 +1,15 @@
 import 'package:file_picker/file_picker.dart';
 
-Future<PlatformFile?> pickFile({List<String>? ext}) async {
+Future<PlatformFile?> pickFile({List<String>? exts}) async {
   FilePickerResult? result = await FilePicker.platform.pickFiles(
-    type: FileType.any,
+    type: FileType.custom,
     allowMultiple: false,
     withData: true,
+    allowedExtensions: exts,
   );
   if (result != null) {
     final file = result.files.single;
-    if (ext == null || ext.contains(file.extension)) {
-      return file;
-    }
+    return file;
   }
   return null;
 }
