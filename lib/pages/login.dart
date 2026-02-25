@@ -24,6 +24,8 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
+const double gap = 40;
+
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _controllers = <String, TextEditingController>{};
@@ -42,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
         inputStyle: inputStyle,
         color: mainColorPurple90,
         isRequired: true,
-        gap: 5,
+        gap: gap,
       ),
       InputProps.cnName(
         label: "姓名",
@@ -52,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
         inputStyle: inputStyle,
         color: mainColorPurple90,
         isRequired: true,
-        gap: 5,
+        gap: gap,
       ),
       InputProps.password(
         hintStyle: hintStyle,
@@ -67,9 +69,36 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        title: GestureDetector(
+          onTap: () {
+            _titleTapCount++;
+            if (_titleTapCount >= 5) {
+              gotoAdminDialog(context);
+              _titleTapCount = 0;
+            }
+          },
+          child: Center(
+            child: const Text(
+              "学号姓名密码登录",
+              style: TextStyle(
+                color: Colors.white30,
+                fontFamily: "SmileySans",
+                fontSize: 28,
+                fontWeight: FontWeight.w900,
+                shadows: [
+                  Shadow(offset: Offset(1, 1), color: mainColorPurple),
+                  Shadow(offset: Offset(-1, -1), color: mainColorPurple),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Container(
-          alignment: Alignment.center,
+          alignment: Alignment.topCenter,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(15)),
           ),
@@ -79,86 +108,57 @@ class _LoginPageState extends State<LoginPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GestureDetector(
-                onTap: () {
-                  _titleTapCount++;
-                  if (_titleTapCount >= 5) {
-                    gotoAdminDialog(context);
-                    _titleTapCount = 0;
-                  }
-                },
-                child: Center(
-                  child: const Text(
-                    "学号姓名密码登录",
-                    style: TextStyle(
-                      color: Colors.white30,
-                      fontFamily: "SmileySans",
-                      fontSize: 28,
-                      fontWeight: FontWeight.w900,
-                      shadows: [
-                        Shadow(offset: Offset(1, 1), color: mainColorPurple),
-                        Shadow(offset: Offset(-1, -1), color: mainColorPurple),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
               const SizedBox(height: 15),
               Form(
                 key: _formKey,
                 child: Column(children: [..._inputs]),
               ),
               const SizedBox(height: 20),
-              SizedBox(
-                height: 48,
-                child: Align(
-                  alignment: Alignment.center,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      if (!_formKey.currentState!.validate()) return;
-                      if (!ApiService.isOk) return;
-                      _message.value = "正在发送登录请求";
-                      showMessageDialog(context, _message);
-                      final success = await _toLogin();
-                      if (success) {
-                        if (_controllers.asTextMap["username"] != null) {
-                          await ProfileStorage.saveName(
-                            _controllers.asTextMap["username"]!,
-                          );
-                        }
-                        if (_controllers.asTextMap["id"] != null) {
-                          await ProfileStorage.saveId(
-                            _controllers.asTextMap["id"]!,
-                          );
-                        }
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                          globalNavigatorKey.currentState
-                              ?.pushNamedAndRemoveUntil(
-                                '/home',
-                                clearOldRouter,
-                              );
-                        }
-                      } else if (context.mounted) {
-                        Navigator.pop(context);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: mainColorPurple,
-                      padding: EdgeInsets.fromLTRB(20, 5, 20, 5),
-                    ),
-                    child: const Text(
-                      "登录",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: "SmileySans",
-                      ),
-                    ),
-                  ),
-                ),
-              ),
             ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        color: bgColorLight60,
+        child: ElevatedButton(
+          onPressed: () async {
+            if (!_formKey.currentState!.validate()) return;
+            if (!ApiService.isOk) return;
+            _message.value = "正在发送登录请求";
+            showMessageDialog(context, _message);
+            final success = await _toLogin();
+            if (success) {
+              if (_controllers.asTextMap["username"] != null) {
+                await ProfileStorage.saveName(
+                  _controllers.asTextMap["username"]!,
+                );
+              }
+              if (_controllers.asTextMap["id"] != null) {
+                await ProfileStorage.saveId(_controllers.asTextMap["id"]!);
+              }
+              if (context.mounted) {
+                Navigator.pop(context);
+                globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
+                  '/home',
+                  clearOldRouter,
+                );
+              }
+            } else if (context.mounted) {
+              Navigator.pop(context);
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            side: BorderSide(color: mainColorPurple80, width: 2.0),
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+          ),
+          child: const Text(
+            "登录",
+            style: TextStyle(
+              color: darkColorPurple,
+              fontSize: 20,
+              fontWeight: FontWeight.w300,
+            ),
           ),
         ),
       ),

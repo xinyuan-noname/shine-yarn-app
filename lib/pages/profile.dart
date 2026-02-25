@@ -336,7 +336,7 @@ class _ProfilePageState extends State<ProfilePage> {
         color: bgColorLight60,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            side: BorderSide(color: Colors.red, width: 1.0),
+            side: BorderSide(color: Colors.red, width: 2.0),
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
           ),

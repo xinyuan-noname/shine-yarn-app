@@ -115,7 +115,7 @@ class _RegisterPageState extends State<RegisterPage> {
         color: bgColorLight60,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            side: BorderSide(color: mainColorPurple80, width: 1.0),
+            side: BorderSide(color: mainColorPurple80, width: 2.0),
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
           ),

@@ -12,7 +12,7 @@ class ApiAdmin {
     _rsaPrivateKey = RSAPrivateKey.fromPEM(signature);
   }
 
-  static Map<String, dynamic>? sign(List<String> wordList) {
+  static Map<String, dynamic>? sign(List wordList) {
     if (_rsaPrivateKey == null) return null;
     final createdAt = DateTime.now().toIso8601String();
     final linkedWords = [...wordList, createdAt].join("|");
@@ -96,14 +96,13 @@ class ApiAdmin {
   static Future<String?> register(Map<String, dynamic> input) async {
     if (_rsaPrivateKey == null) return "签名出错";
     try {
-      final data = ApiAdmin.sign([
-        input["id"],
-        input["username"],
-        input["isAdmin"],
-      ]);
+      final String id = input["id"];
+      final int isAdmin = input["isAdmin"] ? 1 : 0;
+      final data = ApiAdmin.sign([id, isAdmin]);
       if (data == null) return "没有正确配置私钥";
       data.addAll(input);
-      await dio.delete("/admin/register", data: data);
+      data.addAll({"isAdmin": isAdmin});
+      await dio.post("/admin/register", data: data);
       return null;
     } on DioException catch (err) {
       return err.message ?? "注册用户失败";
