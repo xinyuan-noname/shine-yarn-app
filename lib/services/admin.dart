@@ -84,10 +84,10 @@ class ApiAdmin {
   }) async {
     if (_rsaPrivateKey == null) return "签名出错";
     try {
-      final data = ApiAdmin.sign([id]);
+      final data = ApiAdmin.sign([id, isAdmin]);
       if (data == null) return "没有正确配置私钥";
       data.addAll({"id": id, "isAdmin": isAdmin});
-      await dio.delete("/admin/delete", data: data);
+      await dio.patch("/admin/admin_status", data: data);
       return null;
     } on DioException catch (err) {
       return err.message ?? "删除用户出错";
