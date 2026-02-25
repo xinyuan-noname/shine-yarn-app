@@ -1,10 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crypton/crypton.dart';
 import 'package:dio/dio.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:shine/services/dio.dart';
 import 'package:shine/utils/string.dart';
 
@@ -80,6 +78,24 @@ class ApiAdmin {
     }
   }
 
+  static Future<String?> changeAdminStatus({
+    required String id,
+    required isAdmin,
+  }) async {
+    if (_rsaPrivateKey == null) return "签名出错";
+    try {
+      final data = ApiAdmin.sign([id]);
+      if (data == null) return "没有正确配置私钥";
+      data.addAll({"id": id, "isAdmin": isAdmin});
+      await dio.delete("/admin/delete", data: data);
+      return null;
+    } on DioException catch (err) {
+      return err.message ?? "删除用户出错";
+    } catch (err) {
+      return "删除用户出错";
+    }
+  }
+
   static Future<String?> deleteUser(String id) async {
     if (_rsaPrivateKey == null) return "签名出错";
     try {
@@ -95,9 +111,7 @@ class ApiAdmin {
     }
   }
 
-  static Future deleteUserBatch(
-    List<Map<String, dynamic>> userList,
-  ) async {
+  static Future deleteUserBatch(List<Map<String, dynamic>> userList) async {
     if (_rsaPrivateKey == null) return "签名出错";
     try {
       final data = userList;
@@ -108,8 +122,11 @@ class ApiAdmin {
         if (signatureInfo == null) return "没有正确配置私钥";
         user.addAll(signatureInfo);
       }
-      await dio.delete("/admin/delete/batch", data: {"userList": data});
-      return null;
+      final response = await dio.delete(
+        "/admin/delete/batch",
+        data: {"userList": data},
+      );
+      return response.data;
     } on DioException catch (err) {
       return err.message ?? "删除用户出错";
     } catch (err) {

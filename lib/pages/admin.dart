@@ -242,6 +242,7 @@ class _AdminPageState extends State<AdminPage> {
         final userInfo = _userInfoList[index];
         final id = userInfo["id"];
         final username = userInfo["username"];
+        final isAdmin = userInfo['userType'] == "admin";
         final userInfoCard = UserInfoCard(
           userInfo: userInfo,
           onDelete: _batchMode
@@ -251,17 +252,47 @@ class _AdminPageState extends State<AdminPage> {
                     context: context,
                     title: "确认删除$id($username)吗？",
                     content: "此操作无法撤回！",
-                    onYes: () {
+                    onYes: () async {
                       if (context.mounted) {
                         Navigator.pop(context);
                       }
-                      _deleteUser(id);
-                      _getUserInfo();
+                      await _deleteUser(id);
+                      await _getUserInfo();
                       setState(() {});
                     },
                   );
                 },
-          onEdit: _batchMode ? null : () {},
+          onEdit: _batchMode
+              ? null
+              : () async {
+                  await showModalBottomSheet(
+                    context: context,
+                    builder: (BuildContext context) {
+                      print(isAdmin);
+                      return SafeArea(
+                        child: Wrap(
+                          children: [
+                            ListTile(
+                              leading: Icon(Icons.manage_accounts_outlined),
+                              title: Text(
+                                isAdmin ? '撤销$id管理员权限' : '授予$id管理员权限',
+                                style: bottomListTitleTextStyle,
+                              ),
+                              onTap: () async {
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                }
+                                await _changeAdmin(id, isAdmin ? 0 : 1);
+                                await _getUserInfo();
+                                setState(() {});
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
           onIssuePswdKey: _batchMode
               ? null
               : () {
@@ -344,6 +375,27 @@ class _AdminPageState extends State<AdminPage> {
     }
   }
 
+  Future<void> _changeAdmin(String id, int isAdmin) async {
+    _message.value = "";
+    showMessageDialog(context, _message);
+    final success = await sendRequestAndChangeMessage(
+      _message,
+      request: Future(() async {
+        return await ApiAdmin.changeAdminStatus(id: id, isAdmin: isAdmin);
+      }),
+      initMessageList: [],
+      messageList: ["正在更改$id的权限.", "正在更改$id的权限..", "正在更改$id的权限..."],
+      successMessage: "更改成功",
+    );
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
+    if (success) {
+      await _getUserInfo();
+      setState(() {});
+    }
+  }
+
   Future<void> _deleteUser(String id) async {
     _message.value = "";
     showMessageDialog(context, _message);
@@ -399,6 +451,7 @@ class _AdminPageState extends State<AdminPage> {
     }
     if (success) {
       _batchMode = false;
+      _selectedIndexList.clear();
       setState(() {});
       await _getUserInfo();
       setState(() {});
