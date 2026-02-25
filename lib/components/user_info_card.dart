@@ -20,45 +20,54 @@ const TextStyle adminItemTextStyle = TextStyle(
 
 class UserInfoCard extends StatelessWidget {
   final Map<String, dynamic> userInfo;
-  final GestureTapCallback onDelete;
-  final GestureTapCallback onEdit;
-  final GestureTapCallback onIssuePswdKey;
+  final GestureTapCallback? onDelete;
+  final GestureTapCallback? onEdit;
+  final GestureTapCallback? onIssuePswdKey;
+  final GestureTapCallback? onPress;
+  final GestureLongPressCallback? onLongPress;
   const UserInfoCard({
     super.key,
     required this.userInfo,
-    required this.onDelete,
-    required this.onEdit, required this.onIssuePswdKey,
+    this.onDelete,
+    this.onEdit,
+    this.onIssuePswdKey,
+    this.onLongPress,
+    this.onPress,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      color: mainColorPurple,
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      shadowColor: mainColorGreenBule60,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [darkColorPurple, mainColorPurple],
+    return GestureDetector(
+      onLongPress: onLongPress,
+      onTap: onPress,
+      child: Card(
+        elevation: 2,
+        color: mainColorPurple,
+        margin: const EdgeInsets.only(bottom: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shadowColor: mainColorGreenBule60,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [darkColorPurple, mainColorPurple],
+            ),
           ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildUsernameRow(),
-              _buildIdRow(),
-              _buildGenderRow(),
-              _buildPasswordRow(),
-              bottomLine,
-              _buildOperatorRow(),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildUsernameRow(),
+                _buildIdRow(),
+                _buildGenderRow(),
+                _buildPasswordRow(),
+                bottomLine,
+                _buildOperatorRow(),
+              ],
+            ),
           ),
         ),
       ),
@@ -71,46 +80,49 @@ class UserInfoCard extends StatelessWidget {
       children: [
         Row(
           children: [
-            GestureDetector(
-              onTap: onIssuePswdKey,
-              child: Container(
-                alignment: Alignment.center,
-                height: adminFontSize*1.1,
-                decoration: BoxDecoration(
-                  color: mainColorGreenBule60,
-                  borderRadius: BorderRadius.all(Radius.circular(10))
-                ),
-                padding: EdgeInsets.symmetric(horizontal: 5,vertical: 1),
-                child: Text(
-                  "签发密码令牌",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontFamily: 'SmileySans'
+            if (onIssuePswdKey != null)
+              GestureDetector(
+                onTap: onIssuePswdKey,
+                child: Container(
+                  alignment: Alignment.center,
+                  height: adminFontSize * 1.1,
+                  decoration: BoxDecoration(
+                    color: mainColorGreenBule60,
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  child: Text(
+                    "签发密码令牌",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'SmileySans',
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
         Row(
           children: [
-            GestureDetector(
-              onTap: onEdit,
-              child: Icon(
-                Icons.edit,
-                color: Colors.white,
-                size: adminFontSize * 1.1,
+            if (onEdit != null)
+              GestureDetector(
+                onTap: onEdit,
+                child: Icon(
+                  Icons.edit,
+                  color: Colors.white,
+                  size: adminFontSize * 1.1,
+                ),
               ),
-            ),
-            SizedBox(width: 15),
-            GestureDetector(
-              onTap: onDelete,
-              child: Icon(
-                Icons.delete,
-                color: Colors.white,
-                size: adminFontSize * 1.1,
+            SizedBox(height: adminFontSize * 1.1,width: 15),
+            if (onDelete != null)
+              GestureDetector(
+                onTap: onDelete,
+                child: Icon(
+                  Icons.delete,
+                  color: Colors.white,
+                  size: adminFontSize * 1.1,
+                ),
               ),
-            ),
           ],
         ),
       ],

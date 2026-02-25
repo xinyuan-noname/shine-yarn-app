@@ -95,6 +95,30 @@ class ApiAdmin {
     }
   }
 
+  static Future<String?> deleteUserBatch(
+    List<Map<String, dynamic>> userList,
+  ) async {
+    if (_rsaPrivateKey == null) return "签名出错";
+    try {
+      final data = userList;
+      for (final user in userList) {
+        if (user["id"] == null) continue;
+        final id = user["id"];
+        final signatureInfo = ApiAdmin.sign([id]);
+        if (signatureInfo == null) return "没有正确配置私钥";
+        user.addAll(signatureInfo);
+      }
+      print(data);
+      await dio.delete("/admin/delete/batch", data: {"userList": data});
+      return null;
+    } on DioException catch (err) {
+      return err.message ?? "删除用户出错";
+    } catch (err) {
+      print(err);
+      return "删除用户出错";
+    }
+  }
+
   static Future<String?> register(Map<String, dynamic> input) async {
     if (_rsaPrivateKey == null) return "签名出错";
     try {
@@ -125,7 +149,10 @@ class ApiAdmin {
     });
     final formData = FormData.fromMap(data);
     try {
-      final response = await uploadDio.post('/admin/register/excel', data: formData);
+      final response = await uploadDio.post(
+        '/admin/register/excel',
+        data: formData,
+      );
       return response.data;
     } on DioException catch (e) {
       return e.message ?? "上传excel文件失败";

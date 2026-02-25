@@ -22,6 +22,8 @@ class AdminPage extends StatefulWidget {
 
 class _AdminPageState extends State<AdminPage> {
   bool _isOk = false;
+  bool _batchMode = false;
+  List<int> _selectedIndexList = [];
   List _userInfoList = [];
   final ValueNotifier<String> _message = ValueNotifier("");
   @override
@@ -138,59 +140,174 @@ class _AdminPageState extends State<AdminPage> {
       ),
       body: SafeArea(
         child: _isOk
-            ? RefreshIndicator(
-                color: mainColorPurple90,
-                backgroundColor: bgColorLight,
-                child: ListView.builder(
-                  itemCount: max(_userInfoList.length, 1),
-                  padding: EdgeInsets.all(16),
-                  itemBuilder: (context, index) {
-                    if (_userInfoList.isEmpty) {
-                      return Container(
-                        alignment: Alignment.center,
-                        child: Text(
-                          "暂无用户数据",
-                          style: TextStyle(fontSize: 20, color: Colors.grey),
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_batchMode)
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            width: 1,
+                            style: BorderStyle.solid,
+                            color: const Color.fromRGBO(158, 158, 158, 0.8),
+                          ),
                         ),
-                      );
-                    }
-                    final userInfo = _userInfoList[index];
-                    final id = userInfo["id"];
-                    final username = userInfo["username"];
-                    return UserInfoCard(
-                      userInfo: userInfo,
-                      onDelete: () {
-                        showConfrimDialog(
-                          context: context,
-                          title: "确认删除$id($username)吗？",
-                          content: "此操作无法撤回！",
-                          onYes: () {
-                            if (context.mounted) {
-                              Navigator.pop(context);
-                            }
-                            _deleteUser(id);
-                            _getUserInfo();
-                            setState(() {});
-                          },
-                        );
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _selectedIndexList.length != _userInfoList.length
+                              ? IconButton(
+                                  onPressed: () {
+                                    _selectedIndexList.clear();
+                                    _selectedIndexList.addAll(
+                                      List.generate(
+                                        _userInfoList.length,
+                                        (int index) => index,
+                                      ),
+                                    );
+                                    setState(() {});
+                                  },
+                                  icon: Icon(
+                                    Icons.check_box_outline_blank,
+                                    color: Colors.grey,
+                                  ),
+                                )
+                              : IconButton(
+                                  onPressed: () {
+                                    _selectedIndexList.clear();
+                                    setState(() {});
+                                  },
+                                  icon: Icon(
+                                    Icons.check_box_outlined,
+                                    color: mainColorGreenBule,
+                                  ),
+                                ),
+                          IconButton(
+                            onPressed: () {
+                              _batchMode = false;
+                              _selectedIndexList.clear();
+                              setState(() {});
+                            },
+                            icon: Icon(Icons.close,color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                  Expanded(
+                    child: RefreshIndicator(
+                      color: mainColorPurple90,
+                      backgroundColor: bgColorLight,
+                      child: _buildViewList(),
+                      onRefresh: () async {
+                        await _getUserInfo();
+                        setState(() {});
                       },
-                      onEdit: () {},
-                      onIssuePswdKey: () {
-                        _issuePasswordKey(id);
-                      },
-                    );
-                  },
-                ),
-                onRefresh: () async {
-                  await _getUserInfo();
-                  setState(() {});
-                },
+                    ),
+                  ),
+                ],
               )
             : Container(
                 alignment: Alignment.center,
                 child: Icon(Icons.lock, size: 72, color: Colors.grey),
               ),
       ),
+      bottomNavigationBar: _batchMode
+          ? BottomAppBar(
+              color: bgColorLight60,
+              height: 50,
+              padding: EdgeInsets.zero,
+              notchMargin: 0,
+              shadowColor: Colors.white,
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(onPressed: () {}, icon: Icon(Icons.delete)),
+                  ],
+                ),
+              ),
+            )
+          : null,
+    );
+  }
+
+  Widget _buildViewList() {
+    return ListView.builder(
+      itemCount: max(_userInfoList.length, 1),
+      padding: EdgeInsets.all(16),
+      itemBuilder: (context, index) {
+        if (_userInfoList.isEmpty) {
+          return Container(
+            alignment: Alignment.center,
+            child: Text(
+              "暂无用户数据",
+              style: TextStyle(fontSize: 20, color: Colors.grey),
+            ),
+          );
+        }
+        final userInfo = _userInfoList[index];
+        final id = userInfo["id"];
+        final username = userInfo["username"];
+        final userInfoCard = UserInfoCard(
+          userInfo: userInfo,
+          onDelete: _batchMode
+              ? null
+              : () {
+                  showConfrimDialog(
+                    context: context,
+                    title: "确认删除$id($username)吗？",
+                    content: "此操作无法撤回！",
+                    onYes: () {
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                      _deleteUser(id);
+                      _getUserInfo();
+                      setState(() {});
+                    },
+                  );
+                },
+          onEdit: _batchMode ? null : () {},
+          onIssuePswdKey: _batchMode
+              ? null
+              : () {
+                  _issuePasswordKey(id);
+                },
+          onLongPress: () {
+            _batchMode = true;
+            _selectedIndexList.add(index);
+            setState(() {});
+          },
+          onPress: _batchMode
+              ? () {
+                  if (_selectedIndexList.contains(index)) {
+                    _selectedIndexList.remove(index);
+                  } else {
+                    _selectedIndexList.add(index);
+                  }
+                  setState(() {});
+                }
+              : null,
+        );
+        return _batchMode
+            ? Row(
+                children: [
+                  if (_selectedIndexList.contains(index))
+                    Icon(
+                      Icons.check_circle_outline_rounded,
+                      color: mainColorGreenBule,
+                      size: 50,
+                      weight: 10,
+                    ),
+                  Expanded(child: userInfoCard),
+                ],
+              )
+            : userInfoCard;
+      },
     );
   }
 
