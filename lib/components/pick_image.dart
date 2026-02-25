@@ -31,20 +31,20 @@ Future<void> pickImage(
               },
             ),
             bottomLine,
-            ListTile(
-              leading: Icon(Icons.camera_alt),
-              title: Text('拍照', style: bottomListTitleTextStyle),
-              onTap: () async {
-                Navigator.pop(context);
-                final XFile? image = await _picker.pickImage(
-                  source: ImageSource.camera,
-                  imageQuality: 80,
-                );
-                if (image != null) {
-                  handleSelectedImage(image);
-                }
-              },
-            ),
+            // ListTile(
+            //   leading: Icon(Icons.camera_alt),
+            //   title: Text('拍照', style: bottomListTitleTextStyle),
+            //   onTap: () async {
+            //     Navigator.pop(context);
+            //     final XFile? image = await _picker.pickImage(
+            //       source: ImageSource.camera,
+            //       imageQuality: 80,
+            //     );
+            //     if (image != null) {
+            //       handleSelectedImage(image);
+            //     }
+            //   },
+            // ),
           ],
         ),
       );

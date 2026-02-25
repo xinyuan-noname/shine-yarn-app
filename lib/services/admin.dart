@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:crypton/crypton.dart';
 import 'package:dio/dio.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:shine/services/dio.dart';
 import 'package:shine/utils/string.dart';
 
@@ -108,8 +110,27 @@ class ApiAdmin {
     } on DioException catch (err) {
       return err.message ?? "注册用户失败";
     } catch (err) {
-      print(err);
       return "注册用户失败";
+    }
+  }
+
+  static Future registerFromExcel(Uint8List bytes) async {
+    if (_rsaPrivateKey == null) return "签名出错";
+    final word = nowBase64();
+    final data = ApiAdmin.sign([word]);
+    if (data == null) return "没有正确配置私钥";
+    data.addAll({
+      'register': MultipartFile.fromBytes(bytes, filename: 'register.xlsx'),
+      'word': word,
+    });
+    final formData = FormData.fromMap(data);
+    try {
+      final response = await uploadDio.post('/admin/register/excel', data: formData);
+      return response.data;
+    } on DioException catch (e) {
+      return e.message ?? "上传excel文件失败";
+    } catch (e) {
+      return "上传excel文件失败";
     }
   }
 }

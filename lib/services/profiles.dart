@@ -4,16 +4,9 @@ import 'package:dio/dio.dart';
 import 'package:shine/services/dio.dart';
 
 class ApiProfiles {
-  static Future<String?> uploadAvatar(
-    Uint8List bytes, {
-    String subMimeType = "jepg",
-  }) async {
+  static Future<String?> uploadAvatar(Uint8List bytes) async {
     final formData = FormData.fromMap({
-      'avatar': MultipartFile.fromBytes(
-        bytes,
-        filename: 'avatar.jpg',
-        contentType: DioMediaType('image', subMimeType),
-      ),
+      'avatar': MultipartFile.fromBytes(bytes, filename: 'avatar.jpg'),
     });
     try {
       await uploadDio.post('/profiles/avatar', data: formData);

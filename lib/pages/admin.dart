@@ -110,6 +110,21 @@ class _AdminPageState extends State<AdminPage> {
                             }
                           },
                         ),
+                        ListTile(
+                          leading: Icon(Icons.group_add_outlined),
+                          title: Text(
+                            '通过excel创建用户',
+                            style: bottomListTitleTextStyle,
+                          ),
+                          onTap: () async {
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              _registerFromExcel();
+                              await _getUserInfo();
+                              setState(() {});
+                            }
+                          },
+                        ),
                       ],
                     ),
                   );
@@ -179,7 +194,49 @@ class _AdminPageState extends State<AdminPage> {
     );
   }
 
-  Future<void> _deleteUser(id) async {
+  Future<void> _registerFromExcel() async {
+    PlatformFile? file = await pickFile(exts: ["xlsx", "xls"]);
+    if (file == null || file.bytes == null) return;
+    _message.value = "";
+    final List<String> errorResultList = [];
+    showMessageDialog(context, _message);
+    final success = await sendRequestAndChangeMessage(
+      _message,
+      request: Future(() async {
+        final result = await ApiAdmin.registerFromExcel(file.bytes!);
+        if (result is String) return result;
+        if (result is List<Map>) {
+          for (final map in result) {
+            if (map["success"] == false && map["id"] is String) {
+              errorResultList.add(
+                "${map["id"]}注册出错, 出错原因:${map["error"] ?? "未知"}",
+              );
+            }
+          }
+          return null;
+        }
+        return "注册出错";
+      }),
+      initMessageList: [],
+      messageList: ["正在进行注册中.", "正在进行注册中..", "正在进行注册中..."],
+      successMessage: "收到注册信息",
+    );
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
+    if (success) {
+      _getUserInfo().then((_) {
+        setState(() {});
+      });
+      for (final errorResult in errorResultList) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(errorResult)));
+      }
+    }
+  }
+
+  Future<void> _deleteUser(String id) async {
     _message.value = "";
     showMessageDialog(context, _message);
     final success = await sendRequestAndChangeMessage(
@@ -195,7 +252,7 @@ class _AdminPageState extends State<AdminPage> {
       Navigator.pop(context);
     }
     if (success) {
-      _getUserInfo();
+      await _getUserInfo();
       setState(() {});
     }
   }

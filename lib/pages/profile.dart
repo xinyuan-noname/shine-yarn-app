@@ -32,8 +32,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String _isPaswRequired = "否";
   String _version = "?";
   int _tapVersionCount = 0;
-  final _logoutMessage = ValueNotifier("正在发送登出请求");
-  final _avatarUploadMessage = ValueNotifier("正在上传头像文件");
+  final _message = ValueNotifier("");
   @override
   void initState() {
     super.initState();
@@ -342,8 +341,8 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           onPressed: () async {
             if (!ApiService.isOk) return;
-            _logoutMessage.value = "正在发送登出请求";
-            showMessageDialog(context, _logoutMessage);
+            _message.value = "正在发送登出请求";
+            showMessageDialog(context, _message);
             await _toLogout();
             if (context.mounted) {
               Navigator.pop(context);
@@ -376,7 +375,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future _toLogout() async {
     return await sendRequestAndChangeMessage(
-      _logoutMessage,
+      _message,
       request: Future(() async {
         return await ApiAuth.logout();
       }),
@@ -388,7 +387,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future _toUpload(Uint8List bytes) async {
     return await sendRequestAndChangeMessage(
-      _avatarUploadMessage,
+      _message,
       request: Future(() async {
         return await ApiProfiles.uploadAvatar(bytes);
       }),
@@ -400,11 +399,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
   _onUpload() {
     pickImage(context, (XFile image) async {
-      _avatarUploadMessage.value = "正在上传头像文件";
-      showMessageDialog(context, _avatarUploadMessage);
+      _message.value = "正在上传头像文件";
+      showMessageDialog(context, _message);
       Uint8List? imageData = await cropAvatar(image);
       if (imageData == null) {
-        _avatarUploadMessage.value = "没有检测文件数据";
+        _message.value = "没有检测文件数据";
         Future(() {
           Navigator.pop(context);
         });
@@ -425,7 +424,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void dispose() {
     super.dispose();
-    _logoutMessage.dispose();
-    _avatarUploadMessage.dispose();
+    _message.dispose();
+    _message.dispose();
   }
 }
