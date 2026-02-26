@@ -20,6 +20,7 @@ const TextStyle adminItemTextStyle = TextStyle(
 
 class UserInfoCard extends StatelessWidget {
   final Map<String, dynamic> userInfo;
+  final bool? noOperation;
   final GestureTapCallback? onDelete;
   final GestureTapCallback? onEdit;
   final GestureTapCallback? onIssuePswdKey;
@@ -33,6 +34,7 @@ class UserInfoCard extends StatelessWidget {
     this.onIssuePswdKey,
     this.onLongPress,
     this.onPress,
+    this.noOperation,
   });
 
   @override
@@ -65,7 +67,7 @@ class UserInfoCard extends StatelessWidget {
                 if (userInfo.containsKey("gender")) _buildGenderRow(),
                 if (userInfo["passwordRequired"] != null) _buildPasswordRow(),
                 bottomLine,
-                _buildOperatorRow(),
+                if (noOperation != true) _buildOperatorRow(),
               ],
             ),
           ),

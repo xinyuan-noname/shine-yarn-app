@@ -86,9 +86,9 @@ class ApiAuth {
       final response = await dio.get('/auth/admin');
       return response.data;
     } on DioException catch (e) {
-      return e.message ?? "更改登录需求成功";
+      return e.message ?? "获取管理员列表失败";
     } catch (e) {
-      return "更改登录需求失败";
+      return "获取管理员列表失败";
     }
   }
 }
