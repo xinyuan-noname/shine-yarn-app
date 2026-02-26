@@ -26,7 +26,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   String? _avatarPath;
   String _username = "???";
-  String _gender = "无可奉告";
+  String? _gender;
   String _id = "??????????";
   String _isPaswRequired = "否";
   String _version = "?";
@@ -115,7 +115,14 @@ class _ProfilePageState extends State<ProfilePage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text("性别", style: profileKeyTextStyle),
-              Text(_gender, style: profileValueTextStyle),
+              Text(
+                _gender == "male"
+                    ? "男"
+                    : _gender == "female"
+                    ? "女"
+                    : "无可奉告",
+                style: profileValueTextStyle,
+              ),
             ],
           ),
         ),

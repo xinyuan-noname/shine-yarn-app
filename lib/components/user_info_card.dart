@@ -173,7 +173,7 @@ class UserInfoCard extends StatelessWidget {
               ? "男"
               : userInfo["gender"] == "female"
               ? "女"
-              : "未知",
+              : "无可奉告",
           style: adminItemTextStyle,
         ),
         Transform.rotate(

@@ -33,6 +33,17 @@ class ApiProfiles {
     }
   }
 
+  static Future getProfile(String id) async {
+    try {
+      final response = await dio.get('/profiles/my');
+      return response.data;
+    } on DioException catch (e) {
+      return e.message ?? "获取账户信息失败";
+    } catch (e) {
+      return "获取账户信息失败";
+    }
+  }
+
   static Future getUserInfoByList({required List idList, Map? config}) async {
     try {
       config ??= {
@@ -46,8 +57,10 @@ class ApiProfiles {
         data: {"idList": idList, "config": config},
       );
       return response.data;
-    } catch (err) {
-      return null;
+    } on DioException catch (e) {
+      return e.message ?? "获取账户信息失败";
+    } catch (e) {
+      return "获取账户信息失败";
     }
   }
 
@@ -62,14 +75,13 @@ class ApiProfiles {
       };
       final response = await dio.post(
         '/profiles/search/user',
-        data: {
-          "idList": idList,
-          "config": config
-        },
+        data: {"idList": idList, "config": config},
       );
       return response.data;
-    } catch (err) {
-      return null;
+    } on DioException catch (e) {
+      return e.message ?? "获取账户信息失败";
+    } catch (e) {
+      return "获取账户信息失败";
     }
   }
 }
