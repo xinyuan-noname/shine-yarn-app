@@ -6,6 +6,7 @@ import 'package:shine/routes.dart';
 import 'package:shine/services/profiles.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/worker/worker.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,22 +21,19 @@ class _HomePageState extends State<HomePage> {
   String _id = "??????????";
   @override
   void initState() {
-    Future(() async {
-      _username = await ProfileStorage.getName();
-      _avatarPath = await ProfileStorage.getAvatarPath();
-      _id = await ProfileStorage.getId();
-      setState(() {});
-    });
     super.initState();
+    _update();
   }
 
   Future<void> _fetchData() async {
-    final avatarData = await ApiProfiles.getAvatar(_id);
-    await ProfileStorage.saveAvatar(avatarData);
+    await Worker.scheduleMyProfile();
+    await Worker.scheduleAvatar(_id);
   }
 
   Future<void> _update() async {
+    _username = await ProfileStorage.getName();
     _avatarPath = await ProfileStorage.getAvatarPath();
+    _id = await ProfileStorage.getId();
     setState(() {});
   }
 
@@ -84,7 +82,7 @@ class _HomePageState extends State<HomePage> {
                         fontFamily: "SmileySans",
                         color: Colors.grey,
                         fontWeight: FontWeight.w300,
-                        fontSize: 12
+                        fontSize: 12,
                       ),
                     ),
                   ],
@@ -100,7 +98,7 @@ class _HomePageState extends State<HomePage> {
           color: mainColorPurple90,
           backgroundColor: bgColorLight,
           child: ListView.builder(
-            itemCount: 1, 
+            itemCount: 1,
             itemBuilder: (context, index) {
               return ListTile(title: Text('Item $index'));
             },
@@ -108,7 +106,6 @@ class _HomePageState extends State<HomePage> {
           onRefresh: () async {
             await _fetchData();
             await _update();
-            await Future.delayed(Duration(seconds: 1));
           },
         ),
       ),
