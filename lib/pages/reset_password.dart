@@ -207,7 +207,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       child: RefreshIndicator(
         child: SingleChildScrollView(
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            height: 725,
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
             child: Column(
               children: [
                 Text.rich(
@@ -228,7 +229,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           ),
         ),
         onRefresh: () async {
-          _fetchAdminList();
+          await _fetchAdminList();
         },
       ),
     );
