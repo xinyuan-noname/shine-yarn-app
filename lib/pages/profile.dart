@@ -26,7 +26,7 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   String? _avatarPath;
   String _username = "???";
-  String _gender = "?";
+  String _gender = "无可奉告";
   String _id = "??????????";
   String _isPaswRequired = "否";
   String _version = "?";
@@ -46,6 +46,268 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
+  Widget _buildAvatar() {
+    return Stack(
+      children: [
+        SizedBox(
+          width: 100,
+          height: 100,
+          child: Center(
+            child: _avatarPath != null
+                ? CircleAvatar(
+                    backgroundColor: Colors.transparent,
+                    radius: 50,
+                    backgroundImage: FileImage(File(_avatarPath!)),
+                  )
+                : defaultAvatar50,
+          ),
+        ),
+        Positioned(
+          right: 0,
+          bottom: 0,
+          child: GestureDetector(
+            onTap: _onUpload,
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.blue,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.camera_alt,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildName() {
+    return Ink(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () {},
+        child: Container(
+          padding: profilePadding,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("姓名", style: profileKeyTextStyle),
+              Text(_username, style: profileValueTextStyle),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGender() {
+    return Ink(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () {},
+        child: Container(
+          padding: profilePadding,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("性别", style: profileKeyTextStyle),
+              Text(_gender, style: profileValueTextStyle),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildId() {
+    return Ink(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () {},
+        child: Container(
+          padding: profilePadding,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("学号", style: profileKeyTextStyle),
+              Text(_id, style: profileValueTextStyle),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPassword() {
+    return Ink(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () async {
+          await Future.delayed(Duration(milliseconds: 225));
+          if (context.mounted) {
+            globalNavigatorKey.currentState?.pushNamed("/password");
+          }
+        },
+        child: Container(
+          padding: profilePadding,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              Text("更改密码", style: profileKeyTextStyle),
+              Icon(
+                Icons.chevron_right,
+                size: profileFontSize,
+                color: Colors.grey,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPasswordRequired() {
+    return Ink(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () async {
+          showModalBottomSheet(
+            context: context,
+            builder: (BuildContext context) {
+              return SafeArea(
+                child: Wrap(
+                  children: [
+                    ListTile(
+                      leading: Icon(
+                        Icons.check_rounded,
+                        color: Colors.greenAccent,
+                      ),
+                      title: Text('强制密码登录'),
+                      onTap: () async {
+                        await ApiAuth.changePasswordRequired({
+                          "passwordRequired": 1,
+                        });
+                        await ProfileStorage.savePasswordRequired(true);
+                        Navigator.pop(context);
+                        globalNavigatorKey.currentState
+                            ?.pushNamedAndRemoveUntil("/login", clearOldRouter);
+                        setState(() {});
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.error, color: Colors.redAccent),
+                      title: Text('可无密码登录'),
+                      onTap: () async {
+                        ApiAuth.changePasswordRequired({"passwordRequired": 0});
+                        await ProfileStorage.savePasswordRequired(false);
+                        Navigator.pop(context);
+                        setState(() {});
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+        child: Container(
+          padding: profilePadding,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("强制密码登录", style: profileKeyTextStyle),
+              Row(
+                children: [
+                  Text(_isPaswRequired, style: profileValueTextStyle),
+                  Icon(
+                    Icons.chevron_right,
+                    size: profileFontSize,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVersion() {
+    return Ink(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () {
+          _tapVersionCount++;
+          if (_tapVersionCount >= 5) {
+            gotoAdminDialog(context);
+            _tapVersionCount = 0;
+          }
+        },
+        child: Container(
+          padding: profilePadding,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("版本号", style: profileKeyTextStyle),
+              Text(_version, style: profileValueTextStyle),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFrame() {
+    return Ink(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () {},
+        child: Container(
+          padding: profilePadding,
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("应用框架", style: profileKeyTextStyle),
+              Text("Flutter&Express.js", style: profileValueTextStyle),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeveloper() {
+    return Ink(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () {},
+        child: Container(
+          padding: profilePadding,
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("开发设计", style: profileKeyTextStyle),
+              Text("Shine Yarn", style: profileValueTextStyle),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildListTitle(String txt) {
+    return Container(
+      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.only(left: 20, bottom: 5),
+      child: Text(txt, style: TextStyle(color: Colors.grey, fontSize: 16)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,278 +318,37 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       body: SafeArea(
         top: false,
-        child: Container(
-          alignment: Alignment.center,
-          child: Column(
-            children: [
-              const Padding(padding: EdgeInsetsGeometry.only(top: 5)),
-              Stack(
+        child: RefreshIndicator(
+          child: SingleChildScrollView(
+            child: Container(
+              padding: EdgeInsets.only(top: 20),
+              alignment: Alignment.center,
+              child: Column(
                 children: [
-                  SizedBox(
-                    width: 100,
-                    height: 100,
-                    child: Center(
-                      child: _avatarPath != null
-                          ? CircleAvatar(
-                              backgroundColor: Colors.transparent,
-                              radius: 50,
-                              backgroundImage: FileImage(File(_avatarPath!)),
-                            )
-                          : defaultAvatar50,
-                    ),
-                  ),
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: GestureDetector(
-                      onTap: _onUpload,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.camera_alt,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ),
+                  _buildAvatar(),
+                  SizedBox(height: 20),
+                  _buildListTitle("用户"),
+                  _buildName(),
+                  bottomLineSmall,
+                  _buildGender(),
+                  bottomLineSmall,
+                  _buildId(),
+                  bottomLineSmall,
+                  _buildPassword(),
+                  bottomLineSmall,
+                  _buildPasswordRequired(),
+                  _buildListTitle("应用"),
+                  _buildVersion(),
+                  bottomLineSmall,
+                  _buildFrame(),
+                  bottomLineSmall,
+                  _buildDeveloper(),
+                  SizedBox(height: 35),
                 ],
               ),
-              SizedBox(height: 20),
-              Container(
-                alignment: Alignment.centerLeft,
-                padding: const EdgeInsets.only(left: 20, bottom: 5),
-                child: const Text(
-                  "用户",
-                  style: TextStyle(color: Colors.grey, fontSize: 16),
-                ),
-              ),
-              Ink(
-                color: Colors.white,
-                child: InkWell(
-                  onTap: () {},
-                  child: Container(
-                    padding: profilePadding,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("姓名", style: profileKeyTextStyle),
-                        Text(_username, style: profileValueTextStyle),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              bottomLineSmall,
-              Ink(
-                color: Colors.white,
-                child: InkWell(
-                  onTap: () {},
-                  child: Container(
-                    padding: profilePadding,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("性别", style: profileKeyTextStyle),
-                        Text(_gender, style: profileValueTextStyle),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              bottomLineSmall,
-              Ink(
-                color: Colors.white,
-                child: InkWell(
-                  onTap: () {},
-                  child: Container(
-                    padding: profilePadding,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("学号", style: profileKeyTextStyle),
-                        Text(_id, style: profileValueTextStyle),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              bottomLineSmall,
-              Ink(
-                color: Colors.white,
-                child: InkWell(
-                  onTap: () async {
-                    await Future.delayed(Duration(milliseconds: 225));
-                    if (context.mounted) {
-                      globalNavigatorKey.currentState?.pushNamed("/password");
-                    }
-                  },
-                  child: Container(
-                    padding: profilePadding,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        Text("更改密码", style: profileKeyTextStyle),
-                        Icon(
-                          Icons.chevron_right,
-                          size: profileFontSize,
-                          color: Colors.grey,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              bottomLineSmall,
-              Ink(
-                color: Colors.white,
-                child: InkWell(
-                  onTap: () async {
-                    showModalBottomSheet(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return SafeArea(
-                          child: Wrap(
-                            children: [
-                              ListTile(
-                                leading: Icon(
-                                  Icons.check_rounded,
-                                  color: Colors.greenAccent,
-                                ),
-                                title: Text('强制密码登录'),
-                                onTap: () async {
-                                  await ApiAuth.changePasswordRequired({
-                                    "passwordRequired": 1,
-                                  });
-                                  await ProfileStorage.savePasswordRequired(
-                                    true,
-                                  );
-                                  Navigator.pop(context);
-                                  globalNavigatorKey.currentState
-                                      ?.pushNamedAndRemoveUntil(
-                                        "/login",
-                                        clearOldRouter,
-                                      );
-                                  setState(() {});
-                                },
-                              ),
-                              ListTile(
-                                leading: Icon(
-                                  Icons.error,
-                                  color: Colors.redAccent,
-                                ),
-                                title: Text('可无密码登录'),
-                                onTap: () async {
-                                  ApiAuth.changePasswordRequired({
-                                    "passwordRequired": 0,
-                                  });
-                                  await ProfileStorage.savePasswordRequired(
-                                    false,
-                                  );
-                                  Navigator.pop(context);
-                                  setState(() {});
-                                },
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  child: Container(
-                    padding: profilePadding,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("强制密码登录", style: profileKeyTextStyle),
-                        Row(
-                          children: [
-                            Text(_isPaswRequired, style: profileValueTextStyle),
-                            Icon(
-                              Icons.chevron_right,
-                              size: profileFontSize,
-                              color: Colors.grey,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                alignment: Alignment.centerLeft,
-                padding: const EdgeInsets.only(left: 20, top: 5, bottom: 5),
-                child: const Text(
-                  "应用",
-                  style: TextStyle(color: Colors.grey, fontSize: 16),
-                ),
-              ),
-              Ink(
-                color: Colors.white,
-                child: InkWell(
-                  onTap: () {
-                    _tapVersionCount++;
-                    if (_tapVersionCount >= 5) {
-                      gotoAdminDialog(context);
-                      _tapVersionCount = 0;
-                    }
-                  },
-                  child: Container(
-                    padding: profilePadding,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("版本号", style: profileKeyTextStyle),
-                        Text(_version, style: profileValueTextStyle),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              bottomLineSmall,
-              Ink(
-                color: Colors.white,
-                child: InkWell(
-                  onTap: () {},
-                  child: Container(
-                    padding: profilePadding,
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("应用框架", style: profileKeyTextStyle),
-                        Text(
-                          "Flutter&Express.js",
-                          style: profileValueTextStyle,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              bottomLineSmall,
-              Ink(
-                color: Colors.white,
-                child: InkWell(
-                  onTap: () {},
-                  child: Container(
-                    padding: profilePadding,
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("开发设计", style: profileKeyTextStyle),
-                        Text("Shine Yarn", style: profileValueTextStyle),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
+          onRefresh: () async {},
         ),
       ),
       bottomNavigationBar: BottomAppBar(
