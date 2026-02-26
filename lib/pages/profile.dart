@@ -425,6 +425,5 @@ class _ProfilePageState extends State<ProfilePage> {
   void dispose() {
     super.dispose();
     _message.dispose();
-    _message.dispose();
   }
 }

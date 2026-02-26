@@ -64,6 +64,9 @@ class _LoginPageState extends State<LoginPage> {
         isLast: true,
       ),
     ].generateAndAssignController(_controllers);
+    Future(() {
+      _initValue();
+    });
   }
 
   @override
@@ -114,6 +117,16 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(children: [..._inputs]),
               ),
               const SizedBox(height: 20),
+              GestureDetector(
+                onTap: () async {
+                  final id = _controllers["id"]?.text;
+                  await globalNavigatorKey.currentState?.pushNamed(
+                    "/reset_password",
+                    arguments: id,
+                  );
+                },
+                child: Text("忘记密码?", style: TextStyle(color: Colors.blue)),
+              ),
             ],
           ),
         ),
@@ -138,6 +151,7 @@ class _LoginPageState extends State<LoginPage> {
               }
               if (context.mounted) {
                 Navigator.pop(context);
+                
                 globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
                   '/home',
                   clearOldRouter,
@@ -177,6 +191,13 @@ class _LoginPageState extends State<LoginPage> {
       successMessageDuration: Duration(milliseconds: 300),
       failMessageDuration: Duration(milliseconds: 800),
     );
+  }
+
+  Future _initValue() async {
+    final idController = _controllers["id"];
+    idController?.text = await ProfileStorage.getId();
+    final usernameController = _controllers["username"];
+    usernameController?.text = await ProfileStorage.getName();
   }
 
   @override

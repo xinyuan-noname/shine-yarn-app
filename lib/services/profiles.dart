@@ -32,4 +32,44 @@ class ApiProfiles {
       return null;
     }
   }
+
+  static Future getUserInfoByList({required List idList, Map? config}) async {
+    try {
+      config ??= {
+        "gender": true,
+        "userType": true,
+        "username": true,
+        "passwordRequired": true,
+      };
+      final response = await dio.post(
+        '/profiles/search/user',
+        data: {"idList": idList, "config": config},
+      );
+      return response.data;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  static Future getUserInfo({String? idList, Map? config}) async {
+    try {
+      idList ??= "all";
+      config ??= {
+        "gender": true,
+        "userType": true,
+        "username": true,
+        "passwordRequired": true,
+      };
+      final response = await dio.post(
+        '/profiles/search/user',
+        data: {
+          "idList": idList,
+          "config": config
+        },
+      );
+      return response.data;
+    } catch (err) {
+      return null;
+    }
+  }
 }

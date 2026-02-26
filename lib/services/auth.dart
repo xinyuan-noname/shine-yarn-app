@@ -79,4 +79,13 @@ class ApiAuth {
       return "更改登录需求失败";
     }
   }
+
+  static Future getAdminInfo() async {
+    try {
+      final response = await dio.get('/auth/admin');
+      return response.data;
+    } catch (err) {
+      return null;
+    }
+  }
 }

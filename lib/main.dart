@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shine/components/first_view.dart';
 import 'package:shine/pages/splash.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
@@ -72,7 +71,7 @@ class _MyAppState extends State<MyApp> {
         ),
         
       ),
-      home: SplashPage(slot: firstViewLight),
+      home: SplashPage(),
     );
   }
 }

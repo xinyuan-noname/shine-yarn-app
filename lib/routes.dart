@@ -5,6 +5,7 @@ import 'package:shine/pages/login.dart';
 import 'package:shine/pages/password.dart';
 import 'package:shine/pages/profile.dart';
 import 'package:shine/pages/register.dart';
+import 'package:shine/pages/reset_password.dart';
 
 final Map<String, WidgetBuilder> appRouters = {
   "/login": (_) => LoginPage(),
@@ -13,6 +14,7 @@ final Map<String, WidgetBuilder> appRouters = {
   "/profile": (_) => ProfilePage(),
   '/admin': (_) => AdminPage(),
   '/password': (_) => PasswordPage(),
+  "/reset_password": (_) => ResetPasswordPage(),
 };
 final globalNavigatorKey = GlobalKey<NavigatorState>();
 // ignore: prefer_function_declarations_over_variables
