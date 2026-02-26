@@ -15,12 +15,19 @@ class ResetPasswordPage extends StatefulWidget {
 
 class _ResetPasswordPageState extends State<ResetPasswordPage> {
   final List _userInfoList = [];
+  String _errorMessage = "暂无管理员数据";
   @override
   void initState() {
     super.initState();
     Future(() async {
-      final adminList = await ApiAuth.getAdminInfo();
-      _userInfoList.addAll(adminList);
+      final result = await ApiAuth.getAdminInfo();
+      if (result == null) return;
+      if (result is String) {
+        _errorMessage = result;
+      }
+      if (result is List) {
+        _userInfoList.addAll(result);
+      }
       setState(() {});
     });
   }
@@ -52,7 +59,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           return Container(
             alignment: Alignment.center,
             child: Text(
-              "暂无管理员数据",
+              _errorMessage,
               style: TextStyle(fontSize: 20, color: Colors.grey),
             ),
           );

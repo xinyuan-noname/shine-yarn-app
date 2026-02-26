@@ -36,11 +36,19 @@ class ApiService {
         err = DioException(
           requestOptions: err.requestOptions,
           message: '网络连接出错',
-          type: DioExceptionType.connectionTimeout,
+          type: DioExceptionType.connectionError,
         );
       } else if (code != null && code >= 500) {
+        if (code == 530) {
+          err = DioException(
+            requestOptions: err.requestOptions,
+            message: '服务器网络波动',
+            type: DioExceptionType.connectionError,
+          );
+        }
         Worker.scheduleUrlNow();
       }
+      print(code);
       handler.next(err);
     },
   );
@@ -109,9 +117,9 @@ class ApiService {
   }
 
   static waitOk() async {
-    await Future(() {
+    await Future(() async {
       while (!ApiService.isOk) {
-        Future.delayed(Duration(milliseconds: 50));
+        await Future.delayed(Duration(milliseconds: 100));
       }
     });
   }

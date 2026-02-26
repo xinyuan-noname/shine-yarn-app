@@ -268,7 +268,6 @@ class _AdminPageState extends State<AdminPage> {
                   await showModalBottomSheet(
                     context: context,
                     builder: (BuildContext context) {
-                      print(isAdmin);
                       return SafeArea(
                         child: Wrap(
                           children: [

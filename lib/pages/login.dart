@@ -3,7 +3,6 @@ import 'package:shine/components/dialog.dart';
 import 'package:shine/components/input.dart';
 import 'package:shine/extensions/text_editing.dart';
 import 'package:shine/routes.dart';
-import 'package:shine/services/api.dart';
 import 'package:shine/services/auth.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';

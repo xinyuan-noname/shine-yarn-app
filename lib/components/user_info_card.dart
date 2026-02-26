@@ -62,8 +62,8 @@ class UserInfoCard extends StatelessWidget {
               children: [
                 _buildUsernameRow(),
                 _buildIdRow(),
-                _buildGenderRow(),
-                _buildPasswordRow(),
+                if (userInfo.containsKey("gender")) _buildGenderRow(),
+                if (userInfo["passwordRequired"] != null) _buildPasswordRow(),
                 bottomLine,
                 _buildOperatorRow(),
               ],

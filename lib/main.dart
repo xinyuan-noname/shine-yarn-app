@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:shine/pages/splash.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
-import 'package:shine/services/profiles.dart';
 import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/worker/worker.dart';
@@ -37,8 +36,6 @@ class _MyAppState extends State<MyApp> {
     await ApiService.waitOk();
     final tokenFuture = TokenStorage.getAccessToken();
 
-    await Future.delayed(const Duration(seconds: 2));
-
     String? accessToken;
     try {
       accessToken = await tokenFuture;
@@ -48,7 +45,6 @@ class _MyAppState extends State<MyApp> {
 
     if (accessToken != null) {
       ApiService.setAccessToken(accessToken);
-      // 开启refresh定时任务
       Worker.scheduleRefreshNow();
       globalNavigatorKey.currentState?.pushReplacementNamed("/home");
     } else {
