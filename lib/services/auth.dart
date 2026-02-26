@@ -91,4 +91,15 @@ class ApiAuth {
       return "获取管理员列表失败";
     }
   }
+
+  static Future<String?> resetPassword(input) async {
+    try {
+      await dio.patch("/auth/password/reset", data: input);
+      return null;
+    } on DioException catch (e) {
+      return e.message ?? "重置密码失败";
+    } catch (e) {
+      return "重置密码失败";
+    }
+  }
 }

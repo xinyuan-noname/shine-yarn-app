@@ -185,10 +185,13 @@ class UserInfoCard extends StatelessWidget {
                   size: adminFontSize,
                 )
               : userInfo["gender"] == "female"
-              ? Icon(
-                  Icons.female_rounded,
-                  color: bgColorLight80,
-                  size: adminFontSize,
+              ? Transform.translate(
+                  offset: const Offset(-3, 0),
+                  child: Icon(
+                    Icons.female_rounded,
+                    color: bgColorLight80,
+                    size: adminFontSize,
+                  ),
                 )
               : Transform.translate(
                   offset: const Offset(-4, 0),
