@@ -105,10 +105,7 @@ void gotoAdminDialog(BuildContext context) {
     content: '确定要进入吗？',
     onYes: () {
       Navigator.pop(context);
-      globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
-        '/admin',
-        clearOldRouter,
-      );
+      globalNavigatorKey.currentState?.pushNamed('/admin');
     },
   );
 }
