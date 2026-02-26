@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:shine/services/api.dart';
 import 'package:shine/services/auth.dart';
@@ -50,7 +51,7 @@ class Worker {
 
   static scheduleAvatar(String id) async {
     final avatarData = await ApiProfiles.getAvatar(id);
-    await ProfileStorage.saveAvatar(avatarData);
+    if (avatarData is Uint8List) await ProfileStorage.saveAvatar(avatarData);
   }
 
   static scheduleMyProfile() async {
@@ -64,7 +65,7 @@ class Worker {
         await ProfileStorage.saveId(id);
       }
       if (gender is String) {
-        await ProfileStorage.saveId(gender);
+        await ProfileStorage.saveGender(gender);
       }
       if (gender == null) {
         await ProfileStorage.delGender();
