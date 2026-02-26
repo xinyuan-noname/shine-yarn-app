@@ -33,7 +33,7 @@ class ApiProfiles {
     }
   }
 
-  static Future getProfile(String id) async {
+  static Future getMyProfile() async {
     try {
       final response = await dio.get('/profiles/my');
       return response.data;

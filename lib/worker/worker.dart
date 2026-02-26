@@ -52,4 +52,29 @@ class Worker {
     final avatarData = await ApiProfiles.getAvatar(id);
     await ProfileStorage.saveAvatar(avatarData);
   }
+
+  static scheduleMyProfile() async {
+    final result = await ApiProfiles.getMyProfile();
+    if (result is Map) {
+      final String? id = result["id"];
+      final String? gender = result["gender"];
+      final String? username = result["username"];
+      final bool? passwordRequired = result["passwordRequired"];
+      if (id is String) {
+        await ProfileStorage.saveId(id);
+      }
+      if (gender is String) {
+        await ProfileStorage.saveId(gender);
+      }
+      if (gender == null) {
+        await ProfileStorage.delGender();
+      }
+      if (username is String) {
+        await ProfileStorage.saveName(username);
+      }
+      if (passwordRequired is bool) {
+        await ProfileStorage.savePasswordRequired(passwordRequired);
+      }
+    }
+  }
 }

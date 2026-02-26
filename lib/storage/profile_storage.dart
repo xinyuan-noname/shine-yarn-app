@@ -61,9 +61,9 @@ class ProfileStorage {
     await prefs.setBool(_passwordRequiredKey, passwordRequired);
   }
 
-  static Future<String> getPasswordRequired() async {
+  static Future<bool> getPasswordRequired() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_passwordRequiredKey) ?? false ? "是" : "否";
+    return prefs.getBool(_passwordRequiredKey) ?? false;
   }
 
   static Future delPasswordRequired() async {

@@ -15,6 +15,7 @@ import 'package:shine/theme.dart';
 import 'package:shine/utils/device_info.dart';
 import 'package:shine/utils/image.dart';
 import 'package:shine/utils/server.dart';
+import 'package:shine/worker/worker.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -28,7 +29,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String _username = "???";
   String? _gender;
   String _id = "??????????";
-  String _isPaswRequired = "否";
+  bool _isPaswRequired = false;
   String _version = "?";
   int _tapVersionCount = 0;
   final _message = ValueNotifier("");
@@ -36,13 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     Future(() async {
-      _avatarPath = await ProfileStorage.getAvatarPath();
-      _username = await ProfileStorage.getName();
-      _gender = await ProfileStorage.getGender();
-      _id = await ProfileStorage.getId();
-      _isPaswRequired = await ProfileStorage.getPasswordRequired();
-      _version = await getVersionInfo();
-      setState(() {});
+      await _refreshMyProfile();
     });
   }
 
@@ -229,7 +224,10 @@ class _ProfilePageState extends State<ProfilePage> {
               Text("强制密码登录", style: profileKeyTextStyle),
               Row(
                 children: [
-                  Text(_isPaswRequired, style: profileValueTextStyle),
+                  Text(
+                    _isPaswRequired ? "是" : "否",
+                    style: profileValueTextStyle,
+                  ),
                   Icon(
                     Icons.chevron_right,
                     size: profileFontSize,
@@ -355,7 +353,10 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
           ),
-          onRefresh: () async {},
+          onRefresh: () async {
+            await _fetchMyProfile();
+            await _refreshMyProfile();
+          },
         ),
       ),
       bottomNavigationBar: BottomAppBar(
@@ -397,6 +398,21 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       ),
     );
+  }
+
+  Future _refreshMyProfile() async {
+    _avatarPath = await ProfileStorage.getAvatarPath();
+    _username = await ProfileStorage.getName();
+    _gender = await ProfileStorage.getGender();
+    _id = await ProfileStorage.getId();
+    _isPaswRequired = await ProfileStorage.getPasswordRequired();
+    _version = await getVersionInfo();
+    setState(() {});
+  }
+
+  Future _fetchMyProfile() async {
+    await Worker.scheduleMyProfile();
+    await Worker.scheduleAvatar(_id);
   }
 
   Future _toLogout() async {

@@ -7,6 +7,7 @@ import 'package:shine/services/auth.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/server.dart';
+import 'package:shine/worker/worker.dart';
 
 const labelStyle = TextStyle(
   fontFamily: "SmileySans",
@@ -139,17 +140,18 @@ class _LoginPageState extends State<LoginPage> {
             showMessageDialog(context, _message);
             final success = await _toLogin();
             if (success) {
-              if (_controllers.asTextMap["username"] != null) {
-                await ProfileStorage.saveName(
-                  _controllers.asTextMap["username"]!,
-                );
+              final username = _controllers.asTextMap["username"];
+              final id = _controllers.asTextMap["id"];
+              if (username != null) {
+                await ProfileStorage.saveName(username);
               }
-              if (_controllers.asTextMap["id"] != null) {
-                await ProfileStorage.saveId(_controllers.asTextMap["id"]!);
+              if (id != null) {
+                await ProfileStorage.saveId(id);
+                Worker.scheduleAvatar(id);
+                Worker.scheduleMyProfile();
               }
               if (context.mounted) {
                 Navigator.pop(context);
-                
                 globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
                   '/home',
                   clearOldRouter,
