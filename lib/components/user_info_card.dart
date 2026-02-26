@@ -113,7 +113,7 @@ class UserInfoCard extends StatelessWidget {
                   size: adminFontSize * 1.1,
                 ),
               ),
-            SizedBox(height: adminFontSize * 1.1,width: 15),
+            SizedBox(height: adminFontSize * 1.1, width: 15),
             if (onDelete != null)
               GestureDetector(
                 onTap: onDelete,
@@ -144,7 +144,7 @@ class UserInfoCard extends StatelessWidget {
                 size: adminFontSize * 1.2,
               ),
         const SizedBox(width: 5),
-        Text(userInfo['username'], style: adminUsernameTextStyle),
+        Text(userInfo['username'] ?? "??", style: adminUsernameTextStyle),
       ],
     );
   }

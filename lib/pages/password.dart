@@ -92,7 +92,6 @@ class _PasswordPageState extends State<PasswordPage> {
           ),
           onPressed: () async {
             if (!_formKey.currentState!.validate()) return;
-            if (!ApiService.isOk) return;
             showMessageDialog(context, _message);
             final result = await _toChangePassword();
             if (context.mounted) {

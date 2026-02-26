@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:shine/pages/splash.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
+import 'package:shine/services/profiles.dart';
 import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/worker/worker.dart';
@@ -33,6 +34,7 @@ class _MyAppState extends State<MyApp> {
 
   _prepare() async {
     ApiService.init();
+    await ApiService.waitOk();
     final tokenFuture = TokenStorage.getAccessToken();
 
     await Future.delayed(const Duration(seconds: 2));
@@ -69,7 +71,6 @@ class _MyAppState extends State<MyApp> {
             borderRadius: BorderRadius.circular(15),
           ),
         ),
-        
       ),
       home: SplashPage(),
     );

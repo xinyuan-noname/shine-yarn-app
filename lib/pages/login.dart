@@ -136,7 +136,6 @@ class _LoginPageState extends State<LoginPage> {
         child: ElevatedButton(
           onPressed: () async {
             if (!_formKey.currentState!.validate()) return;
-            if (!ApiService.isOk) return;
             _message.value = "正在发送登录请求";
             showMessageDialog(context, _message);
             final success = await _toLogin();

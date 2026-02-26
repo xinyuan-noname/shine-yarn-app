@@ -29,7 +29,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("更改密码", style: titleTextStyle),
+        title: const Text("重置密码", style: titleTextStyle),
         centerTitle: true,
         bottom: bottomLine,
       ),

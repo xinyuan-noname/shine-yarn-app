@@ -101,11 +101,19 @@ class ApiService {
     uploadDio.interceptors.add(ApiService._errorInterceptor);
   }
 
-  static init() async {
+  static init() {
     ApiService.useJson();
     ApiService.useError();
     ApiService.setDeviceInfo();
-    await Worker.scheduleUrlNow();
+    Worker.scheduleUrlNow();
+  }
+
+  static waitOk() async {
+    await Future(() {
+      while (!ApiService.isOk) {
+        Future.delayed(Duration(milliseconds: 50));
+      }
+    });
   }
 
   static DioMediaType? parseContentType(String? mimeType) {

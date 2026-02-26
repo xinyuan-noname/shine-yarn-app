@@ -340,7 +340,6 @@ class _ProfilePageState extends State<ProfilePage> {
             shadowColor: Colors.transparent,
           ),
           onPressed: () async {
-            if (!ApiService.isOk) return;
             _message.value = "正在发送登出请求";
             showMessageDialog(context, _message);
             await _toLogout();
