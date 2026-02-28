@@ -20,10 +20,12 @@ class UserView extends StatefulWidget {
 class _UserViewState extends State<UserView> {
   final ValueNotifier<String> _message = ValueNotifier("");
   List _userInfoList = [];
+  String _myUserType = "guest";
   @override
   void initState() {
     super.initState();
     _getUserInfo();
+    _updateUserType();
   }
 
   @override
@@ -56,6 +58,11 @@ class _UserViewState extends State<UserView> {
     setState(() {});
   }
 
+  Future<void> _updateUserType() async {
+    _myUserType = await TokenStorage.getTokenUserType();
+    setState(() {});
+  }
+
   Widget _buildViewList() {
     return ListView.builder(
       itemCount: max(_userInfoList.length, 1),
@@ -74,7 +81,7 @@ class _UserViewState extends State<UserView> {
         final id = userInfo["id"];
         final userInfoCard = UserInfoCard(
           userInfo: userInfo,
-          onIssuePswdKey: TokenStorage.getTokenUserType() == "admin"
+          onIssuePswdKey: _myUserType == "admin"
               ? () {
                   _issuePasswordKey(id);
                 }
