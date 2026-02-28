@@ -147,8 +147,7 @@ class _LoginPageState extends State<LoginPage> {
               }
               if (id != null) {
                 await ProfileStorage.saveId(id);
-                Worker.scheduleAvatar(id);
-                Worker.scheduleMyProfile();
+                Worker.scheduleMyData();
               }
               if (context.mounted) {
                 Navigator.pop(context);

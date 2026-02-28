@@ -78,4 +78,9 @@ class Worker {
       }
     }
   }
+
+  static scheduleMyData() async {
+    await Worker.scheduleMyAvatar();
+    await Worker.scheduleMyProfile();
+  }
 }

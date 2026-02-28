@@ -25,8 +25,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _fetchData() async {
-    await Worker.scheduleMyProfile();
-    await Worker.scheduleMyAvatar();
+    await Worker.scheduleMyData();
   }
 
   Future<void> _update() async {
