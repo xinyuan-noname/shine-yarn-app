@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/routes.dart';
-import 'package:shine/services/profiles.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/worker/worker.dart';
@@ -27,7 +26,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _fetchData() async {
     await Worker.scheduleMyProfile();
-    await Worker.scheduleAvatar(_id);
+    await Worker.scheduleMyAvatar();
   }
 
   Future<void> _update() async {

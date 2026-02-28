@@ -49,8 +49,8 @@ class Worker {
     Worker.scheduleUrl(Duration(milliseconds: 50));
   }
 
-  static scheduleAvatar(String id) async {
-    final avatarData = await ApiProfiles.getAvatar(id);
+  static scheduleMyAvatar() async {
+    final avatarData = await ApiProfiles.getMyAvatar();
     if (avatarData is Uint8List) await ProfileStorage.saveAvatar(avatarData);
   }
 

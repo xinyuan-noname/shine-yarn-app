@@ -33,6 +33,21 @@ class ApiProfiles {
     }
   }
 
+  static Future getMyAvatar() async {
+    try {
+      final response = await dio.get(
+        '/profiles/my/avatar',
+        options: Options(
+          headers: {'Accept': 'image/*'},
+          responseType: ResponseType.bytes,
+        ),
+      );
+      return response.data;
+    } catch (e) {
+      return null;
+    }
+  }
+
   static Future getMyProfile() async {
     try {
       final response = await dio.get('/profiles/my');
