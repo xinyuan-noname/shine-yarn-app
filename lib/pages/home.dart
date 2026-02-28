@@ -5,6 +5,7 @@ import 'package:shine/components/line.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/views/user.dart';
 import 'package:shine/worker/worker.dart';
 
 class HomePage extends StatefulWidget {
@@ -18,6 +19,28 @@ class _HomePageState extends State<HomePage> {
   String? _avatarPath;
   String _username = "???";
   String _id = "??????????";
+  int _currentIndex = 0;
+  late final List<Widget> _viewList = [
+    RefreshIndicator(
+      color: mainColorPurple90,
+      backgroundColor: bgColorLight,
+      child: ListView.builder(
+        itemCount: 1,
+        itemBuilder: (context, index) {
+          return ListTile(title: Text('Item $index'));
+        },
+      ),
+      onRefresh: () async {
+        await _fetchData();
+        await _update();
+      },
+    ),
+    UserView()
+  ];
+  final _bottomItemOptions = [
+    (Icons.task_outlined, Icons.task, "任务"),
+    (Icons.group_outlined, Icons.group, "用户"),
+  ];
   @override
   void initState() {
     super.initState();
@@ -38,75 +61,84 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GestureDetector(
-                  onTap: () async {
-                    if (context.mounted) {
-                      await globalNavigatorKey.currentState?.pushNamed(
-                        '/profile',
-                      );
-                      await _update();
-                    }
-                  },
-                  child: _avatarPath != null
-                      ? CircleAvatar(
-                          backgroundColor: Colors.transparent,
-                          radius: 25,
-                          backgroundImage: FileImage(File(_avatarPath!)),
-                        )
-                      : defaultAvatar25,
-                ),
-                SizedBox(width: 5),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _username,
-                      style: TextStyle(
-                        letterSpacing: 1.0,
-                        fontFamily: "SmileySans",
-                        fontWeight: FontWeight.w300,
-                      ),
+      appBar: _buildAppBar(),
+      body: SafeArea(child: _viewList[_currentIndex]),
+      bottomNavigationBar: _buildBottombar(),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GestureDetector(
+                onTap: () async {
+                  if (context.mounted) {
+                    await globalNavigatorKey.currentState?.pushNamed(
+                      '/profile',
+                    );
+                    await _update();
+                  }
+                },
+                child: _avatarPath != null
+                    ? CircleAvatar(
+                        backgroundColor: Colors.transparent,
+                        radius: 25,
+                        backgroundImage: FileImage(File(_avatarPath!)),
+                      )
+                    : defaultAvatar25,
+              ),
+              SizedBox(width: 5),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _username,
+                    style: TextStyle(
+                      letterSpacing: 1.0,
+                      fontFamily: "SmileySans",
+                      fontWeight: FontWeight.w300,
                     ),
-                    Text(
-                      _id,
-                      style: TextStyle(
-                        fontFamily: "SmileySans",
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w300,
-                        fontSize: 12,
-                      ),
+                  ),
+                  Text(
+                    _id,
+                    style: TextStyle(
+                      fontFamily: "SmileySans",
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w300,
+                      fontSize: 12,
                     ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-        bottom: bottomLine,
-      ),
-      body: SafeArea(
-        child: RefreshIndicator(
-          color: mainColorPurple90,
-          backgroundColor: bgColorLight,
-          child: ListView.builder(
-            itemCount: 1,
-            itemBuilder: (context, index) {
-              return ListTile(title: Text('Item $index'));
-            },
+                  ),
+                ],
+              ),
+            ],
           ),
-          onRefresh: () async {
-            await _fetchData();
-            await _update();
-          },
-        ),
+        ],
       ),
+      bottom: bottomLine,
+    );
+  }
+
+  Widget _buildBottombar() {
+    return BottomNavigationBar(
+      currentIndex: _currentIndex,
+      items: _bottomItemOptions
+          .map(
+            (record) => BottomNavigationBarItem(
+              icon: Icon(record.$1),
+              activeIcon: Icon(record.$2),
+              label: record.$3,
+            ),
+          )
+          .toList(),
+      onTap: (value) {
+        _currentIndex = value;
+        setState(() {});
+      },
     );
   }
 }
