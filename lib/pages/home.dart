@@ -4,6 +4,7 @@ import 'package:shine/components/avatar.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/storage/profile_storage.dart';
+import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/views/user.dart';
 import 'package:shine/worker/worker.dart';
@@ -21,31 +22,8 @@ class _HomePageState extends State<HomePage> {
   String _id = "??????????";
   int _currentIndex = 0;
   List _userInfoList = [];
+  String _userType = "guest";
   final ValueNotifier<String> _message = ValueNotifier("");
-  late final List<Widget> _viewList = [
-    RefreshIndicator(
-      color: mainColorPurple90,
-      backgroundColor: bgColorLight,
-      child: ListView.builder(
-        itemCount: 1,
-        itemBuilder: (context, index) {
-          return ListTile(title: Text('Item $index'));
-        },
-      ),
-      onRefresh: () async {
-        await _fetchData();
-        await _update();
-      },
-    ),
-    UserView(
-      userInfoList: _userInfoList,
-      message: _message,
-      onRefresh: () async {
-        await _getUserInfo();
-        setState(() {});
-      },
-    ),
-  ];
   final _bottomItemOptions = [
     (Icons.task_outlined, Icons.task, "任务"),
     (Icons.group_outlined, Icons.group, "用户"),
@@ -55,9 +33,10 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _update();
+    _updateUserInfo();
   }
 
-  Future<void> _getUserInfo() async {
+  Future<void> _updateUserInfo() async {
     await Worker.scheduleAllUser();
     final result = await ProfileStorage.getUserList();
     if (result != null) {
@@ -74,14 +53,39 @@ class _HomePageState extends State<HomePage> {
     _username = await ProfileStorage.getName();
     _avatarPath = await ProfileStorage.getAvatarPath();
     _id = await ProfileStorage.getId();
+    _userType = await TokenStorage.getTokenUserType();
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> viewList = [
+      RefreshIndicator(
+        color: mainColorPurple90,
+        backgroundColor: bgColorLight,
+        child: ListView.builder(
+          itemCount: 1,
+          itemBuilder: (context, index) {
+            return ListTile(title: Text('Item $index'));
+          },
+        ),
+        onRefresh: () async {
+          await _fetchData();
+          await _update();
+        },
+      ),
+      UserView(
+        userType: _userType,
+        userInfoList: _userInfoList,
+        message: _message,
+        onRefresh: () async {
+          await _updateUserInfo();
+        },
+      ),
+    ];
     return Scaffold(
       appBar: _buildAppBar(),
-      body: SafeArea(child: _viewList[_currentIndex]),
+      body: SafeArea(child: viewList[_currentIndex]),
       bottomNavigationBar: _buildBottombar(),
     );
   }

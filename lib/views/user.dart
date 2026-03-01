@@ -9,14 +9,14 @@ import 'package:shine/theme.dart';
 import 'package:shine/utils/server.dart';
 
 class UserView extends StatelessWidget {
-  final String? userType;
+  final String userType;
   final List userInfoList;
   final ValueNotifier<String> message;
 
   final RefreshCallback onRefresh;
   const UserView({
     super.key,
-    this.userType,
+    required this.userType,
     required this.userInfoList,
     required this.message,
     required this.onRefresh,
