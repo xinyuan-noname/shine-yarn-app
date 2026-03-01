@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/auth.dart';
 import 'package:shine/services/profiles.dart';
+import 'package:shine/services/task.dart';
 import 'package:shine/storage/profile_storage.dart';
 
 class Worker {
@@ -32,7 +33,7 @@ class Worker {
   }
 
   static scheduleUrl(Duration? duration) {
-    const defaultDuration = Duration(seconds: 1, milliseconds: 500);
+    const defaultDuration = Duration(seconds: 3);
     _urlTimer?.cancel();
     duration ??= defaultDuration;
     _urlTimer = Timer(duration, () async {
@@ -49,12 +50,12 @@ class Worker {
     Worker.scheduleUrl(Duration(milliseconds: 50));
   }
 
-  static scheduleMyAvatar() async {
+  static syncMyAvatar() async {
     final avatarData = await ApiProfiles.getMyAvatar();
     if (avatarData is Uint8List) await ProfileStorage.saveAvatar(avatarData);
   }
 
-  static scheduleMyProfile() async {
+  static syncMyProfile() async {
     final result = await ApiProfiles.getMyProfile();
     if (result is Map) {
       final String? id = result["id"];
@@ -79,15 +80,17 @@ class Worker {
     }
   }
 
-  static scheduleAllUser() async {
+  static syncAllUser() async {
     final userInfoList = await ApiProfiles.getUserInfo();
     if (userInfoList is List) await ProfileStorage.saveUserList(userInfoList);
   }
 
-  static scheduleMyData() async {
-    await Worker.scheduleMyAvatar();
-    await Worker.scheduleMyProfile();
+  static syncMyData() async {
+    await Worker.syncMyAvatar();
+    await Worker.syncMyProfile();
   }
 
-  static sheduleTaskWebSocket() {}
+  static startTaskWebSocket() {
+    WsTask.start();
+  }
 }

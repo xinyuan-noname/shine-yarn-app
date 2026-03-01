@@ -411,7 +411,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future _fetchMyProfile() async {
-    await Worker.scheduleMyData();
+    await Worker.syncMyData();
   }
 
   Future _toLogout() async {

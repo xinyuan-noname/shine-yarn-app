@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _updateUserInfo() async {
-    await Worker.scheduleAllUser();
+    await Worker.syncAllUser();
     final result = await ProfileStorage.getUserList();
     if (result != null) {
       _userInfoList = result;
@@ -46,7 +46,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _fetchData() async {
-    await Worker.scheduleMyData();
+    await Worker.syncMyData();
   }
 
   Future<void> _update() async {
