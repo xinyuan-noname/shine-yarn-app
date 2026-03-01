@@ -79,8 +79,15 @@ class Worker {
     }
   }
 
+  static scheduleAllUser() async {
+    final userInfoList = await ApiProfiles.getUserInfo();
+    if (userInfoList is List) await ProfileStorage.saveUserList(userInfoList);
+  }
+
   static scheduleMyData() async {
     await Worker.scheduleMyAvatar();
     await Worker.scheduleMyProfile();
   }
+
+  static sheduleTaskWebSocket() {}
 }

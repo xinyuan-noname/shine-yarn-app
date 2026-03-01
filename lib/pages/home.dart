@@ -20,6 +20,8 @@ class _HomePageState extends State<HomePage> {
   String _username = "???";
   String _id = "??????????";
   int _currentIndex = 0;
+  List _userInfoList = [];
+  final ValueNotifier<String> _message = ValueNotifier("");
   late final List<Widget> _viewList = [
     RefreshIndicator(
       color: mainColorPurple90,
@@ -35,16 +37,33 @@ class _HomePageState extends State<HomePage> {
         await _update();
       },
     ),
-    UserView()
+    UserView(
+      userInfoList: _userInfoList,
+      message: _message,
+      onRefresh: () async {
+        await _getUserInfo();
+        setState(() {});
+      },
+    ),
   ];
   final _bottomItemOptions = [
     (Icons.task_outlined, Icons.task, "任务"),
     (Icons.group_outlined, Icons.group, "用户"),
   ];
+
   @override
   void initState() {
     super.initState();
     _update();
+  }
+
+  Future<void> _getUserInfo() async {
+    await Worker.scheduleAllUser();
+    final result = await ProfileStorage.getUserList();
+    if (result != null) {
+      _userInfoList = result;
+      setState(() {});
+    }
   }
 
   Future<void> _fetchData() async {

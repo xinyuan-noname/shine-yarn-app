@@ -5,28 +5,22 @@ import 'package:flutter/services.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/user_info_card.dart';
 import 'package:shine/services/admin.dart';
-import 'package:shine/services/profiles.dart';
-import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/server.dart';
 
-class UserView extends StatefulWidget {
-  const UserView({super.key});
+class UserView extends StatelessWidget {
+  final String? userType;
+  final List userInfoList;
+  final ValueNotifier<String> message;
 
-  @override
-  State<UserView> createState() => _UserViewState();
-}
-
-class _UserViewState extends State<UserView> {
-  final ValueNotifier<String> _message = ValueNotifier("");
-  List _userInfoList = [];
-  String _myUserType = "guest";
-  @override
-  void initState() {
-    super.initState();
-    _getUserInfo();
-    _updateUserType();
-  }
+  final RefreshCallback onRefresh;
+  const UserView({
+    super.key,
+    this.userType,
+    required this.userInfoList,
+    required this.message,
+    required this.onRefresh,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -37,38 +31,20 @@ class _UserViewState extends State<UserView> {
           child: RefreshIndicator(
             color: mainColorPurple90,
             backgroundColor: bgColorLight,
+            onRefresh: onRefresh,
             child: _buildViewList(),
-            onRefresh: () async {
-              await _getUserInfo();
-            },
           ),
         ),
       ],
     );
   }
 
-  Future<void> _getUserInfo() async {
-    final result = await ApiProfiles.getUserInfo();
-    if (result == null) {
-      Future.delayed(Duration(milliseconds: 500));
-      await ApiProfiles.getUserInfo();
-      return;
-    }
-    _userInfoList = result;
-    setState(() {});
-  }
-
-  Future<void> _updateUserType() async {
-    _myUserType = await TokenStorage.getTokenUserType();
-    setState(() {});
-  }
-
   Widget _buildViewList() {
     return ListView.builder(
-      itemCount: max(_userInfoList.length, 1),
+      itemCount: max(userInfoList.length, 1),
       padding: EdgeInsets.all(16),
       itemBuilder: (context, index) {
-        if (_userInfoList.isEmpty) {
+        if (userInfoList.isEmpty) {
           return Container(
             alignment: Alignment.center,
             child: Text(
@@ -77,13 +53,13 @@ class _UserViewState extends State<UserView> {
             ),
           );
         }
-        final userInfo = _userInfoList[index];
+        final userInfo = userInfoList[index];
         final id = userInfo["id"];
         final userInfoCard = UserInfoCard(
           userInfo: userInfo,
-          onIssuePswdKey: _myUserType == "admin"
+          onIssuePswdKey: userType == "admin"
               ? () {
-                  _issuePasswordKey(id);
+                  _issuePasswordKey(id, context);
                 }
               : null,
         );
@@ -92,12 +68,12 @@ class _UserViewState extends State<UserView> {
     );
   }
 
-  Future<void> _issuePasswordKey(id) async {
-    _message.value = "";
+  Future<void> _issuePasswordKey(String id, BuildContext context) async {
+    message.value = "";
     late String passwordKey;
-    showMessageDialog(context, _message);
+    showMessageDialog(context, message);
     final success = await sendRequestAndChangeMessage(
-      _message,
+      message,
       request: Future(() async {
         final result = await ApiAdmin.issuePasswordKey(id);
         if (result is String) return result;
@@ -123,11 +99,5 @@ class _UserViewState extends State<UserView> {
         context,
       ).showSnackBar(SnackBar(content: Text("令牌为: $passwordKey")));
     }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _message.dispose();
   }
 }

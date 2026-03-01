@@ -11,6 +11,7 @@ class ProfileStorage {
   static final String _passwordRequiredKey = 'password_required_key';
   static final String _avatarNameKey = 'avatar_name_key';
   static final String _adminListKey = 'admin_list_key';
+  static final String _userListKey = 'user_list_key';
   static Future<void> saveName(String name) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_nameKey, name);
@@ -119,5 +120,22 @@ class ProfileStorage {
   static Future delAdminList() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_adminListKey);
+  }
+  static Future<void> saveUserList(List list) async {
+    final prefs = await SharedPreferences.getInstance();
+    final s = list.map((e) => jsonEncode(e)).toList();
+    await prefs.setStringList(_userListKey, s);
+  }
+
+  static Future<List?> getUserList() async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = prefs.getStringList(_userListKey);
+    if (list == null) return null;
+    return list.map((e) => jsonDecode(e)).toList();
+  }
+
+  static Future delUserList() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_userListKey);
   }
 }
