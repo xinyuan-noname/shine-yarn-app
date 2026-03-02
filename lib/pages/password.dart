@@ -7,6 +7,14 @@ import 'package:shine/services/api_auth.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/server.dart';
 
+const hintStyle = TextStyle(fontFamily: "SmileySans", color: bgColorLight60);
+const inputStyle = TextStyle(fontFamily: "SmileySans", color: bgColorLight);
+const labelStyle = TextStyle(
+  fontFamily: "SmileySans",
+  fontSize: 16,
+  fontWeight: FontWeight.w500,
+);
+
 class PasswordPage extends StatefulWidget {
   const PasswordPage({super.key});
 
@@ -27,21 +35,25 @@ class _PasswordPageState extends State<PasswordPage> {
         label: "新密码",
         name: "newPassword",
         isRequired: true,
-        labelStyle: TextStyle(fontSize: 18),
+        labelStyle: labelStyle,
+        inputStyle: inputStyle,
         decoration: InputDecoration(
           hintText: "请输入新密码",
+          hintStyle: hintStyle,
           contentPadding: const EdgeInsets.only(left: 10),
           filled: true,
           fillColor: mainColorPurple,
         ),
-        gap: 10,
+        gap: 40,
       ),
       InputProps.password(
         label: "再次输入新密码",
         isRequired: true,
-        labelStyle: TextStyle(fontSize: 18),
+        labelStyle: labelStyle,
+        inputStyle: inputStyle,
         decoration: InputDecoration(
           hintText: "请再次输入新密码",
+          hintStyle: hintStyle,
           contentPadding: const EdgeInsets.only(left: 10),
           filled: true,
           fillColor: mainColorPurple,

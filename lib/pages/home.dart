@@ -10,6 +10,9 @@ import 'package:shine/theme.dart';
 import 'package:shine/views/user.dart';
 import 'package:shine/worker/worker.dart';
 
+const selectedTextStyle = TextStyle(fontFamily: "SmileySans");
+const unselectedTextStyle = TextStyle(fontFamily: "SmileySans");
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -154,21 +157,34 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBottombar() {
-    return BottomNavigationBar(
-      currentIndex: _currentIndex,
-      items: _bottomItemOptions
-          .map(
-            (record) => BottomNavigationBarItem(
-              icon: Icon(record.$1),
-              activeIcon: Icon(record.$2),
-              label: record.$3,
-            ),
-          )
-          .toList(),
-      onTap: (value) {
-        _currentIndex = value;
-        setState(() {});
-      },
+    return Container(
+      decoration: BoxDecoration(
+        color: bgColorLight80,
+        border: Border(
+          top: BorderSide(
+            color: const Color.fromRGBO(158, 158, 158, 0.8),
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        selectedLabelStyle: selectedTextStyle,
+        unselectedLabelStyle: unselectedTextStyle,
+        items: _bottomItemOptions
+            .map(
+              (record) => BottomNavigationBarItem(
+                icon: Icon(record.$1),
+                activeIcon: Icon(record.$2),
+                label: record.$3,
+              ),
+            )
+            .toList(),
+        onTap: (value) {
+          _currentIndex = value;
+          setState(() {});
+        },
+      ),
     );
   }
 }
