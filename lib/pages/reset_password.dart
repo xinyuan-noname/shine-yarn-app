@@ -6,7 +6,7 @@ import 'package:shine/components/input.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/user_info_card.dart';
 import 'package:shine/extensions/text_editing.dart';
-import 'package:shine/services/auth.dart';
+import 'package:shine/services/api_auth.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/server.dart';

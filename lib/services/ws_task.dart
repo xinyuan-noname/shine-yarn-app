@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:shine/services/api.dart';
+import 'package:shine/services/ws.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class WsTask {
@@ -9,22 +9,13 @@ class WsTask {
   static bool get isConnected => _channel != null;
   static Timer? _heartbeatTimer;
 
-  static String get wsUrl {
-    try {
-      final uri = Uri.parse(ApiService.url);
-      final scheme = uri.scheme == 'https' ? 'wss' : 'ws';
-      return "${uri.replace(scheme: scheme)}/task";
-    } catch (e) {
-      throw ArgumentError('Invalid API URL: ${ApiService.url}');
-    }
-  }
+  static String get _wsUrl =>
+      "${WebSocketServer.wsUrl}/task?token=${WebSocketServer.wsToken}";
 
   static Future<void> connect() async {
     if (_channel != null) return;
-
     try {
-      _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
-
+      _channel = WebSocketChannel.connect(Uri.parse(_wsUrl));
       _channel!.sink.done
           .then((_) {
             WsTask.clear();
@@ -34,7 +25,9 @@ class WsTask {
           });
 
       _channel!.stream.listen(
-        (message) {},
+        (message) {
+          print("ws连接成功");
+        },
         onError: (error) {
           WsTask.clear();
         },

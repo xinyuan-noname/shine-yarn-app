@@ -40,8 +40,10 @@ class ApiAuth {
         TokenStorage.setAccessToken(accessToken);
         return true;
       }
+    } on DioException catch (e) {
+      return e.message ?? "刷新访问令牌失败";
     } catch (e) {
-      return false;
+      return "刷新访问令牌失败";
     }
   }
 

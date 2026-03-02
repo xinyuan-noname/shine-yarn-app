@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:shine/services/api.dart';
-import 'package:shine/services/auth.dart';
-import 'package:shine/services/profiles.dart';
-import 'package:shine/services/task.dart';
+import 'package:shine/services/api_auth.dart';
+import 'package:shine/services/api_profiles.dart';
+import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/profile_storage.dart';
 
 class Worker {

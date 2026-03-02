@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/routes.dart';
+import 'package:shine/services/ws.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
@@ -34,6 +35,12 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _update();
     _updateUserInfo();
+    _startWs();
+  }
+
+  Future<void> _startWs() async {
+    WebSocketServer.init();
+    Worker.startTaskWebSocket();
   }
 
   Future<void> _updateUserInfo() async {

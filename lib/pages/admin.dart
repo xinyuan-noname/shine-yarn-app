@@ -8,7 +8,7 @@ import 'package:shine/components/icon_button.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/user_info_card.dart';
 import 'package:shine/routes.dart';
-import 'package:shine/services/admin.dart';
+import 'package:shine/services/api_admin.dart';
 import 'package:shine/storage/admin_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/file.dart';
