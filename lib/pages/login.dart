@@ -9,13 +9,6 @@ import 'package:shine/theme.dart';
 import 'package:shine/utils/server.dart';
 import 'package:shine/worker/worker.dart';
 
-const labelStyle = TextStyle(
-  fontFamily: "SmileySans",
-  fontSize: 16,
-  fontWeight: FontWeight.w500,
-);
-const hintStyle = TextStyle(fontFamily: "SmileySans", color: bgColorLight60);
-const inputStyle = TextStyle(fontFamily: "SmileySans", color: bgColorLight);
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

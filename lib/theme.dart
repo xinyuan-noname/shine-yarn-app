@@ -43,3 +43,11 @@ const EdgeInsetsGeometry profilePadding = EdgeInsets.only(
 );
 
 const TextStyle bottomListTitleTextStyle  = TextStyle(fontFamily: "SmileySans", fontSize: 20);
+
+const hintStyle = TextStyle(fontFamily: "SmileySans", color: bgColorLight60);
+const inputStyle = TextStyle(fontFamily: "SmileySans", color: bgColorLight);
+const labelStyle = TextStyle(
+  fontFamily: "SmileySans",
+  fontSize: 16,
+  fontWeight: FontWeight.w500,
+);

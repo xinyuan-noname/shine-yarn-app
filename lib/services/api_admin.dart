@@ -53,6 +53,7 @@ class ApiAdmin {
           "gender": true,
           "userType": true,
           "username": true,
+          "position": true,
           "passwordRequired": true,
         },
       });
@@ -93,6 +94,24 @@ class ApiAdmin {
       return err.message ?? "删除用户出错";
     } catch (err) {
       return "删除用户出错";
+    }
+  }
+
+  static Future<String?> changePosition({
+    required String id,
+    required String position,
+  }) async {
+    if (_rsaPrivateKey == null) return "签名出错";
+    try {
+      final data = ApiAdmin.sign([id]);
+      if (data == null) return "没有正确配置私钥";
+      data.addAll({"id": id, "position": position});
+      await dio.patch("/admin/position", data: data);
+      return null;
+    } on DioException catch (err) {
+      return err.message ?? "设置职务出错";
+    } catch (err) {
+      return "设置职务出错";
     }
   }
 

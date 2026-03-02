@@ -87,6 +87,7 @@ class ApiProfiles {
         "userType": true,
         "username": true,
         "passwordRequired": true,
+        "position": true,
       };
       final response = await dio.post(
         '/profiles/search/user',

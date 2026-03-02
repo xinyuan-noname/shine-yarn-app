@@ -147,6 +147,16 @@ class UserInfoCard extends StatelessWidget {
               ),
         const SizedBox(width: 5),
         Text(userInfo['username'] ?? "??", style: adminUsernameTextStyle),
+        if (userInfo['position'] is String)
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 3, horizontal: 2),
+            decoration: BoxDecoration(
+              color: Colors.amberAccent,
+              boxShadow: [BoxShadow(color: Colors.white, spreadRadius: 1)],
+              borderRadius: BorderRadius.all(Radius.circular(5)),
+            ),
+            child: Text(userInfo['position'], style: adminItemTextStyle),
+          ),
       ],
     );
   }

@@ -286,6 +286,28 @@ class _AdminPageState extends State<AdminPage> {
                                 setState(() {});
                               },
                             ),
+                            ListTile(
+                              leading: Icon(Icons.star),
+                              title: Text(
+                                "设置职务",
+                                style: bottomListTitleTextStyle,
+                              ),
+                              onTap: () async {
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                }
+                                final position = await showPromptDialog(
+                                  context: context,
+                                  title: "设置职位",
+                                  label: "职务",
+                                );
+                                if (position == null) return;
+                                print(position);
+                                await _changePosition(id, position);
+                                await _getUserInfo();
+                                setState(() {});
+                              },
+                            ),
                           ],
                         ),
                       );
@@ -384,6 +406,27 @@ class _AdminPageState extends State<AdminPage> {
       }),
       initMessageList: [],
       messageList: ["正在更改$id的权限.", "正在更改$id的权限..", "正在更改$id的权限..."],
+      successMessage: "更改成功",
+    );
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
+    if (success) {
+      await _getUserInfo();
+      setState(() {});
+    }
+  }
+
+  Future<void> _changePosition(String id, String position) async {
+    _message.value = "";
+    showMessageDialog(context, _message);
+    final success = await sendRequestAndChangeMessage(
+      _message,
+      request: Future(() async {
+        return await ApiAdmin.changePosition(id: id, position: position);
+      }),
+      initMessageList: [],
+      messageList: ["正在更改$id的身份.", "正在更改$id的身份..", "正在更改$id的身份..."],
       successMessage: "更改成功",
     );
     if (context.mounted) {

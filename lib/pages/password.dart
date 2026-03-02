@@ -7,14 +7,6 @@ import 'package:shine/services/api_auth.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/server.dart';
 
-const hintStyle = TextStyle(fontFamily: "SmileySans", color: bgColorLight60);
-const inputStyle = TextStyle(fontFamily: "SmileySans", color: bgColorLight);
-const labelStyle = TextStyle(
-  fontFamily: "SmileySans",
-  fontSize: 16,
-  fontWeight: FontWeight.w500,
-);
-
 class PasswordPage extends StatefulWidget {
   const PasswordPage({super.key});
 

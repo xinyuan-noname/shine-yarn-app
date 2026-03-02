@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:shine/components/input.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/theme.dart';
 
@@ -76,6 +79,7 @@ void showConfrimDialog({
 }) {
   showDialog(
     context: context,
+    barrierDismissible: false,
     builder: (BuildContext context) {
       return AlertDialog(
         backgroundColor: mainColorPurple,
@@ -96,6 +100,70 @@ void showConfrimDialog({
       );
     },
   );
+}
+
+Future<String?> showPromptDialog({
+  required BuildContext context,
+  required String title,
+  required String label,
+  VoidCallback? onYes,
+}) {
+  final formKey = GlobalKey<FormState>();
+  Map<String, dynamic> map = {};
+  final completer = Completer<String?>();
+  showDialog(
+    barrierDismissible: false,
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: mainColorPurple,
+        title: Text(title, style: dialogTitleStyle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Form(
+              key: formKey,
+              child: Input(
+                name: "prompt",
+                label: label,
+                onSavedMap: map,
+                hintStyle: hintStyle,
+                inputStyle: inputStyle,
+                labelStyle: labelStyle,
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(width: 1.0, color: Colors.grey),
+                ),
+                color: mainColorPurple90,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            style: dialogButtonStyle,
+            onPressed: () {
+              Navigator.pop(context);
+              completer.complete(null);
+            },
+            child: const Text('取消'),
+          ),
+          TextButton(
+            style: dialogButtonStyle,
+            onPressed: () {
+              formKey.currentState?.save();
+              final String? result = map['prompt'];
+              print(result);
+              Navigator.pop(context);
+              completer.complete(result);
+            },
+            child: const Text('确定'),
+          ),
+        ],
+      );
+    },
+  );
+  return completer.future;
 }
 
 void gotoAdminDialog(BuildContext context) {

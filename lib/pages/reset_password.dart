@@ -23,13 +23,6 @@ const contentStrongTextStyle = TextStyle(
   fontStyle: FontStyle.italic,
   color: Colors.redAccent,
 );
-const labelStyle = TextStyle(
-  fontFamily: "SmileySans",
-  fontSize: 16,
-  fontWeight: FontWeight.w500,
-);
-const hintStyle = TextStyle(fontFamily: "SmileySans", color: bgColorLight60);
-const inputStyle = TextStyle(fontFamily: "SmileySans", color: bgColorLight);
 
 const double inputGap = 10;
 
