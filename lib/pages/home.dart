@@ -39,7 +39,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _startWs() async {
-    WebSocketServer.init();
+    await WebSocketServer.init();
     Worker.startTaskWebSocket();
   }
 

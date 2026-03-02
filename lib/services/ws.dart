@@ -4,9 +4,9 @@ import 'package:shine/services/dio.dart';
 
 class WebSocketServer {
   static String _token = '';
-  static getWsToken() async {
+  static Future<String?> syncWsToken() async {
     try {
-      final response = await dio.patch("/ws/token");
+      final response = await dio.get("/ws/token");
       if (response.data is! Map) {
         return "获取WebSocket令牌失效";
       }
@@ -14,6 +14,7 @@ class WebSocketServer {
         return "获取WebSocket令牌失效";
       }
       _token = response.data['token'];
+      return null;
     } on DioException catch (e) {
       return e.message ?? "获取WebSocket令牌失效";
     } catch (e) {
@@ -35,7 +36,7 @@ class WebSocketServer {
     return _token;
   }
 
-  static init() {
-    WebSocketServer.getWsToken();
+  static Future<void> init() async {
+    await WebSocketServer.syncWsToken();
   }
 }
