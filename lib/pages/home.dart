@@ -12,6 +12,11 @@ import 'package:shine/worker/worker.dart';
 
 const selectedTextStyle = TextStyle(fontFamily: "SmileySans");
 const unselectedTextStyle = TextStyle(fontFamily: "SmileySans");
+const userTypeStyleList = [
+  ("访客", Colors.grey, Color.fromRGBO(255, 255, 255, 0.5)),
+  ("用户", Colors.lightGreen, Color.fromRGBO(255, 255, 255, 0.8)),
+  ("管理员", Colors.amber, Color.fromRGBO(255, 255, 255, 0.9)),
+];
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -137,14 +142,20 @@ class _HomePageState extends State<HomePage> {
                       fontWeight: FontWeight.w300,
                     ),
                   ),
-                  Text(
-                    _id,
-                    style: TextStyle(
-                      fontFamily: "SmileySans",
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w300,
-                      fontSize: 12,
-                    ),
+                  Row(
+                    children: [
+                      _buildAccessSignal(),
+                      SizedBox(width: 3),
+                      Text(
+                        _id,
+                        style: TextStyle(
+                          fontFamily: "SmileySans",
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w300,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -153,6 +164,32 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       bottom: bottomLine,
+    );
+  }
+
+  Widget _buildAccessSignal() {
+    late (String, Color, Color) r;
+    if (_userType == "admin") {
+      r = userTypeStyleList[2];
+    } else if (_userType == "user") {
+      r = userTypeStyleList[1];
+    } else {
+      r = userTypeStyleList[0];
+    }
+    return GestureDetector(
+      child: Container(
+        alignment: Alignment.center,
+        height: 20,
+        decoration: BoxDecoration(
+          color: r.$2,
+          borderRadius: BorderRadius.all(Radius.circular(5)),
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 1, vertical: 1),
+        child: Text(
+          r.$1,
+          style: TextStyle(fontSize: 10, color: r.$3, fontFamily: 'SmileySans'),
+        ),
+      ),
     );
   }
 
