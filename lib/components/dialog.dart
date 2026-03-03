@@ -71,12 +71,12 @@ void showAlertDialog({
   );
 }
 
-void showConfrimDialog({
+Future<bool> showConfrimDialog({
   required BuildContext context,
   required String title,
   required String content,
-  VoidCallback? onYes,
 }) {
+  final completer = Completer<bool>();
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -88,18 +88,25 @@ void showConfrimDialog({
         actions: [
           TextButton(
             style: dialogButtonStyle,
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              Navigator.pop(context);
+              completer.complete(false);
+            },
             child: const Text('取消'),
           ),
           TextButton(
             style: dialogButtonStyle,
-            onPressed: onYes ?? () => Navigator.pop(context),
+            onPressed: () {
+              Navigator.pop(context);
+              completer.complete(true);
+            },
             child: const Text('确定'),
           ),
         ],
       );
     },
   );
+  return completer.future;
 }
 
 Future<String?> showPromptDialog({
@@ -153,7 +160,6 @@ Future<String?> showPromptDialog({
             onPressed: () {
               formKey.currentState?.save();
               final String? result = map['prompt'];
-              print(result);
               Navigator.pop(context);
               completer.complete(result);
             },
@@ -166,14 +172,12 @@ Future<String?> showPromptDialog({
   return completer.future;
 }
 
-void gotoAdminDialog(BuildContext context) {
-  showConfrimDialog(
+Future gotoAdminDialog(BuildContext context) async {
+  final result = await showConfrimDialog(
     context: context,
     title: '即将进入超级管理员界面!',
     content: '确定要进入吗？',
-    onYes: () {
-      Navigator.pop(context);
-      globalNavigatorKey.currentState?.pushNamed('/admin');
-    },
   );
+  if (!result) return null;
+  return await globalNavigatorKey.currentState?.pushNamed('/admin');
 }

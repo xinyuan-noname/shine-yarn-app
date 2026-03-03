@@ -247,20 +247,17 @@ class _AdminPageState extends State<AdminPage> {
           userInfo: userInfo,
           onDelete: _batchMode
               ? null
-              : () {
-                  showConfrimDialog(
+              : () async {
+                  final result = await showConfrimDialog(
                     context: context,
                     title: "确认删除$id($username)吗？",
                     content: "此操作无法撤回！",
-                    onYes: () async {
-                      if (context.mounted) {
-                        Navigator.pop(context);
-                      }
-                      await _deleteUser(id);
-                      await _getUserInfo();
-                      setState(() {});
-                    },
                   );
+                  if (result) {
+                    await _deleteUser(id);
+                    await _getUserInfo();
+                    setState(() {});
+                  }
                 },
           onEdit: _batchMode
               ? null
@@ -302,7 +299,6 @@ class _AdminPageState extends State<AdminPage> {
                                   label: "职务",
                                 );
                                 if (position == null) return;
-                                print(position);
                                 await _changePosition(id, position);
                                 await _getUserInfo();
                                 setState(() {});

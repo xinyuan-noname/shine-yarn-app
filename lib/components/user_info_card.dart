@@ -136,26 +136,35 @@ class UserInfoCard extends StatelessWidget {
       children: [
         userInfo['userType'] == "admin"
             ? Icon(
-                Icons.manage_accounts,
-                color: bgColorLight,
+                Icons.star,
+                color: Colors.amberAccent,
                 size: adminFontSize * 1.2,
               )
             : Icon(
                 Icons.person,
-                color: bgColorLight60,
+                color: bgColorLight,
                 size: adminFontSize * 1.2,
               ),
         const SizedBox(width: 5),
         Text(userInfo['username'] ?? "??", style: adminUsernameTextStyle),
         if (userInfo['position'] is String)
           Container(
-            padding: EdgeInsets.symmetric(vertical: 3, horizontal: 2),
+            margin: EdgeInsets.only(left: 10),
+            padding: EdgeInsets.symmetric(horizontal: 2,vertical: 0.5),
             decoration: BoxDecoration(
-              color: Colors.amberAccent,
-              boxShadow: [BoxShadow(color: Colors.white, spreadRadius: 1)],
+              color: Colors.redAccent,
+              boxShadow: [BoxShadow(color: bgColorLight60, spreadRadius: 1,offset: Offset(0.5, 0.5))],
               borderRadius: BorderRadius.all(Radius.circular(5)),
             ),
-            child: Text(userInfo['position'], style: adminItemTextStyle),
+            child: Text(
+              userInfo['position'],
+              style: const TextStyle(
+                color: Colors.white,
+                fontFamily: 'SmileySans',
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
       ],
     );

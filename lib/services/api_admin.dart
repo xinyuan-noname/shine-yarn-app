@@ -45,7 +45,7 @@ class ApiAdmin {
       final word = nowBase64();
       final data = ApiAdmin.sign([word]);
       if (data == null) return null;
-      // gender userType username passwordRequired
+      // gender userType username passwordRequired position
       data.addAll({
         "word": word,
         "idList": "all",
@@ -58,6 +58,7 @@ class ApiAdmin {
         },
       });
       final response = await dio.post('/admin/search/user', data: data);
+      print(response.data);
       return response.data;
     } catch (err) {
       return null;
