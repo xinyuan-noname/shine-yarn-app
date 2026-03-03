@@ -50,6 +50,7 @@ void showAlertDialog({
   required String title,
   required String content,
   VoidCallback? onYes,
+  String confirmText = '确定',
 }) {
   showDialog(
     context: context,
@@ -63,7 +64,7 @@ void showAlertDialog({
           TextButton(
             style: dialogButtonStyle,
             onPressed: onYes ?? () => Navigator.pop(context),
-            child: const Text('确定'),
+            child: Text(confirmText),
           ),
         ],
       );
@@ -75,6 +76,8 @@ Future<bool> showConfrimDialog({
   required BuildContext context,
   required String title,
   required String content,
+  String confirmText = '确定',
+  String cancelText = '取消',
 }) {
   final completer = Completer<bool>();
   showDialog(
@@ -92,7 +95,7 @@ Future<bool> showConfrimDialog({
               Navigator.pop(context);
               completer.complete(false);
             },
-            child: const Text('取消'),
+            child: Text(cancelText),
           ),
           TextButton(
             style: dialogButtonStyle,
@@ -100,7 +103,7 @@ Future<bool> showConfrimDialog({
               Navigator.pop(context);
               completer.complete(true);
             },
-            child: const Text('确定'),
+            child: Text(confirmText),
           ),
         ],
       );
@@ -113,7 +116,8 @@ Future<String?> showPromptDialog({
   required BuildContext context,
   required String title,
   required String label,
-  VoidCallback? onYes,
+  String confirmText = '确定',
+  String cancelText = '取消',
 }) {
   final formKey = GlobalKey<FormState>();
   Map<String, dynamic> map = {};
@@ -153,7 +157,7 @@ Future<String?> showPromptDialog({
               Navigator.pop(context);
               completer.complete(null);
             },
-            child: const Text('取消'),
+            child: Text(cancelText),
           ),
           TextButton(
             style: dialogButtonStyle,
@@ -163,7 +167,74 @@ Future<String?> showPromptDialog({
               Navigator.pop(context);
               completer.complete(result);
             },
-            child: const Text('确定'),
+            child: Text(confirmText),
+          ),
+        ],
+      );
+    },
+  );
+  return completer.future;
+}
+
+Future<T> showDropDownDialog<T>({
+  required BuildContext context,
+  required String title,
+  required List<(T, String)> items,
+  required T initialValue,
+  String confirmText = '确定',
+  String cancelText = '取消',
+}) {
+  final completer = Completer<T>();
+  T selectedValue = initialValue;
+
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: mainColorPurple,
+        title: Text(title, style: dialogTitleStyle),
+        content: StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return DropdownButtonFormField<T>(
+              initialValue: selectedValue,
+              onChanged: (T? newValue) {
+                if (newValue == null) return;
+                selectedValue = newValue;
+                setState(() {});
+              },
+              items: items.map((item) {
+                return DropdownMenuItem<T>(
+                  value: item.$1,
+                  child: Text(item.$2, style: dialogContentStyle),
+                );
+              }).toList(),
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(width: 1.0, color: Colors.grey),
+                ),
+                filled: true,
+                fillColor: mainColorPurple90,
+              ),
+            );
+          },
+        ),
+        actions: [
+          TextButton(
+            style: dialogButtonStyle,
+            onPressed: () {
+              Navigator.pop(context);
+              completer.complete(selectedValue);
+            },
+            child: Text(cancelText),
+          ),
+          TextButton(
+            style: dialogButtonStyle,
+            onPressed: () {
+              Navigator.pop(context);
+              completer.complete(selectedValue);
+            },
+            child: Text(confirmText),
           ),
         ],
       );

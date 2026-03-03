@@ -12,7 +12,6 @@ class UserView extends StatelessWidget {
   final String userType;
   final List userInfoList;
   final ValueNotifier<String> message;
-
   final RefreshCallback onRefresh;
   const UserView({
     super.key,

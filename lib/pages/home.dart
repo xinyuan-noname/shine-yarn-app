@@ -164,6 +164,10 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       bottom: bottomLine,
+      actions: [
+        if (_currentIndex == 0)
+          IconButton(onPressed: () {}, icon: Icon(Icons.add, size: 32)),
+      ],
     );
   }
 
