@@ -67,7 +67,7 @@ void showTaskGridBottomSheet(BuildContext context) {
                     ("position", "所有班委"),
                     ("admin", "所有管理员"),
                   ],
-                  initialValue: "all",
+                  initialValue: "entire",
                 );
                 print(result);
               },
