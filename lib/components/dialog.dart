@@ -203,6 +203,7 @@ Future<T> showDropDownDialog<T>({
                 selectedValue = newValue;
                 setState(() {});
               },
+              dropdownColor: mainColorPurple60,
               items: items.map((item) {
                 return DropdownMenuItem<T>(
                   value: item.$1,
@@ -210,6 +211,7 @@ Future<T> showDropDownDialog<T>({
                 );
               }).toList(),
               decoration: InputDecoration(
+                hintStyle: hintStyle,
                 border: OutlineInputBorder(
                   borderSide: BorderSide(width: 1.0, color: Colors.grey),
                 ),

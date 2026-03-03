@@ -42,7 +42,15 @@ const EdgeInsetsGeometry profilePadding = EdgeInsets.only(
   bottom: 10,
 );
 
-const TextStyle bottomListTitleTextStyle  = TextStyle(fontFamily: "SmileySans", fontSize: 20);
+const TextStyle bottomListTitleTextStyle = TextStyle(
+  fontFamily: "SmileySans",
+  fontSize: 20,
+);
+const TextStyle bottomSheetGridTitleTextStyle = TextStyle(
+  fontFamily: "SmileySans",
+  fontSize: 12,
+  color: mainColorGreenBule,
+);
 
 const hintStyle = TextStyle(fontFamily: "SmileySans", color: bgColorLight60);
 const inputStyle = TextStyle(fontFamily: "SmileySans", color: bgColorLight);
