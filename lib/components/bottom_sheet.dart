@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
+import 'package:shine/pages/task_check_page.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/theme.dart';
@@ -14,7 +15,7 @@ Widget _buildBottomSheetItem({
     child: Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(width: 1,color: mainColorGreenBule60),
+        border: Border.all(width: 1, color: mainColorGreenBule60),
         gradient: purpleLinearGradient,
       ),
       child: Column(
@@ -37,13 +38,13 @@ void showTaskGridBottomSheet(BuildContext context) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor:mainColorPurple,
+    backgroundColor: mainColorPurple,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (context) {
       return Container(
-        padding:const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
         child: GridView.count(
           crossAxisCount: 4,
           crossAxisSpacing: 12,
@@ -69,10 +70,12 @@ void showTaskGridBottomSheet(BuildContext context) {
                   ],
                   initialValue: GroupStorageKey.entire,
                 );
-                globalNavigatorKey.currentState?.pushNamed(
-                  '/task/check',
-                  arguments: result,
-                );
+                if (result is GroupStorageKey) {
+                  globalNavigatorKey.currentState?.pushNamed(
+                    '/task/check',
+                    arguments: TaskCheckArgs(groupStorageKey: result),
+                  );
+                }
               },
             ),
           ],

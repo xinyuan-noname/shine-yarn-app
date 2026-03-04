@@ -34,12 +34,13 @@ class $TaskCheckTable extends TaskCheck
     ),
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
-  static const VerificationMeta _finishMeta = const VerificationMeta('finish');
+  static const VerificationMeta _finishedMeta = const VerificationMeta(
+    'finished',
+  );
   @override
-  late final GeneratedColumn<String> finish = GeneratedColumn<String>(
-    'finish',
+  late final GeneratedColumn<String> finished = GeneratedColumn<String>(
+    'finished',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -71,7 +72,7 @@ class $TaskCheckTable extends TaskCheck
   List<GeneratedColumn> get $columns => [
     id,
     title,
-    finish,
+    finished,
     unfinished,
     createdAt,
   ];
@@ -98,13 +99,13 @@ class $TaskCheckTable extends TaskCheck
     } else if (isInserting) {
       context.missing(_titleMeta);
     }
-    if (data.containsKey('finish')) {
+    if (data.containsKey('finished')) {
       context.handle(
-        _finishMeta,
-        finish.isAcceptableOrUnknown(data['finish']!, _finishMeta),
+        _finishedMeta,
+        finished.isAcceptableOrUnknown(data['finished']!, _finishedMeta),
       );
     } else if (isInserting) {
-      context.missing(_finishMeta);
+      context.missing(_finishedMeta);
     }
     if (data.containsKey('unfinished')) {
       context.handle(
@@ -137,9 +138,9 @@ class $TaskCheckTable extends TaskCheck
         DriftSqlType.string,
         data['${effectivePrefix}title'],
       )!,
-      finish: attachedDatabase.typeMapping.read(
+      finished: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}finish'],
+        data['${effectivePrefix}finished'],
       )!,
       unfinished: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -161,13 +162,13 @@ class $TaskCheckTable extends TaskCheck
 class TaskCheckData extends DataClass implements Insertable<TaskCheckData> {
   final int id;
   final String title;
-  final String finish;
+  final String finished;
   final String unfinished;
   final DateTime? createdAt;
   const TaskCheckData({
     required this.id,
     required this.title,
-    required this.finish,
+    required this.finished,
     required this.unfinished,
     this.createdAt,
   });
@@ -176,7 +177,7 @@ class TaskCheckData extends DataClass implements Insertable<TaskCheckData> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['title'] = Variable<String>(title);
-    map['finish'] = Variable<String>(finish);
+    map['finished'] = Variable<String>(finished);
     map['unfinished'] = Variable<String>(unfinished);
     if (!nullToAbsent || createdAt != null) {
       map['created_at'] = Variable<DateTime>(createdAt);
@@ -188,7 +189,7 @@ class TaskCheckData extends DataClass implements Insertable<TaskCheckData> {
     return TaskCheckCompanion(
       id: Value(id),
       title: Value(title),
-      finish: Value(finish),
+      finished: Value(finished),
       unfinished: Value(unfinished),
       createdAt: createdAt == null && nullToAbsent
           ? const Value.absent()
@@ -204,7 +205,7 @@ class TaskCheckData extends DataClass implements Insertable<TaskCheckData> {
     return TaskCheckData(
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
-      finish: serializer.fromJson<String>(json['finish']),
+      finished: serializer.fromJson<String>(json['finished']),
       unfinished: serializer.fromJson<String>(json['unfinished']),
       createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
     );
@@ -215,7 +216,7 @@ class TaskCheckData extends DataClass implements Insertable<TaskCheckData> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
-      'finish': serializer.toJson<String>(finish),
+      'finished': serializer.toJson<String>(finished),
       'unfinished': serializer.toJson<String>(unfinished),
       'createdAt': serializer.toJson<DateTime?>(createdAt),
     };
@@ -224,13 +225,13 @@ class TaskCheckData extends DataClass implements Insertable<TaskCheckData> {
   TaskCheckData copyWith({
     int? id,
     String? title,
-    String? finish,
+    String? finished,
     String? unfinished,
     Value<DateTime?> createdAt = const Value.absent(),
   }) => TaskCheckData(
     id: id ?? this.id,
     title: title ?? this.title,
-    finish: finish ?? this.finish,
+    finished: finished ?? this.finished,
     unfinished: unfinished ?? this.unfinished,
     createdAt: createdAt.present ? createdAt.value : this.createdAt,
   );
@@ -238,7 +239,7 @@ class TaskCheckData extends DataClass implements Insertable<TaskCheckData> {
     return TaskCheckData(
       id: data.id.present ? data.id.value : this.id,
       title: data.title.present ? data.title.value : this.title,
-      finish: data.finish.present ? data.finish.value : this.finish,
+      finished: data.finished.present ? data.finished.value : this.finished,
       unfinished: data.unfinished.present
           ? data.unfinished.value
           : this.unfinished,
@@ -251,7 +252,7 @@ class TaskCheckData extends DataClass implements Insertable<TaskCheckData> {
     return (StringBuffer('TaskCheckData(')
           ..write('id: $id, ')
           ..write('title: $title, ')
-          ..write('finish: $finish, ')
+          ..write('finished: $finished, ')
           ..write('unfinished: $unfinished, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
@@ -259,14 +260,14 @@ class TaskCheckData extends DataClass implements Insertable<TaskCheckData> {
   }
 
   @override
-  int get hashCode => Object.hash(id, title, finish, unfinished, createdAt);
+  int get hashCode => Object.hash(id, title, finished, unfinished, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is TaskCheckData &&
           other.id == this.id &&
           other.title == this.title &&
-          other.finish == this.finish &&
+          other.finished == this.finished &&
           other.unfinished == this.unfinished &&
           other.createdAt == this.createdAt);
 }
@@ -274,36 +275,36 @@ class TaskCheckData extends DataClass implements Insertable<TaskCheckData> {
 class TaskCheckCompanion extends UpdateCompanion<TaskCheckData> {
   final Value<int> id;
   final Value<String> title;
-  final Value<String> finish;
+  final Value<String> finished;
   final Value<String> unfinished;
   final Value<DateTime?> createdAt;
   const TaskCheckCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
-    this.finish = const Value.absent(),
+    this.finished = const Value.absent(),
     this.unfinished = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   TaskCheckCompanion.insert({
     this.id = const Value.absent(),
     required String title,
-    required String finish,
+    required String finished,
     required String unfinished,
     this.createdAt = const Value.absent(),
   }) : title = Value(title),
-       finish = Value(finish),
+       finished = Value(finished),
        unfinished = Value(unfinished);
   static Insertable<TaskCheckData> custom({
     Expression<int>? id,
     Expression<String>? title,
-    Expression<String>? finish,
+    Expression<String>? finished,
     Expression<String>? unfinished,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (title != null) 'title': title,
-      if (finish != null) 'finish': finish,
+      if (finished != null) 'finished': finished,
       if (unfinished != null) 'unfinished': unfinished,
       if (createdAt != null) 'created_at': createdAt,
     });
@@ -312,14 +313,14 @@ class TaskCheckCompanion extends UpdateCompanion<TaskCheckData> {
   TaskCheckCompanion copyWith({
     Value<int>? id,
     Value<String>? title,
-    Value<String>? finish,
+    Value<String>? finished,
     Value<String>? unfinished,
     Value<DateTime?>? createdAt,
   }) {
     return TaskCheckCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
-      finish: finish ?? this.finish,
+      finished: finished ?? this.finished,
       unfinished: unfinished ?? this.unfinished,
       createdAt: createdAt ?? this.createdAt,
     );
@@ -334,8 +335,8 @@ class TaskCheckCompanion extends UpdateCompanion<TaskCheckData> {
     if (title.present) {
       map['title'] = Variable<String>(title.value);
     }
-    if (finish.present) {
-      map['finish'] = Variable<String>(finish.value);
+    if (finished.present) {
+      map['finished'] = Variable<String>(finished.value);
     }
     if (unfinished.present) {
       map['unfinished'] = Variable<String>(unfinished.value);
@@ -351,7 +352,7 @@ class TaskCheckCompanion extends UpdateCompanion<TaskCheckData> {
     return (StringBuffer('TaskCheckCompanion(')
           ..write('id: $id, ')
           ..write('title: $title, ')
-          ..write('finish: $finish, ')
+          ..write('finished: $finished, ')
           ..write('unfinished: $unfinished, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
@@ -374,7 +375,7 @@ typedef $$TaskCheckTableCreateCompanionBuilder =
     TaskCheckCompanion Function({
       Value<int> id,
       required String title,
-      required String finish,
+      required String finished,
       required String unfinished,
       Value<DateTime?> createdAt,
     });
@@ -382,7 +383,7 @@ typedef $$TaskCheckTableUpdateCompanionBuilder =
     TaskCheckCompanion Function({
       Value<int> id,
       Value<String> title,
-      Value<String> finish,
+      Value<String> finished,
       Value<String> unfinished,
       Value<DateTime?> createdAt,
     });
@@ -406,8 +407,8 @@ class $$TaskCheckTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get finish => $composableBuilder(
-    column: $table.finish,
+  ColumnFilters<String> get finished => $composableBuilder(
+    column: $table.finished,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -441,8 +442,8 @@ class $$TaskCheckTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get finish => $composableBuilder(
-    column: $table.finish,
+  ColumnOrderings<String> get finished => $composableBuilder(
+    column: $table.finished,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -472,8 +473,8 @@ class $$TaskCheckTableAnnotationComposer
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
 
-  GeneratedColumn<String> get finish =>
-      $composableBuilder(column: $table.finish, builder: (column) => column);
+  GeneratedColumn<String> get finished =>
+      $composableBuilder(column: $table.finished, builder: (column) => column);
 
   GeneratedColumn<String> get unfinished => $composableBuilder(
     column: $table.unfinished,
@@ -517,13 +518,13 @@ class $$TaskCheckTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> title = const Value.absent(),
-                Value<String> finish = const Value.absent(),
+                Value<String> finished = const Value.absent(),
                 Value<String> unfinished = const Value.absent(),
                 Value<DateTime?> createdAt = const Value.absent(),
               }) => TaskCheckCompanion(
                 id: id,
                 title: title,
-                finish: finish,
+                finished: finished,
                 unfinished: unfinished,
                 createdAt: createdAt,
               ),
@@ -531,13 +532,13 @@ class $$TaskCheckTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String title,
-                required String finish,
+                required String finished,
                 required String unfinished,
                 Value<DateTime?> createdAt = const Value.absent(),
               }) => TaskCheckCompanion.insert(
                 id: id,
                 title: title,
-                finish: finish,
+                finished: finished,
                 unfinished: unfinished,
                 createdAt: createdAt,
               ),

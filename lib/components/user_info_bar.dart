@@ -6,6 +6,9 @@ class UserInfoBar extends StatelessWidget {
   final String username;
   final Icon? suffixIcon;
   final BoxDecoration? decoration;
+  final TextStyle usernameStyle;
+  final TextStyle idStyle;
+  final EdgeInsetsGeometry margin;
   const UserInfoBar({
     super.key,
     required this.id,
@@ -13,6 +16,9 @@ class UserInfoBar extends StatelessWidget {
     this.onTap,
     this.suffixIcon,
     this.decoration,
+    this.usernameStyle = const TextStyle(fontFamily: "SmileySans"),
+    this.idStyle = const TextStyle(fontFamily: "SmileySans"),
+    this.margin = const EdgeInsets.symmetric(vertical: 1),
   });
 
   @override
@@ -20,12 +26,14 @@ class UserInfoBar extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        margin: margin,
         decoration: decoration,
         child: Row(
           children: [
             if (suffixIcon != null) suffixIcon!,
-            Text(username),
-            Text(id),
+            Text(username, style: usernameStyle),
+            SizedBox(width: 5),
+            Text(id, style: idStyle),
           ],
         ),
       ),

@@ -7,8 +7,8 @@ part 'database.g.dart';
 
 class TaskCheck extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get title => text().withLength(min: 6, max: 32).unique()();
-  TextColumn get finish => text()();
+  TextColumn get title => text().withLength(min: 6, max: 32)();
+  TextColumn get finished => text()();
   TextColumn get unfinished => text()();
   DateTimeColumn get createdAt => dateTime().nullable()();
 }
@@ -20,22 +20,25 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   int get schemaVersion => 1;
+  Future<List<TaskCheckData>> getAllTaskCheckItems() async {
+    return await select(taskCheck).get();
+  }
 
-  Future<TaskCheckData> getTaskCheckItem(int id) async {
+  Future<TaskCheckData?> getTaskCheckItem(int id) async {
     final stmt = select(taskCheck)..where((t) => t.id.equals(id));
-    return await stmt.getSingle();
+    return await stmt.getSingleOrNull();
   }
 
   Future<int> insertTaskCheckItem({
     required String title,
-    String? finish,
+    String? finished,
     String? unfinished,
     DateTime? createdAt,
   }) async {
     return await into(taskCheck).insert(
       TaskCheckCompanion(
         title: Value(title),
-        finish: Value(finish ?? ''),
+        finished: Value(finished ?? ''),
         unfinished: Value(unfinished ?? ''),
         createdAt: Value(createdAt ?? DateTime.now()),
       ),
@@ -51,12 +54,17 @@ class AppDatabase extends _$AppDatabase {
 
     stmt.write(
       TaskCheckCompanion(
-        finish: finished != null ? Value(finished) : const Value.absent(),
+        finished: finished != null ? Value(finished) : const Value.absent(),
         unfinished: unfinished != null
             ? Value(unfinished)
             : const Value.absent(),
       ),
     );
+  }
+
+    Future<void> deleteTaskCheck(int id) async {
+    final stmt = delete(taskCheck)..where((tbl) => tbl.id.equals(id));
+    await stmt.go();
   }
 
   static QueryExecutor _openConnection() {

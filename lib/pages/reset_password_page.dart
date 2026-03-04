@@ -102,13 +102,16 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         },
       ),
     ].generateAndAssignController(_controllers);
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      final args = ModalRoute.of(context)?.settings.arguments;
-      if (args is String) {
-        _controllers["id"]?.text = args;
-      }
-    });
     _getAdminList();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is String) {
+      _controllers["id"]?.text = args;
+    }
   }
 
   _getAdminList() async {

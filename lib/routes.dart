@@ -16,7 +16,7 @@ final Map<String, WidgetBuilder> appRouters = {
   '/admin': (_) => AdminPage(),
   '/password': (_) => PasswordPage(),
   "/reset/password": (_) => ResetPasswordPage(),
-  "/task/check": (_) => TaskCHeckPage(),
+  "/task/check": (_) => TaskCheckPage(),
 };
 final globalNavigatorKey = GlobalKey<NavigatorState>();
 // ignore: prefer_function_declarations_over_variables

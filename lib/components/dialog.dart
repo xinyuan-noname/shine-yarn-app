@@ -181,7 +181,7 @@ Future<String?> showPromptDialog({
   return completer.future;
 }
 
-Future<T> showDropDownDialog<T>({
+Future<T?> showDropDownDialog<T>({
   required BuildContext context,
   required String title,
   required List<(T, String)> items,
