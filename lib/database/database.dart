@@ -21,8 +21,8 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 1;
 
-  Future<TaskCheckData> getTaskCheckItem(title) async {
-    final stmt = select(taskCheck)..where((t) => t.id.equals(title));
+  Future<TaskCheckData> getTaskCheckItem(int id) async {
+    final stmt = select(taskCheck)..where((t) => t.id.equals(id));
     return await stmt.getSingle();
   }
 
@@ -38,6 +38,23 @@ class AppDatabase extends _$AppDatabase {
         finish: Value(finish ?? ''),
         unfinished: Value(unfinished ?? ''),
         createdAt: Value(createdAt ?? DateTime.now()),
+      ),
+    );
+  }
+
+  Future<void> updateTaskCheckContent({
+    required int id,
+    String? finished,
+    String? unfinished,
+  }) async {
+    final stmt = update(taskCheck)..where((tbl) => tbl.id.equals(id));
+
+    stmt.write(
+      TaskCheckCompanion(
+        finish: finished != null ? Value(finished) : const Value.absent(),
+        unfinished: unfinished != null
+            ? Value(unfinished)
+            : const Value.absent(),
       ),
     );
   }

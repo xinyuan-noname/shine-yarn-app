@@ -8,7 +8,8 @@ import 'package:shine/services/ws.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
-import 'package:shine/views/user.dart';
+import 'package:shine/views/message_view.dart';
+import 'package:shine/views/user_view.dart';
 import 'package:shine/worker/worker.dart';
 
 const selectedTextStyle = TextStyle(fontFamily: "SmileySans");
@@ -36,6 +37,7 @@ class _HomePageState extends State<HomePage> {
   final ValueNotifier<String> _message = ValueNotifier("");
   final _bottomItemOptions = [
     (Icons.task_outlined, Icons.task, "任务"),
+    (Icons.message_outlined, Icons.message, "消息"),
     (Icons.group_outlined, Icons.group, "用户"),
   ];
 
@@ -95,6 +97,7 @@ class _HomePageState extends State<HomePage> {
           await _update();
         },
       ),
+      MessageView(),
       UserView(
         userType: _userType,
         userInfoList: _userInfoList,

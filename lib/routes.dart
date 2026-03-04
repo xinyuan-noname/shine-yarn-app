@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:shine/pages/admin.dart';
-import 'package:shine/pages/home.dart';
-import 'package:shine/pages/login.dart';
-import 'package:shine/pages/password.dart';
-import 'package:shine/pages/profile.dart';
-import 'package:shine/pages/register.dart';
-import 'package:shine/pages/reset_password.dart';
+import 'package:shine/pages/admin_page.dart';
+import 'package:shine/pages/home_page.dart';
+import 'package:shine/pages/login_page.dart';
+import 'package:shine/pages/password_page.dart';
+import 'package:shine/pages/profile_page.dart';
+import 'package:shine/pages/register_page.dart';
+import 'package:shine/pages/reset_password_page.dart';
 
 final Map<String, WidgetBuilder> appRouters = {
   "/login": (_) => LoginPage(),
