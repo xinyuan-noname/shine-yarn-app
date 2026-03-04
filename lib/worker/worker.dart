@@ -3,8 +3,10 @@ import 'dart:typed_data';
 
 import 'package:shine/services/api.dart';
 import 'package:shine/services/api_auth.dart';
+import 'package:shine/services/api_group.dart';
 import 'package:shine/services/api_profiles.dart';
 import 'package:shine/services/ws_task.dart';
+import 'package:shine/storage/group_storage.dart';
 import 'package:shine/storage/profile_storage.dart';
 
 class Worker {
@@ -88,6 +90,17 @@ class Worker {
   static syncMyData() async {
     await Worker.syncMyAvatar();
     await Worker.syncMyProfile();
+  }
+
+  static syncGlobalGroup({bool force = false}) async {
+    final list = GroupStorageKey.values;
+    for (final nameKeyEnum in list) {
+      if (!force) {
+        final storage = await GroupStorage.getGroupUserList(nameKeyEnum);
+        if (storage is List) continue;
+      }
+      await ApiGroup.getGlobalGroupData(nameKeyEnum);
+    }
   }
 
   static startTaskWebSocket() {

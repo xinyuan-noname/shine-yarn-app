@@ -45,6 +45,7 @@ class _HomePageState extends State<HomePage> {
     _update();
     _updateUserInfo();
     _startWs();
+    _prepareData();
   }
 
   Future<void> _startWs() async {
@@ -71,6 +72,10 @@ class _HomePageState extends State<HomePage> {
     _id = await ProfileStorage.getId();
     _userType = await TokenStorage.getTokenUserType();
     setState(() {});
+  }
+
+  Future<void> _prepareData() async {
+    Worker.syncGlobalGroup();
   }
 
   @override
