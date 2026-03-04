@@ -4,19 +4,30 @@ import 'package:shine/database/database.dart';
 
 final db = DatabaseProvider.instance;
 
-class CheckTaskStorageData {
+class TaskStorageData {
   final int id;
   final String title;
-  final List finished;
-  final List unfinished;
   final DateTime? createdAt;
-  const CheckTaskStorageData(
-    this.id,
-    this.title,
+  final bool personal;
+  const TaskStorageData({
+    required this.id,
+    required this.title,
+    required this.personal,
+    this.createdAt,
+  });
+}
+
+class CheckTaskStorageData extends TaskStorageData {
+  final List? finished;
+  final List? unfinished;
+  const CheckTaskStorageData({
+    required super.id,
+    required super.title,
+    super.personal = false,
+    super.createdAt,
     this.finished,
     this.unfinished,
-    this.createdAt,
-  );
+  });
 }
 
 class TaskStorage {
@@ -44,10 +55,35 @@ class TaskStorage {
     final List unfinished = [];
     if (df is List) finished.addAll(df);
     if (du is List) unfinished.addAll(du);
-    return CheckTaskStorageData(id, title, finished, unfinished, createdAt);
+    return CheckTaskStorageData(
+      id: id,
+      title: title,
+      finished: finished,
+      unfinished: unfinished,
+      createdAt: createdAt,
+    );
+  }
+
+  static Future<List<CheckTaskStorageData>> getAllCheckTask() async {
+    final dataList = await db.getAllTaskCheckItems();
+    return dataList
+        .map(
+          (ele) => CheckTaskStorageData(
+            id: ele.id,
+            title: ele.title,
+            createdAt: ele.createdAt,
+          ),
+        )
+        .toList();
   }
 
   static Future<void> delCheckTask({required int id}) async {
     await db.deleteTaskCheck(id);
+  }
+
+  static Future<List<TaskStorageData>> getAllTask() async {
+    final List<TaskStorageData> result = [];
+    result.addAll(await getAllCheckTask());
+    return result;
   }
 }

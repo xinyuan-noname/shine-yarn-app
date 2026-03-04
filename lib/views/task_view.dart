@@ -1,0 +1,29 @@
+import 'package:flutter/material.dart';
+import 'package:shine/storage/task_storage.dart';
+import 'package:shine/theme.dart';
+
+class TaskView extends StatelessWidget {
+  final RefreshCallback onRefresh;
+  final List<TaskStorageData> taskList;
+  const TaskView({
+    super.key,
+    required this.onRefresh,
+    required this.taskList,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return RefreshIndicator(
+      color: mainColorPurple90,
+      backgroundColor: bgColorLight,
+      onRefresh: onRefresh,
+      child: ListView.builder(
+        itemCount: taskList.length,
+        itemBuilder: (context, index) {
+          final data = taskList[index];
+          return ListTile(title: Text(data.title));
+        },
+      ),
+    );
+  }
+}

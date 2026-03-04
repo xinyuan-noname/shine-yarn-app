@@ -6,9 +6,11 @@ import 'package:shine/components/line.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/ws.dart';
 import 'package:shine/storage/profile_storage.dart';
+import 'package:shine/storage/task_storage.dart';
 import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/views/message_view.dart';
+import 'package:shine/views/task_view.dart';
 import 'package:shine/views/user_view.dart';
 import 'package:shine/worker/worker.dart';
 
@@ -33,6 +35,7 @@ class _HomePageState extends State<HomePage> {
   String _id = "??????????";
   int _currentIndex = 0;
   List _userInfoList = [];
+  List<TaskStorageData> _taskList = [];
   String _userType = "guest";
   final ValueNotifier<String> _message = ValueNotifier("");
   final _bottomItemOptions = [
@@ -48,6 +51,7 @@ class _HomePageState extends State<HomePage> {
     _updateUserInfo();
     _startWs();
     _prepareData();
+    _getTaskData();
   }
 
   Future<void> _startWs() async {
@@ -80,21 +84,20 @@ class _HomePageState extends State<HomePage> {
     Worker.syncGlobalGroup();
   }
 
+  Future<void> _getTaskData() async {
+    _taskList.addAll(await TaskStorage.getAllTask());
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<Widget> viewList = [
-      RefreshIndicator(
-        color: mainColorPurple90,
-        backgroundColor: bgColorLight,
-        child: ListView.builder(
-          itemCount: 1,
-          itemBuilder: (context, index) {
-            return ListTile(title: Text('Item $index'));
-          },
-        ),
+      TaskView(
+        taskList:_taskList,
         onRefresh: () async {
           await _fetchData();
           await _update();
+          await _getTaskData();
         },
       ),
       MessageView(),
@@ -104,6 +107,8 @@ class _HomePageState extends State<HomePage> {
         message: _message,
         onRefresh: () async {
           await _updateUserInfo();
+          await _fetchData();
+          await _update();
         },
       ),
     ];
