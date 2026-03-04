@@ -99,7 +99,8 @@ class Worker {
         final storage = await GroupStorage.getGroupUserList(nameKeyEnum);
         if (storage is List) continue;
       }
-      await ApiGroup.getGlobalGroupData(nameKeyEnum);
+      final result = await ApiGroup.getGlobalGroupData(nameKeyEnum);
+      if(result is List) GroupStorage.saveGroupUserList(nameKeyEnum, result);
     }
   }
 

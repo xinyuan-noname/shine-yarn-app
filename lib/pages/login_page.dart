@@ -114,7 +114,7 @@ class _LoginPageState extends State<LoginPage> {
                 onTap: () async {
                   final id = _controllers["id"]?.text;
                   await globalNavigatorKey.currentState?.pushNamed(
-                    "/reset_password",
+                    "/reset/password",
                     arguments: id,
                   );
                 },

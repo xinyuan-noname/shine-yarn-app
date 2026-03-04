@@ -35,11 +35,9 @@ const TextStyle profileValueTextStyle = TextStyle(
   fontSize: profileFontSize,
   color: Colors.grey,
 );
-const EdgeInsetsGeometry profilePadding = EdgeInsets.only(
-  left: 20,
-  right: 20,
-  top: 10,
-  bottom: 10,
+const EdgeInsetsGeometry profilePadding = EdgeInsets.symmetric(
+  horizontal: 20,
+  vertical: 10,
 );
 
 const TextStyle bottomListTitleTextStyle = TextStyle(
@@ -58,4 +56,18 @@ const labelStyle = TextStyle(
   fontFamily: "SmileySans",
   fontSize: 16,
   fontWeight: FontWeight.w500,
+);
+
+const listTitleStyle = TextStyle(
+  fontFamily: "SmileySans",
+  color: mainColorGreenBule,
+  fontSize: 20,
+);
+
+const bodyPadding = EdgeInsets.symmetric(vertical: 10, horizontal: 20);
+
+const purpleLinearGradient = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [darkColorPurple, mainColorPurple],
 );

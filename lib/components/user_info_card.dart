@@ -92,7 +92,10 @@ class UserInfoCard extends StatelessWidget {
                     color: mainColorGreenBule60,
                     borderRadius: BorderRadius.all(Radius.circular(10)),
                   ),
-                  padding: EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 1,
+                  ),
                   child: Text(
                     "签发密码令牌",
                     style: TextStyle(
@@ -150,10 +153,16 @@ class UserInfoCard extends StatelessWidget {
         if (userInfo['position'] is String)
           Container(
             margin: EdgeInsets.only(left: 10),
-            padding: EdgeInsets.symmetric(horizontal: 2,vertical: 0.5),
+            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0.5),
             decoration: BoxDecoration(
               color: Colors.redAccent,
-              boxShadow: [BoxShadow(color: bgColorLight60, spreadRadius: 1,offset: Offset(0.5, 0.5))],
+              boxShadow: [
+                BoxShadow(
+                  color: bgColorLight60,
+                  spreadRadius: 1,
+                  offset: Offset(0.5, 0.5),
+                ),
+              ],
               borderRadius: BorderRadius.all(Radius.circular(5)),
             ),
             child: Text(

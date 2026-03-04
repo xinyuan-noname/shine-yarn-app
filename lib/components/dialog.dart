@@ -116,11 +116,13 @@ Future<String?> showPromptDialog({
   required BuildContext context,
   required String title,
   required String label,
+  String? initValue,
   String confirmText = '确定',
   String cancelText = '取消',
+  int? min,
+  int? max,
 }) {
-  final formKey = GlobalKey<FormState>();
-  Map<String, dynamic> map = {};
+  final controller = TextEditingController();
   final completer = Completer<String?>();
   showDialog(
     barrierDismissible: false,
@@ -134,11 +136,12 @@ Future<String?> showPromptDialog({
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Form(
-              key: formKey,
               child: Input(
                 name: "prompt",
                 label: label,
-                onSavedMap: map,
+                minLength: min ?? 1,
+                maxLength: max ?? 32,
+                controller: controller,
                 hintStyle: hintStyle,
                 inputStyle: inputStyle,
                 labelStyle: labelStyle,
@@ -162,8 +165,7 @@ Future<String?> showPromptDialog({
           TextButton(
             style: dialogButtonStyle,
             onPressed: () {
-              formKey.currentState?.save();
-              final String? result = map['prompt'];
+              final result = controller.text;
               Navigator.pop(context);
               completer.complete(result);
             },
@@ -173,6 +175,9 @@ Future<String?> showPromptDialog({
       );
     },
   );
+  if (initValue is String) {
+    controller.text = initValue;
+  }
   return completer.future;
 }
 

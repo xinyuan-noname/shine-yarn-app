@@ -58,7 +58,7 @@ class _MyAppState extends State<MyApp> {
       routes: appRouters,
       navigatorKey: globalNavigatorKey,
       theme: ThemeData(
-        appBarTheme: AppBarTheme(backgroundColor: bgColorLight60),
+        appBarTheme: AppBarTheme(backgroundColor: bgColorLight),
         scaffoldBackgroundColor: bgColorLight,
         textTheme: TextTheme(labelMedium: TextStyle(fontSize: 14)),
         inputDecorationTheme: InputDecorationTheme(

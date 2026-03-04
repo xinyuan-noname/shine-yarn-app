@@ -13,7 +13,6 @@ class WsTask {
       "${WebSocketServer.wsUrl}/task?token=${WebSocketServer.wsToken}";
 
   static Future<void> connect() async {
-    print(WsTask._wsUrl);
     if (_channel != null) return;
     try {
       _channel = WebSocketChannel.connect(Uri.parse(_wsUrl));

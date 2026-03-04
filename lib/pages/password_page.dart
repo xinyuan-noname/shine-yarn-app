@@ -73,7 +73,7 @@ class _PasswordPageState extends State<PasswordPage> {
         top: false,
         child: Container(
           alignment: Alignment.center,
-          padding: EdgeInsets.only(top: 10, bottom: 10, left: 20, right: 20),
+          padding: bodyPadding,
           child: Column(
             children: [
               const Padding(padding: EdgeInsetsGeometry.only(top: 5)),

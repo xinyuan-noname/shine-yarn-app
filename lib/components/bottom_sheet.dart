@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
+import 'package:shine/routes.dart';
+import 'package:shine/storage/group_storage.dart';
 import 'package:shine/theme.dart';
 
 Widget _buildBottomSheetItem({
@@ -12,11 +14,8 @@ Widget _buildBottomSheetItem({
     child: Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [darkColorPurple, mainColorPurple],
-        ),
+        border: Border.all(width: 1,color: mainColorGreenBule60),
+        gradient: purpleLinearGradient,
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -38,13 +37,13 @@ void showTaskGridBottomSheet(BuildContext context) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: darkColorPurple,
+    backgroundColor:mainColorPurple,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (context) {
       return Container(
-        padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+        padding:const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
         child: GridView.count(
           crossAxisCount: 4,
           crossAxisSpacing: 12,
@@ -55,21 +54,25 @@ void showTaskGridBottomSheet(BuildContext context) {
             _buildBottomSheetItem(
               icon: Icons.checklist,
               title: '任务清查',
-              onTap: () async{
+              onTap: () async {
                 Navigator.pop(context);
-                final result = await showDropDownDialog<String>(
+                final result = await showDropDownDialog<GroupStorageKey>(
                   context: context,
                   title: "选择清查的范围",
                   items: [
-                    ("entire", "所有学生"),
-                    ("male", "所有男生"),
-                    ("female", "所有女生"),
-                    ("position", "所有班委"),
-                    ("admin", "所有管理员"),
+                    (GroupStorageKey.entire, "所有学生"),
+                    (GroupStorageKey.male, "所有男生"),
+                    (GroupStorageKey.female, "所有女生"),
+                    (GroupStorageKey.position, "所有班委"),
+                    (GroupStorageKey.user, "所有非班委"),
+                    (GroupStorageKey.admin, "所有管理员"),
                   ],
-                  initialValue: "entire",
+                  initialValue: GroupStorageKey.entire,
                 );
-                print(result);
+                globalNavigatorKey.currentState?.pushNamed(
+                  '/task/check',
+                  arguments: result,
+                );
               },
             ),
           ],
