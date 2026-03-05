@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/pages/task_check_page.dart';
@@ -34,8 +36,8 @@ Widget _buildBottomSheetItem({
   );
 }
 
-void showTaskGridBottomSheet(BuildContext context) {
-  showModalBottomSheet(
+Future<void> showTaskGridBottomSheet(BuildContext context) async {
+  return await showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: mainColorPurple,
@@ -71,7 +73,7 @@ void showTaskGridBottomSheet(BuildContext context) {
                   initialValue: GroupStorageKey.entire,
                 );
                 if (result is GroupStorageKey) {
-                  globalNavigatorKey.currentState?.pushNamed(
+                  await globalNavigatorKey.currentState?.pushNamed(
                     '/task/check',
                     arguments: TaskCheckArgs(groupStorageKey: result),
                   );

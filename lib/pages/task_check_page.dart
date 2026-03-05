@@ -35,7 +35,7 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is TaskCheckArgs) {
       final groupStorageKey = args.groupStorageKey;
-      final id = args.id;
+      final data = args.data;
       if (groupStorageKey is GroupStorageKey) {
         final result = await GroupStorage.getGroupUserList(groupStorageKey);
         if (result is List) {
@@ -44,9 +44,7 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
           setState(() {});
         }
       }
-      if (id is int) {
-        final data = await TaskStorage.getCheckTask(id: id);
-        if (data == null) return;
+      if (data is CheckTaskStorageData) {
         final finishedList = data.finished;
         final unfinishedList = data.unfinished;
         _taskId = data.id;
@@ -246,7 +244,7 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
 }
 
 class TaskCheckArgs {
-  final int? id;
+  final CheckTaskStorageData? data;
   final GroupStorageKey? groupStorageKey;
-  const TaskCheckArgs({this.groupStorageKey, this.id});
+  const TaskCheckArgs({this.groupStorageKey, this.data});
 }

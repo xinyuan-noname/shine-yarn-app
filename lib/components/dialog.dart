@@ -46,14 +46,14 @@ void showMessageDialog(
   );
 }
 
-void showAlertDialog({
+Future<void> showAlertDialog({
   required BuildContext context,
   required String title,
   required String content,
   VoidCallback? onYes,
   String confirmText = '确定',
-}) {
-  showDialog(
+}) async {
+  await showDialog(
     context: context,
     barrierDismissible: false,
     builder: (BuildContext context) {
@@ -79,9 +79,8 @@ Future<bool> showConfrimDialog({
   required String content,
   String confirmText = '确定',
   String cancelText = '取消',
-}) {
-  final completer = Completer<bool>();
-  showDialog(
+}) async {
+  final result = await showDialog<bool?>(
     context: context,
     barrierDismissible: false,
     builder: (BuildContext context) {
@@ -93,16 +92,14 @@ Future<bool> showConfrimDialog({
           TextButton(
             style: dialogButtonStyle,
             onPressed: () {
-              Navigator.pop(context);
-              completer.complete(false);
+              Navigator.pop(context, false);
             },
             child: Text(cancelText),
           ),
           TextButton(
             style: dialogButtonStyle,
             onPressed: () {
-              Navigator.pop(context);
-              completer.complete(true);
+              Navigator.pop(context, true);
             },
             child: Text(confirmText),
           ),
@@ -110,7 +107,7 @@ Future<bool> showConfrimDialog({
       );
     },
   );
-  return completer.future;
+  return result ?? false;
 }
 
 Future<String?> showPromptDialog({
@@ -126,7 +123,7 @@ Future<String?> showPromptDialog({
   final formKey = GlobalKey<FormState>();
   final controller = TextEditingController();
   final completer = Completer<String?>();
-  showDialog(
+  final future = showDialog(
     barrierDismissible: false,
     context: context,
     builder: (BuildContext context) {
@@ -186,6 +183,10 @@ Future<String?> showPromptDialog({
   if (initValue is String) {
     controller.text = initValue;
   }
+  future.then((_) {
+    if (!completer.isCompleted) return;
+    completer.complete(null);
+  });
   return completer.future;
 }
 
@@ -200,7 +201,7 @@ Future<T?> showDropDownDialog<T>({
   final completer = Completer<T>();
   T selectedValue = initialValue;
 
-  showDialog(
+  final future = showDialog(
     context: context,
     barrierDismissible: false,
     builder: (BuildContext context) {
@@ -255,6 +256,10 @@ Future<T?> showDropDownDialog<T>({
       );
     },
   );
+  future.then((_) {
+    if (!completer.isCompleted) return;
+    completer.complete(null);
+  });
   return completer.future;
 }
 
