@@ -47,11 +47,18 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _update();
-    _updateUserInfo();
-    _startWs();
+    _loadMine();
+    _updateAllData();
     _prepareData();
-    _getTaskData();
+    _startWs();
+    HomePageRefreshNotifier._refreshTask = () {
+      if (!mounted) return;
+      _updateTaskData();
+    };
+  }
+
+  Future<void> _prepareData() async {
+    Worker.syncGlobalGroup();
   }
 
   Future<void> _startWs() async {
@@ -68,11 +75,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _fetchData() async {
-    await Worker.syncMyData();
-  }
-
-  Future<void> _update() async {
+  Future<void> _loadMine() async {
     _username = await ProfileStorage.getName();
     _avatarPath = await ProfileStorage.getAvatarPath();
     _id = await ProfileStorage.getId();
@@ -80,14 +83,21 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
-  Future<void> _prepareData() async {
-    Worker.syncGlobalGroup();
+  Future<void> _updateMine() async {
+    await Worker.syncMyData();
+    _loadMine();
   }
 
-  Future<void> _getTaskData() async {
+  Future<void> _updateTaskData() async {
     _taskList.clear();
-    _taskList.addAll(await TaskStorage.getAllTask());
+    _taskList.addAll((await TaskStorage.getAllTask()).reversed.toList());
     setState(() {});
+  }
+
+  Future<void> _updateAllData() async {
+    _updateUserInfo();
+    _updateTaskData();
+    _updateMine();
   }
 
   @override
@@ -96,9 +106,7 @@ class _HomePageState extends State<HomePage> {
       TaskView(
         taskList: _taskList,
         onRefresh: () async {
-          await _fetchData();
-          await _update();
-          await _getTaskData();
+          await _updateTaskData();
         },
       ),
       MessageView(),
@@ -108,8 +116,6 @@ class _HomePageState extends State<HomePage> {
         message: _message,
         onRefresh: () async {
           await _updateUserInfo();
-          await _fetchData();
-          await _update();
         },
       ),
     ];
@@ -134,7 +140,6 @@ class _HomePageState extends State<HomePage> {
                     await globalNavigatorKey.currentState?.pushNamed(
                       '/profile',
                     );
-                    await _update();
                   }
                 },
                 child: _avatarPath != null
@@ -247,5 +252,24 @@ class _HomePageState extends State<HomePage> {
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    HomePageRefreshNotifier.clear();
+    super.dispose();
+  }
+}
+
+class HomePageRefreshNotifier {
+  static bool get isOk => _refreshTask != null;
+  static VoidCallback? _refreshTask;
+  static void refreshTask() {
+    _refreshTask ??= () {};
+    _refreshTask!();
+  }
+
+  static void clear() {
+    _refreshTask = null;
   }
 }

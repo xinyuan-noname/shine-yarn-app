@@ -194,7 +194,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           "passwordRequired": 1,
                         });
                         await ProfileStorage.savePasswordRequired(true);
-                        Navigator.pop(context);
+                        Navigator.of(context).pop();
                         globalNavigatorKey.currentState
                             ?.pushNamedAndRemoveUntil("/login", clearOldRouter);
                         setState(() {});
@@ -206,7 +206,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       onTap: () async {
                         ApiAuth.changePasswordRequired({"passwordRequired": 0});
                         await ProfileStorage.savePasswordRequired(false);
-                        Navigator.pop(context);
+                        Navigator.of(context).pop();
                         setState(() {});
                       },
                     ),
@@ -372,7 +372,7 @@ class _ProfilePageState extends State<ProfilePage> {
             showMessageDialog(context, _message);
             await _toLogout();
             if (context.mounted) {
-              Navigator.pop(context);
+              Navigator.of(context).pop();
             }
             globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
               "/login",
@@ -446,13 +446,13 @@ class _ProfilePageState extends State<ProfilePage> {
       if (imageData == null) {
         _message.value = "没有检测文件数据";
         Future(() {
-          Navigator.pop(context);
+          Navigator.of(context).pop();
         });
         return;
       }
       final success = await _toUpload(imageData);
       if (context.mounted) {
-        Navigator.pop(context);
+        Navigator.of(context).pop();
       }
       if (success) {
         await ProfileStorage.saveAvatar(imageData);

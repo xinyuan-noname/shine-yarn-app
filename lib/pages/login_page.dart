@@ -9,7 +9,6 @@ import 'package:shine/theme.dart';
 import 'package:shine/utils/server.dart';
 import 'package:shine/worker/worker.dart';
 
-
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -144,14 +143,14 @@ class _LoginPageState extends State<LoginPage> {
                 Worker.syncAllUser();
               }
               if (context.mounted) {
-                Navigator.pop(context);
+                Navigator.of(context).pop();
                 globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
                   '/home',
                   clearOldRouter,
                 );
               }
             } else if (context.mounted) {
-              Navigator.pop(context);
+              Navigator.of(context).pop();
             }
           },
           style: ElevatedButton.styleFrom(

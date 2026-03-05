@@ -87,7 +87,7 @@ class UserView extends StatelessWidget {
       successMessage: "签发成功",
     );
     if (context.mounted) {
-      Navigator.pop(context);
+      Navigator.of(context).pop();
     }
     if (success) {
       await Clipboard.setData(ClipboardData(text: "$id的密码令牌: $passwordKey"));

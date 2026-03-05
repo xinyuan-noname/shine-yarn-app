@@ -64,7 +64,7 @@ Future<void> showAlertDialog({
         actions: [
           TextButton(
             style: dialogButtonStyle,
-            onPressed: onYes ?? () => Navigator.pop(context),
+            onPressed: onYes ?? () => Navigator.of(context).pop(),
             child: Text(confirmText),
           ),
         ],
@@ -160,7 +160,7 @@ Future<String?> showPromptDialog({
           TextButton(
             style: dialogButtonStyle,
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.of(context).pop();
               completer.complete(null);
             },
             child: Text(cancelText),
@@ -170,7 +170,7 @@ Future<String?> showPromptDialog({
             onPressed: () {
               final result = controller.text;
               if (formKey.currentState!.validate() && result.isNotEmpty) {
-                Navigator.pop(context);
+                Navigator.of(context).pop();
                 completer.complete(result);
               }
             },
@@ -184,7 +184,7 @@ Future<String?> showPromptDialog({
     controller.text = initValue;
   }
   future.then((_) {
-    if (!completer.isCompleted) return;
+    if (completer.isCompleted) return;
     completer.complete(null);
   });
   return completer.future;
@@ -198,7 +198,7 @@ Future<T?> showDropDownDialog<T>({
   String confirmText = '确定',
   String cancelText = '取消',
 }) {
-  final completer = Completer<T>();
+  final completer = Completer<T?>();
   T selectedValue = initialValue;
 
   final future = showDialog(
@@ -239,15 +239,15 @@ Future<T?> showDropDownDialog<T>({
           TextButton(
             style: dialogButtonStyle,
             onPressed: () {
-              Navigator.pop(context);
-              completer.complete(selectedValue);
+              Navigator.of(context).pop();
+              completer.complete(null);
             },
             child: Text(cancelText),
           ),
           TextButton(
             style: dialogButtonStyle,
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.of(context).pop();
               completer.complete(selectedValue);
             },
             child: Text(confirmText),
@@ -257,7 +257,7 @@ Future<T?> showDropDownDialog<T>({
     },
   );
   future.then((_) {
-    if (!completer.isCompleted) return;
+    if (completer.isCompleted) return;
     completer.complete(null);
   });
   return completer.future;

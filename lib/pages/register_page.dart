@@ -103,7 +103,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       color: mainColorPurple,
                       gap: 5,
                       onSavedMap: map,
-                      initialValue: false
+                      initialValue: false,
                     ),
                   ],
                 ),
@@ -126,10 +126,10 @@ class _RegisterPageState extends State<RegisterPage> {
             _formKey.currentState?.save();
             final success = await _toRegister();
             if (context.mounted) {
-              Navigator.pop(context);
+              Navigator.of(context).pop();
             }
             if (success) {
-              Navigator.pop(context);
+              Navigator.of(context).pop();
             }
           },
           child: Row(

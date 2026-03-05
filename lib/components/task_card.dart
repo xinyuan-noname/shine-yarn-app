@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/pages/home_page.dart';
+import 'package:shine/pages/task_check_page.dart';
+import 'package:shine/routes.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/time.dart';
@@ -11,20 +14,40 @@ class TaskCard extends StatelessWidget {
   final GestureLongPressCallback? onLongPress;
   final DismissDirectionCallback? onDismissed;
   final TaskStorageData taskData;
+  final VoidCallback? routerChangeCallback;
+  final VoidCallback? deleteCallback;
   const TaskCard({
     super.key,
     this.onPress,
     this.onLongPress,
     required this.taskData,
     this.onDismissed,
+    this.routerChangeCallback,
+    this.deleteCallback,
   });
 
   @override
   Widget build(BuildContext context) {
+    final onPressMap = <Type, GestureTapCallback>{
+      CheckTaskStorageData: () async {
+        final CheckTaskStorageData data = taskData as CheckTaskStorageData;
+        await globalNavigatorKey.currentState?.pushNamed(
+          '/task/check',
+          arguments: TaskCheckArgs(data: data),
+        );
+        HomePageRefreshNotifier.refreshTask();
+      },
+    };
+    final onDismissedMap = <Type, DismissDirectionCallback>{
+      CheckTaskStorageData: (direction) async {
+        if (direction != DismissDirection.endToStart) return;
+        await TaskStorage.delCheckTask(id: taskData.id);
+      },
+    };
     return Dismissible(
       key: ValueKey(taskData.hashCode),
       direction: DismissDirection.endToStart,
-      onDismissed: onDismissed,
+      onDismissed: onDismissed ?? onDismissedMap[taskData.runtimeType],
       child: Card(
         elevation: 2,
         color: mainColorPurple,
@@ -33,7 +56,7 @@ class TaskCard extends StatelessWidget {
         shadowColor: mainColorGreenBule60,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: onPress,
+          onTap: onPress ?? onPressMap[taskData.runtimeType],
           onLongPress: onLongPress,
           child: Container(
             decoration: BoxDecoration(

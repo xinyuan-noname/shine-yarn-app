@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
+import 'package:shine/pages/home_page.dart';
 import 'package:shine/pages/task_check_page.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/storage/group_storage.dart';
@@ -58,7 +59,7 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
               icon: Icons.checklist,
               title: '任务清查',
               onTap: () async {
-                Navigator.pop(context);
+                Navigator.of(context).pop();
                 final result = await showDropDownDialog<GroupStorageKey>(
                   context: context,
                   title: "选择清查的范围",
@@ -77,6 +78,7 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
                     '/task/check',
                     arguments: TaskCheckArgs(groupStorageKey: result),
                   );
+                  HomePageRefreshNotifier.refreshTask();
                 }
               },
             ),

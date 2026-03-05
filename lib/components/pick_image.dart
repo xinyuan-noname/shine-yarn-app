@@ -19,7 +19,7 @@ Future<void> pickImage(
               leading: Icon(Icons.photo_album),
               title: Text('从相册选择', style: bottomListTitleTextStyle),
               onTap: () async {
-                Navigator.pop(context);
+                Navigator.of(context).pop();
                 final XFile? image = await _picker.pickImage(
                   source: ImageSource.gallery,
                   imageQuality: 80,
@@ -35,7 +35,7 @@ Future<void> pickImage(
             //   leading: Icon(Icons.camera_alt),
             //   title: Text('拍照', style: bottomListTitleTextStyle),
             //   onTap: () async {
-            //     Navigator.pop(context);
+            //     Navigator.of(context).pop();
             //     final XFile? image = await _picker.pickImage(
             //       source: ImageSource.camera,
             //       imageQuality: 80,

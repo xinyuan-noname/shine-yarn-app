@@ -55,7 +55,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     });
   }
 
-  void _initInputs(){
+  void _initInputs() {
     _inputs = [
       InputProps.number(
         label: "学号",
@@ -359,10 +359,10 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       failMessageDuration: Duration(milliseconds: 800),
     );
     if (context.mounted) {
-      Navigator.pop(context);
+      Navigator.of(context).pop();
     }
     if (success) {
-      Navigator.pop(context);
+      Navigator.of(context).pop();
     }
   }
 

@@ -98,10 +98,10 @@ class _PasswordPageState extends State<PasswordPage> {
             showMessageDialog(context, _message);
             final result = await _toChangePassword();
             if (context.mounted) {
-              Navigator.pop(context);
+              Navigator.of(context).pop();
             }
             if (result) {
-              Navigator.pop(context);
+              Navigator.of(context).pop();
             }
           },
           child: Row(

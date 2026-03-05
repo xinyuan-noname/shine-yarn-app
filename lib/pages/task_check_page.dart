@@ -85,11 +85,19 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
               unfinished: _unselectedList,
             );
           }
+        } else if (_taskId != null) {
+          if (_unselectedList.isEmpty) {
+            await TaskStorage.delCheckTask(id: _taskId!);
+          } else {
+            await TaskStorage.updateCheckTask(
+              id: _taskId!,
+              title: _title,
+              finished: _selectedList,
+              unfinished: _unselectedList,
+            );
+          }
         }
-        if (_unselectedList.isEmpty && _taskId != null) {
-          await TaskStorage.delCheckTask(id: _taskId!);
-        }
-        Navigator.pop(context);
+        Navigator.of(context).pop();
       },
       child: Scaffold(
         appBar: AppBar(

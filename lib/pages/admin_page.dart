@@ -42,7 +42,7 @@ class _AdminPageState extends State<AdminPage> {
       content: "请立即上传",
       onYes: () async {
         if (context.mounted) {
-          Navigator.pop(context);
+          Navigator.of(context).pop();
         }
         bool success = false;
         while (!success) {
@@ -51,7 +51,7 @@ class _AdminPageState extends State<AdminPage> {
           showMessageDialog(context, _message);
           success = await _checkSignature();
           if (context.mounted) {
-            Navigator.pop(context);
+            Navigator.of(context).pop();
             _isOk = success;
             await _getUserInfo();
             setState(() {});
@@ -108,7 +108,7 @@ class _AdminPageState extends State<AdminPage> {
                           title: Text('创建新用户', style: bottomListTitleTextStyle),
                           onTap: () async {
                             if (context.mounted) {
-                              Navigator.pop(context);
+                              Navigator.of(context).pop();
                               await globalNavigatorKey.currentState?.pushNamed(
                                 "/register",
                               );
@@ -125,7 +125,7 @@ class _AdminPageState extends State<AdminPage> {
                           ),
                           onTap: () async {
                             if (context.mounted) {
-                              Navigator.pop(context);
+                              Navigator.of(context).pop();
                               _registerFromExcel();
                               await _getUserInfo();
                               setState(() {});
@@ -276,7 +276,7 @@ class _AdminPageState extends State<AdminPage> {
                               ),
                               onTap: () async {
                                 if (context.mounted) {
-                                  Navigator.pop(context);
+                                  Navigator.of(context).pop();
                                 }
                                 await _changeAdmin(id, isAdmin ? 0 : 1);
                                 await _getUserInfo();
@@ -291,7 +291,7 @@ class _AdminPageState extends State<AdminPage> {
                               ),
                               onTap: () async {
                                 if (context.mounted) {
-                                  Navigator.pop(context);
+                                  Navigator.of(context).pop();
                                 }
                                 final position = await showPromptDialog(
                                   context: context,
@@ -378,7 +378,7 @@ class _AdminPageState extends State<AdminPage> {
       successMessage: "收到注册信息",
     );
     if (context.mounted) {
-      Navigator.pop(context);
+      Navigator.of(context).pop();
     }
     if (success) {
       _getUserInfo().then((_) {
@@ -405,7 +405,7 @@ class _AdminPageState extends State<AdminPage> {
       successMessage: "更改成功",
     );
     if (context.mounted) {
-      Navigator.pop(context);
+      Navigator.of(context).pop();
     }
     if (success) {
       await _getUserInfo();
@@ -426,7 +426,7 @@ class _AdminPageState extends State<AdminPage> {
       successMessage: "更改成功",
     );
     if (context.mounted) {
-      Navigator.pop(context);
+      Navigator.of(context).pop();
     }
     if (success) {
       await _getUserInfo();
@@ -447,7 +447,7 @@ class _AdminPageState extends State<AdminPage> {
       successMessage: "删除成功",
     );
     if (context.mounted) {
-      Navigator.pop(context);
+      Navigator.of(context).pop();
     }
     if (success) {
       await _getUserInfo();
@@ -485,7 +485,7 @@ class _AdminPageState extends State<AdminPage> {
       successMessage: "删除成功",
     );
     if (context.mounted) {
-      Navigator.pop(context);
+      Navigator.of(context).pop();
     }
     if (success) {
       _batchMode = false;
@@ -521,7 +521,7 @@ class _AdminPageState extends State<AdminPage> {
       successMessage: "签发成功",
     );
     if (context.mounted) {
-      Navigator.pop(context);
+      Navigator.of(context).pop();
     }
     if (success) {
       await Clipboard.setData(ClipboardData(text: "$id的密码令牌: $passwordKey"));
