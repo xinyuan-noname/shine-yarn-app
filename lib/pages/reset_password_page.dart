@@ -44,6 +44,18 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   @override
   void initState() {
     super.initState();
+    _initInputs();
+    _getAdminList();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is String) {
+        _controllers["id"]?.text = args;
+      }
+    });
+  }
+
+  void _initInputs(){
     _inputs = [
       InputProps.number(
         label: "学号",
@@ -102,16 +114,6 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         },
       ),
     ].generateAndAssignController(_controllers);
-    _getAdminList();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is String) {
-      _controllers["id"]?.text = args;
-    }
   }
 
   _getAdminList() async {

@@ -64,7 +64,6 @@ class TaskCard extends StatelessWidget {
                       children: [
                         Wrap(
                           children: [
-                            if (taskData.personal) Icon(Icons.lock),
                             Text(
                               taskData.title,
                               style: const TextStyle(
@@ -73,6 +72,15 @@ class TaskCard extends StatelessWidget {
                                 color: bgColorLight,
                               ),
                             ),
+                            if (taskData.personal)
+                              Transform.translate(
+                                offset: Offset(4, 3),
+                                child: Icon(
+                                  Icons.lock,
+                                  size: 24,
+                                  color: bgColorLight,
+                                ),
+                              ),
                           ],
                         ),
                         _buildTaskTag(),

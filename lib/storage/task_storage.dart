@@ -75,6 +75,7 @@ class TaskStorage {
       finished: finished,
       unfinished: unfinished,
       createdAt: createdAt,
+      personal: true,
     );
   }
 
@@ -93,6 +94,7 @@ class TaskStorage {
         createdAt: ele.createdAt,
         finished: finished,
         unfinished: unfinished,
+        personal: true,
       );
     }).toList();
   }

@@ -25,12 +25,10 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
   @override
   void initState() {
     super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _handleArgs();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _handleArgs();
+    });
   }
 
   Future<void> _handleArgs() async {
@@ -57,7 +55,7 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
         _selectedList.addAll(finishedList);
         _unselectedList.clear();
         _unselectedList.addAll(unfinishedList);
-              setState(() {});
+        setState(() {});
       }
     }
   }
@@ -77,7 +75,7 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
             confirmText: "保存",
             cancelText: "退出",
             min: 2,
-            max: 32,
+            max: 6,
             initValue: '',
           );
           if (title is String) {
