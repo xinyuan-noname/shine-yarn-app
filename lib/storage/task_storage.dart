@@ -18,15 +18,15 @@ class TaskStorageData {
 }
 
 class CheckTaskStorageData extends TaskStorageData {
-  final List? finished;
-  final List? unfinished;
+  final List finished;
+  final List unfinished;
   const CheckTaskStorageData({
     required super.id,
     required super.title,
     super.personal = false,
     super.createdAt,
-    this.finished,
-    this.unfinished,
+    required this.finished,
+    required this.unfinished,
   });
 }
 
@@ -41,6 +41,20 @@ class TaskStorage {
       title: title,
       finished: jsonEncode(finished),
       unfinished: jsonEncode(unfinished),
+    );
+  }
+
+  static Future<void> updateCheckTask({
+    required int id,
+    String? title,
+    List? finished,
+    List? unfinished,
+  }) async {
+    await db.updateTaskCheckContent(
+      id: id,
+      title: title,
+      finished: finished == null ? null : jsonEncode(finished),
+      unfinished: unfinished == null ? null : jsonEncode(unfinished),
     );
   }
 
@@ -66,15 +80,21 @@ class TaskStorage {
 
   static Future<List<CheckTaskStorageData>> getAllCheckTask() async {
     final dataList = await db.getAllTaskCheckItems();
-    return dataList
-        .map(
-          (ele) => CheckTaskStorageData(
-            id: ele.id,
-            title: ele.title,
-            createdAt: ele.createdAt,
-          ),
-        )
-        .toList();
+    return dataList.map((ele) {
+      final df = jsonDecode(ele.finished);
+      final du = jsonDecode(ele.unfinished);
+      final List finished = [];
+      final List unfinished = [];
+      if (df is List) finished.addAll(df);
+      if (du is List) unfinished.addAll(du);
+      return CheckTaskStorageData(
+        id: ele.id,
+        title: ele.title,
+        createdAt: ele.createdAt,
+        finished: finished,
+        unfinished: unfinished,
+      );
+    }).toList();
   }
 
   static Future<void> delCheckTask({required int id}) async {

@@ -30,18 +30,18 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final List<TaskStorageData> _taskList = [];
   String? _avatarPath;
   String _username = "???";
   String _id = "??????????";
   int _currentIndex = 0;
   List _userInfoList = [];
-  List<TaskStorageData> _taskList = [];
   String _userType = "guest";
   final ValueNotifier<String> _message = ValueNotifier("");
   final _bottomItemOptions = [
     (Icons.task_outlined, Icons.task, "任务"),
     (Icons.message_outlined, Icons.message, "消息"),
-    (Icons.group_outlined, Icons.group, "用户"),
+    (Icons.group_outlined, Icons.group, "成员"),
   ];
 
   @override
@@ -85,6 +85,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _getTaskData() async {
+    _taskList.clear();
     _taskList.addAll(await TaskStorage.getAllTask());
     setState(() {});
   }
@@ -93,7 +94,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final List<Widget> viewList = [
       TaskView(
-        taskList:_taskList,
+        taskList: _taskList,
         onRefresh: () async {
           await _fetchData();
           await _update();

@@ -41,7 +41,7 @@ class UserView extends StatelessWidget {
   Widget _buildViewList() {
     return ListView.builder(
       itemCount: max(userInfoList.length, 1),
-      padding: EdgeInsets.all(16),
+      padding: viewPadding,
       itemBuilder: (context, index) {
         if (userInfoList.isEmpty) {
           return Container(

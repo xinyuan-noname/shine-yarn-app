@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
@@ -16,8 +18,8 @@ class TaskCheckPage extends StatefulWidget {
 }
 
 class _TaskCHeckPageState extends State<TaskCheckPage> {
-  int? taskId;
-  String _name = "清查任务";
+  int? _taskId;
+  String _title = "清查任务";
   final List _unselectedList = [];
   final List _selectedList = [];
   @override
@@ -39,34 +41,23 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
       if (groupStorageKey is GroupStorageKey) {
         final result = await GroupStorage.getGroupUserList(groupStorageKey);
         if (result is List) {
+          _unselectedList.clear();
           _unselectedList.addAll(result);
           setState(() {});
         }
       }
-      if (id is String) {}
-    }
-  }
-
-  Future<void> _saveOnPop() async {
-    final title = await showPromptDialog(
-      context: context,
-      title: "是否保存？是，则为本次任务命名；否，则点击取消。",
-      label: "任务名称",
-    );
-    if (title is String) {
-      await TaskStorage.addCheckTask(
-        title: title,
-        finished: _selectedList,
-        unfinished: _unselectedList,
-      );
-    } else {
-      final result = await showConfrimDialog(
-        context: context,
-        title: "确认退出吗？",
-        content: "该操作会丢失所有数据",
-      );
-      if (result == false) {
-        await _saveOnPop();
+      if (id is int) {
+        final data = await TaskStorage.getCheckTask(id: id);
+        if (data == null) return;
+        final finishedList = data.finished;
+        final unfinishedList = data.unfinished;
+        _taskId = data.id;
+        _title = data.title;
+        _selectedList.clear();
+        _selectedList.addAll(finishedList);
+        _unselectedList.clear();
+        _unselectedList.addAll(unfinishedList);
+              setState(() {});
       }
     }
   }
@@ -74,37 +65,60 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
         if (!mounted) return;
-        if (taskId == null) {
-          await _saveOnPop();
+        if (_unselectedList.isNotEmpty && _taskId == null) {
+          final title = await showPromptDialog(
+            context: context,
+            title: "该任务暂未完成，是否保存？",
+            label: "任务名称",
+            confirmText: "保存",
+            cancelText: "退出",
+            min: 2,
+            max: 32,
+            initValue: '',
+          );
+          if (title is String) {
+            await TaskStorage.addCheckTask(
+              title: title,
+              finished: _selectedList,
+              unfinished: _unselectedList,
+            );
+          }
         }
-        if (_unselectedList.isEmpty && taskId != null) {
-          await TaskStorage.delCheckTask(id: taskId!);
-          return;
+        if (_unselectedList.isEmpty && _taskId != null) {
+          await TaskStorage.delCheckTask(id: _taskId!);
         }
+        Navigator.pop(context);
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_name, style: titleTextStyle),
+          title: Text(_title, style: titleTextStyle),
           centerTitle: true,
           bottom: bottomLine,
           actions: [
-            IconButton(
-              onPressed: () async {
-                final result = await showPromptDialog(
-                  context: context,
-                  title: "请输入更改任务名",
-                  label: "更改后的任务名",
-                  initValue: _name,
-                );
-                if (result is String) {
-                  _name = result;
-                  setState(() {});
-                }
-              },
-              icon: Icon(Icons.edit, size: 28),
-            ),
+            if (_taskId is int)
+              IconButton(
+                onPressed: () async {
+                  final result = await showPromptDialog(
+                    context: context,
+                    title: "请输入更改任务名",
+                    label: "更改后的任务名",
+                    initValue: _title,
+                  );
+                  if (result is String) {
+                    await TaskStorage.updateCheckTask(
+                      id: _taskId!,
+                      title: result,
+                    );
+                    _title = result;
+                    setState(() {});
+                  }
+                },
+                icon: Icon(Icons.edit, size: 28),
+              ),
           ],
         ),
         body: _buildBodyContent(),

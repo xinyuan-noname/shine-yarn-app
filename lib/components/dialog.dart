@@ -122,6 +122,7 @@ Future<String?> showPromptDialog({
   int? min,
   int? max,
 }) {
+  final formKey = GlobalKey<FormState>();
   final controller = TextEditingController();
   final completer = Completer<String?>();
   showDialog(
@@ -136,6 +137,7 @@ Future<String?> showPromptDialog({
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Form(
+              key: formKey,
               child: Input(
                 name: "prompt",
                 label: label,
@@ -166,8 +168,10 @@ Future<String?> showPromptDialog({
             style: dialogButtonStyle,
             onPressed: () {
               final result = controller.text;
-              Navigator.pop(context);
-              completer.complete(result);
+              if (formKey.currentState!.validate() && result.isNotEmpty) {
+                Navigator.pop(context);
+                completer.complete(result);
+              }
             },
             child: Text(confirmText),
           ),

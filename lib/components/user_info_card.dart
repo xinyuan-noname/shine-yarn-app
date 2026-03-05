@@ -10,13 +10,6 @@ const TextStyle adminUsernameTextStyle = TextStyle(
   fontSize: adminFontSize,
   color: mainColorGreenBule,
 );
-const TextStyle adminItemTextStyle = TextStyle(
-  fontFamily: 'SmileySans',
-  fontSize: adminFontSize * 0.8,
-  color: bgColorLight80,
-  fontWeight: FontWeight.w300,
-  letterSpacing: 1.2,
-);
 
 class UserInfoCard extends StatelessWidget {
   final Map<String, dynamic> userInfo;
@@ -51,11 +44,7 @@ class UserInfoCard extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [darkColorPurple, mainColorPurple],
-            ),
+            gradient: purpleLinearGradient,
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -182,10 +171,10 @@ class UserInfoCard extends StatelessWidget {
   Widget _buildIdRow() {
     return Row(
       children: [
-        Text("学号", style: adminItemTextStyle),
-        Text(":", style: adminItemTextStyle),
+        Text("学号", style: cardItemTextStyle),
+        Text(":", style: cardItemTextStyle),
         const SizedBox(width: 5),
-        Text(userInfo['id'], style: adminItemTextStyle),
+        Text(userInfo['id'], style: cardItemTextStyle),
       ],
     );
   }
@@ -193,8 +182,8 @@ class UserInfoCard extends StatelessWidget {
   Widget _buildGenderRow() {
     return Row(
       children: [
-        Text("性别", style: adminItemTextStyle),
-        Text(":", style: adminItemTextStyle),
+        Text("性别", style: cardItemTextStyle),
+        Text(":", style: cardItemTextStyle),
         const SizedBox(width: 5),
         Text(
           userInfo['gender'] == "male"
@@ -202,7 +191,7 @@ class UserInfoCard extends StatelessWidget {
               : userInfo["gender"] == "female"
               ? "女"
               : "无可奉告",
-          style: adminItemTextStyle,
+          style: cardItemTextStyle,
         ),
         Transform.rotate(
           angle: math.pi / 24,
@@ -237,12 +226,12 @@ class UserInfoCard extends StatelessWidget {
   Widget _buildPasswordRow() {
     return Row(
       children: [
-        Text("强制密码登录", style: adminItemTextStyle),
-        Text(":", style: adminItemTextStyle),
+        Text("强制密码登录", style: cardItemTextStyle),
+        Text(":", style: cardItemTextStyle),
         const SizedBox(width: 5),
         Text(
           userInfo['passwordRequired'] == true ? "是" : "否",
-          style: adminItemTextStyle,
+          style: cardItemTextStyle,
         ),
       ],
     );

@@ -86,7 +86,7 @@ class _ProfilePageState extends State<ProfilePage> {
       child: InkWell(
         onTap: () {},
         child: Container(
-          padding: profilePadding,
+          padding: bodyPadding,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -105,7 +105,7 @@ class _ProfilePageState extends State<ProfilePage> {
       child: InkWell(
         onTap: () {},
         child: Container(
-          padding: profilePadding,
+          padding: bodyPadding,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -131,7 +131,7 @@ class _ProfilePageState extends State<ProfilePage> {
       child: InkWell(
         onTap: () {},
         child: Container(
-          padding: profilePadding,
+          padding: bodyPadding,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -155,7 +155,7 @@ class _ProfilePageState extends State<ProfilePage> {
           }
         },
         child: Container(
-          padding: profilePadding,
+          padding: bodyPadding,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const [
@@ -217,7 +217,7 @@ class _ProfilePageState extends State<ProfilePage> {
           );
         },
         child: Container(
-          padding: profilePadding,
+          padding: bodyPadding,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -254,7 +254,7 @@ class _ProfilePageState extends State<ProfilePage> {
           }
         },
         child: Container(
-          padding: profilePadding,
+          padding: bodyPadding,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -273,7 +273,7 @@ class _ProfilePageState extends State<ProfilePage> {
       child: InkWell(
         onTap: () {},
         child: Container(
-          padding: profilePadding,
+          padding: bodyPadding,
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -292,7 +292,7 @@ class _ProfilePageState extends State<ProfilePage> {
       child: InkWell(
         onTap: () {},
         child: Container(
-          padding: profilePadding,
+          padding: bodyPadding,
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

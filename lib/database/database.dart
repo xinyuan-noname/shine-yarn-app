@@ -7,7 +7,7 @@ part 'database.g.dart';
 
 class TaskCheck extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get title => text().withLength(min: 6, max: 32)();
+  TextColumn get title => text().withLength(min: 2, max: 32)();
   TextColumn get finished => text()();
   TextColumn get unfinished => text()();
   DateTimeColumn get createdAt => dateTime().nullable()();
@@ -47,6 +47,7 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> updateTaskCheckContent({
     required int id,
+    String? title,
     String? finished,
     String? unfinished,
   }) async {
@@ -58,11 +59,12 @@ class AppDatabase extends _$AppDatabase {
         unfinished: unfinished != null
             ? Value(unfinished)
             : const Value.absent(),
+        title: title != null ? Value(title) : const Value.absent(),
       ),
     );
   }
 
-    Future<void> deleteTaskCheck(int id) async {
+  Future<void> deleteTaskCheck(int id) async {
     final stmt = delete(taskCheck)..where((tbl) => tbl.id.equals(id));
     await stmt.go();
   }

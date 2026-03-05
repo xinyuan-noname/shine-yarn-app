@@ -3,12 +3,17 @@ import 'package:flutter/material.dart';
 const bgColorLight = Color.fromRGBO(230, 240, 255, 1);
 const bgColorLight80 = Color.fromRGBO(230, 240, 255, 0.80);
 const bgColorLight60 = Color.fromRGBO(230, 240, 255, 0.60);
+
+const deepColorBlue = Color.fromARGB(255, 0, 187, 255);
+
 const mainColorGreenBule = Color.fromARGB(255, 7, 247, 255);
 const mainColorGreenBule60 = Color.fromRGBO(7, 247, 255, 0.60);
 const mainColorGreenBule50 = Color.fromRGBO(7, 247, 255, 0.50);
 const mainColorGreenBule40 = Color.fromRGBO(7, 247, 255, 0.40);
 const mainColorGreenBule30 = Color.fromRGBO(7, 247, 255, 0.30);
+
 const darkColorPurple = Color.fromRGBO(107, 99, 187, 1);
+
 const mainColorPurple = Color.fromRGBO(167, 157, 255, 1);
 const mainColorPurple90 = Color.fromRGBO(167, 157, 255, 0.9);
 const mainColorPurple80 = Color.fromRGBO(167, 157, 255, 0.8);
@@ -35,10 +40,6 @@ const TextStyle profileValueTextStyle = TextStyle(
   fontSize: profileFontSize,
   color: Colors.grey,
 );
-const EdgeInsetsGeometry profilePadding = EdgeInsets.symmetric(
-  horizontal: 20,
-  vertical: 10,
-);
 
 const TextStyle bottomListTitleTextStyle = TextStyle(
   fontFamily: "SmileySans",
@@ -64,10 +65,29 @@ const listTitleStyle = TextStyle(
   fontSize: 20,
 );
 
+const TextStyle cardItemTextStyle = TextStyle(
+  fontFamily: 'SmileySans',
+  fontSize: 19.2,
+  color: bgColorLight80,
+  fontWeight: FontWeight.w300,
+  letterSpacing: 1.2,
+);
+
 const bodyPadding = EdgeInsets.symmetric(vertical: 10, horizontal: 20);
+const viewPadding = EdgeInsets.all(16);
 
 const purpleLinearGradient = LinearGradient(
   begin: Alignment.topLeft,
   end: Alignment.bottomRight,
   colors: [darkColorPurple, mainColorPurple],
+);
+const blueLinearGradient = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [deepColorBlue, mainColorGreenBule],
+);
+const whiteLinearGradient = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [Colors.white, bgColorLight],
 );
