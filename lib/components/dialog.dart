@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shine/components/input.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/theme.dart';
@@ -151,6 +152,9 @@ Future<String?> showPromptDialog({
                   borderSide: BorderSide(width: 1.0, color: Colors.grey),
                 ),
                 color: mainColorPurple90,
+                inputFormatters: [
+                  FilteringTextInputFormatter.deny(RegExp(r"\s")),
+                ],
               ),
             ),
           ],

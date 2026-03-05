@@ -67,15 +67,17 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
         if (!mounted) return;
+        const min = 2;
+        const max = 8;
         if (_unselectedList.isNotEmpty && _taskId == null) {
           final title = await showPromptDialog(
             context: context,
-            title: "该任务暂未完成，是否保存？",
+            title: "该任务暂未完成，是否保存？(名称在$min到$max个字符之间)",
             label: "任务名称",
             confirmText: "保存",
             cancelText: "退出",
-            min: 2,
-            max: 6,
+            min: min,
+            max: max,
             initValue: '',
           );
           if (title is String) {

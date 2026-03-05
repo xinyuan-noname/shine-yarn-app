@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shine/components/line.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/time.dart';
@@ -8,31 +9,37 @@ const double largeIconSize = 48;
 class TaskCard extends StatelessWidget {
   final GestureTapCallback? onPress;
   final GestureLongPressCallback? onLongPress;
+  final DismissDirectionCallback? onDismissed;
   final TaskStorageData taskData;
   const TaskCard({
     super.key,
     this.onPress,
     this.onLongPress,
     required this.taskData,
+    this.onDismissed,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onLongPress: onLongPress,
-      onTap: onPress,
+    return Dismissible(
+      key: ValueKey(taskData.hashCode),
+      direction: DismissDirection.endToStart,
+      onDismissed: onDismissed,
       child: Card(
         elevation: 2,
         color: mainColorPurple,
         margin: const EdgeInsets.symmetric(vertical: 6),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         shadowColor: mainColorGreenBule60,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            gradient: blueLinearGradient,
-          ),
-          child: Padding(
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onPress,
+          onLongPress: onLongPress,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: blueLinearGradient,
+            ),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,41 +66,54 @@ class TaskCard extends StatelessWidget {
                       padding: const EdgeInsets.all(8),
                       child: _buildTaskIcon(),
                     ),
-                    SizedBox(width: 20),
-                    Column(
-                      children: [
-                        Wrap(
-                          children: [
-                            Text(
-                              taskData.title,
-                              style: const TextStyle(
-                                fontFamily: 'SmileySans',
-                                fontSize: 20,
-                                color: bgColorLight,
-                              ),
-                            ),
-                            if (taskData.personal)
-                              Transform.translate(
-                                offset: Offset(4, 3),
-                                child: Icon(
-                                  Icons.lock,
-                                  size: 24,
-                                  color: bgColorLight,
+                    SizedBox(width: 10),
+                    SizedBox(
+                      width: 100,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (taskData.personal)
+                                Transform.translate(
+                                  offset: Offset(0, 0),
+                                  child: Icon(
+                                    Icons.lock,
+                                    size: 20,
+                                    color: bgColorLight,
+                                  ),
+                                ),
+                              Expanded(
+                                child: Text(
+                                  taskData.title,
+                                  style: const TextStyle(
+                                    fontFamily: 'SmileySans',
+                                    fontSize: 16,
+                                    color: bgColorLight,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                          ],
-                        ),
-                        _buildTaskTag(),
-                      ],
+                            ],
+                          ),
+                          _buildTaskTag(),
+                        ],
+                      ),
                     ),
                     SizedBox(width: 10),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: _buildTaskInfo(),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: _buildTaskInfo(),
+                      ),
                     ),
                   ],
                 ),
+                SizedBox(height: 2),
+                bottomLine,
+                _buildCreatedAt(),
               ],
             ),
           ),
@@ -146,17 +166,15 @@ class TaskCard extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildTaskInfo() {
-    final List<Widget> result = [];
+  Widget _buildCreatedAt() {
     final createdAt = taskData.createdAt;
-    final createdWidget = Wrap(
-      direction: Axis.vertical,
+    return Row(
       children: [
         Text(
           "创建于：",
           style: const TextStyle(
             fontFamily: 'SmileySans',
-            fontSize: 10,
+            fontSize: 12,
             color: bgColorLight80,
           ),
           softWrap: true,
@@ -165,13 +183,17 @@ class TaskCard extends StatelessWidget {
           createdAt is DateTime ? getLocalTimeString(createdAt) : "未知时间",
           style: const TextStyle(
             fontFamily: 'SmileySans',
-            fontSize: 10,
+            fontSize: 12,
             color: bgColorLight80,
           ),
           softWrap: true,
         ),
       ],
     );
+  }
+
+  List<Widget> _buildTaskInfo() {
+    final List<Widget> result = [];
     if (taskData is CheckTaskStorageData) {
       final checkTaskData = taskData as CheckTaskStorageData;
       final countF = checkTaskData.finished.length;
@@ -186,7 +208,6 @@ class TaskCard extends StatelessWidget {
             color: bgColorLight,
           ),
         ),
-        createdWidget,
       ]);
     }
     return result;
