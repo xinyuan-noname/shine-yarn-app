@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/user_info_bar.dart';
+import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
@@ -100,35 +101,37 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
         Navigator.of(context).pop();
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(_title, style: titleTextStyle),
-          centerTitle: true,
-          bottom: bottomLine,
-          actions: [
-            if (_taskId is int)
-              IconButton(
-                onPressed: () async {
-                  final result = await showPromptDialog(
-                    context: context,
-                    title: "请输入更改任务名",
-                    label: "更改后的任务名",
-                    initValue: _title,
-                  );
-                  if (result is String) {
-                    await TaskStorage.updateCheckTask(
-                      id: _taskId!,
-                      title: result,
-                    );
-                    _title = result;
-                    setState(() {});
-                  }
-                },
-                icon: Icon(Icons.edit, size: 28),
-              ),
-          ],
-        ),
+        appBar: _buildAppBar(),
         body: _buildBodyContent(),
+        bottomNavigationBar: _buildBottomBar(),
       ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      title: Text(_title, style: titleTextStyle),
+      centerTitle: true,
+      bottom: bottomLine,
+      actions: [
+        if (_taskId is int)
+          IconButton(
+            onPressed: () async {
+              final result = await showPromptDialog(
+                context: context,
+                title: "请输入更改任务名",
+                label: "更改后的任务名",
+                initValue: _title,
+              );
+              if (result is String) {
+                await TaskStorage.updateCheckTask(id: _taskId!, title: result);
+                _title = result;
+                setState(() {});
+              }
+            },
+            icon: Icon(Icons.edit, size: 28),
+          ),
+      ],
     );
   }
 
@@ -158,7 +161,7 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
                 SizedBox(height: 1),
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    padding: const EdgeInsets.only(left: 16),
                     child: ListView.builder(
                       itemCount: _unselectedList.length,
                       itemBuilder: (BuildContext context, int index) {
@@ -224,10 +227,12 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
                               idStyle: const TextStyle(
                                 fontFamily: "SmileySans",
                                 color: Colors.grey,
+                                fontSize: 15,
                               ),
                               usernameStyle: const TextStyle(
                                 fontFamily: "SmileySans",
                                 color: Colors.grey,
+                                fontSize: 15,
                               ),
                               onTap: () {
                                 _selectedList.remove(selectedItem);
@@ -246,6 +251,61 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBottomBar() {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: const Color.fromRGBO(158, 158, 158, 0.8),
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: BottomAppBar(
+        height: 48,
+        padding: EdgeInsets.all(3),
+        color: bgColorLight60,
+        child: Container(
+          width: 100,
+          alignment: Alignment.center,
+          child: GestureDetector(
+            onTap: () async {
+              final result = await showPromptDialog(
+                context: context,
+                title: "请设置提醒消息, 点击确定以发送",
+                label: "提醒消息",
+                initValue: "请尽快完成",
+              );
+              if (result == null) return;
+              final List<String> list = [];
+              for (final unselectedItem in _unselectedList) {
+                final id = unselectedItem["id"];
+                if (id is String) list.add(id);
+              }
+              WsTask.sendRemind(msg: result, targetList: list);
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: redLinearGradient,
+                borderRadius: BorderRadius.all(Radius.circular(5)),
+                border: Border.all(color: mainColorPurple),
+              ),
+              padding: EdgeInsets.all(5),
+              child: Text(
+                "一键提醒未完成同学",
+                style: const TextStyle(
+                  fontFamily: "SmileySans",
+                  fontSize: 16,
+                  color: bgColorLight,
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -5,7 +5,7 @@ final defaultAvatar25 = Container(
   alignment: Alignment.center,
   decoration: BoxDecoration(
     shape: BoxShape.circle,
-    border: Border.all(color: Colors.blue, width: 0.5),
+    border: Border.all(color: deepColorBlue, width: 0.5),
     color: mainColorGreenBule40,
     boxShadow: [
       const BoxShadow(
@@ -27,11 +27,6 @@ final defaultAvatar25 = Container(
         fontFamily: "SmileySans",
         color: Colors.white30,
         shadows: [
-          Shadow(
-            offset: Offset(1, 1),
-            blurRadius: 20,
-            color: Colors.amberAccent,
-          ),
           Shadow(offset: Offset(1, 1), color: mainColorPurple),
           Shadow(offset: Offset(-1, -1), color: mainColorPurple),
         ],
@@ -43,7 +38,7 @@ final defaultAvatar50 = Container(
   alignment: Alignment.center,
   decoration: BoxDecoration(
     shape: BoxShape.circle,
-    border: Border.all(color: Colors.blue, width: 0.5),
+    border: Border.all(color: deepColorBlue, width: 0.5),
     color: mainColorGreenBule40,
     boxShadow: [
       const BoxShadow(
@@ -65,11 +60,6 @@ final defaultAvatar50 = Container(
         fontFamily: "SmileySans",
         color: Colors.white30,
         shadows: [
-          Shadow(
-            offset: Offset(1, 1),
-            blurRadius: 20,
-            color: Colors.amberAccent,
-          ),
           Shadow(offset: Offset(1, 1), color: mainColorPurple),
           Shadow(offset: Offset(-1, -1), color: mainColorPurple),
         ],

@@ -1,13 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:shine/services/ws.dart';
+import 'package:uuid/uuid.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class WsTask {
   static WebSocketChannel? _channel;
 
   static bool get isConnected => _channel != null;
-  static Timer? _heartbeatTimer;
 
   static String get _wsUrl =>
       "${WebSocketServer.wsUrl}/task?token=${WebSocketServer.wsToken}";
@@ -26,7 +27,13 @@ class WsTask {
 
       _channel!.stream.listen(
         (message) {
-          print("ws连接成功");
+          if (message is String) {
+            final map = jsonDecode(message);
+            switch (map["type"]) {
+              case "ping":
+                _handlePing();
+            }
+          }
         },
         onError: (error) {
           WsTask.clear();
@@ -47,6 +54,16 @@ class WsTask {
     _channel!.sink.add(message);
   }
 
+  static void sendRemind({required String msg, required List<String> targetList}) {
+    final map = {
+      "type": "remind",
+      "target": targetList,
+      "ts": DateTime.now().toLocal().toString(),
+      "wsi": Uuid().v4(),
+    };
+    WsTask.send(jsonEncode(map));
+  }
+
   static Future<void> close([int? code, String? reason]) async {
     await _channel?.sink.close(code, reason);
     WsTask.clear();
@@ -54,22 +71,14 @@ class WsTask {
 
   static void clear() {
     _channel = null;
-    _heartbeatTimer?.cancel();
-    _heartbeatTimer = null;
   }
 
-  static void ping() {
-    _heartbeatTimer?.cancel();
-    if (_channel == null) return;
-    _heartbeatTimer = Timer.periodic(Duration(seconds: 30), (_) {
-      if (_channel != null) {
-        _channel!.sink.add('ping');
-      }
-    });
+  static void _handlePing() {
+    final map = {"type": "pong", "ts": DateTime.now().toLocal().toString()};
+    WsTask.send(jsonEncode(map));
   }
 
   static Future<void> start() async {
     await WsTask.connect();
-    ping();
   }
 }

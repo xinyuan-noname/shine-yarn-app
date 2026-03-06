@@ -26,6 +26,7 @@ class InputProps {
   final bool isLast;
   final TextInputType keyboardType;
   final bool autocorrect;
+  final bool autofocus;
   final bool isPassword;
   final List<TextInputFormatter>? inputFormatters;
   final AutovalidateMode? autovalidateMode;
@@ -51,6 +52,7 @@ class InputProps {
     this.keyboardType = TextInputType.text,
     this.autocorrect = false,
     this.isPassword = false,
+    this.autofocus = false,
     this.inputFormatters,
     this.autovalidateMode = AutovalidateMode.onUserInteraction,
     this.gap,
@@ -73,6 +75,7 @@ class InputProps {
     OutlineInputBorder? border,
     InputDecoration? decoration,
     bool isLast = false,
+    bool autofocus = false,
     AutovalidateMode? autovalidateMode,
     double? gap,
     Map<String, dynamic>? onSavedMap,
@@ -88,6 +91,7 @@ class InputProps {
       keyboardType: TextInputType.visiblePassword,
       inputFormatters: inputFormatters ?? [_textInputFormatterNoEmptyCharacter],
       autocorrect: false,
+      autofocus: false,
       isLast: isLast,
       labelStyle: labelStyle,
       inputStyle: inputStyle,
@@ -111,6 +115,7 @@ class InputProps {
     OutlineInputBorder? border,
     InputDecoration? decoration,
     bool isLast = false,
+    bool autofocus = false,
     List<TextInputFormatter>? inputFormatters,
     AutovalidateMode? autovalidateMode,
     double? gap,
@@ -128,6 +133,7 @@ class InputProps {
       labelStyle: labelStyle,
       inputStyle: inputStyle,
       hintStyle: hintStyle,
+      autofocus: autofocus,
       color: color,
       border: border,
       decoration: decoration,
@@ -151,6 +157,7 @@ class InputProps {
     List<TextInputFormatter>? inputFormatters,
     InputDecoration? decoration,
     bool isLast = false,
+    bool autofocus = false,
     AutovalidateMode? autovalidateMode,
     double? gap,
     Map<String, dynamic>? onSavedMap,
@@ -167,6 +174,7 @@ class InputProps {
       inputFormatters:
           inputFormatters ?? [FilteringTextInputFormatter.digitsOnly],
       isLast: isLast,
+      autofocus: autofocus,
       labelStyle: labelStyle,
       inputStyle: inputStyle,
       hintStyle: hintStyle,
@@ -205,6 +213,7 @@ class Input extends StatefulWidget {
     String? patternErrorText,
     bool isRequired = false,
     bool isLast = false,
+    bool autofocus = false,
     TextInputType keyboardType = TextInputType.text,
     bool autocorrect = false,
     bool isPassword = false,
@@ -231,6 +240,7 @@ class Input extends StatefulWidget {
         patternErrorText: patternErrorText,
         isRequired: isRequired,
         isLast: isLast,
+        autofocus: autofocus,
         keyboardType: keyboardType,
         autocorrect: autocorrect,
         isPassword: isPassword,
@@ -286,6 +296,7 @@ class _InputState extends State<Input> {
                   Theme.of(context).textTheme.labelMedium,
             ),
       TextFormField(
+        autofocus: widget.props.autofocus,
         controller: widget.controller,
         autovalidateMode: widget.props.autovalidateMode,
         keyboardType: widget.props.keyboardType,

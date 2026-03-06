@@ -112,7 +112,7 @@ class _PasswordPageState extends State<PasswordPage> {
                 '提交',
                 style: TextStyle(
                   color: mainColorPurple,
-                  fontSize: 20,
+                  fontSize: 24,
                   fontWeight: FontWeight.w300,
                 ),
               ),

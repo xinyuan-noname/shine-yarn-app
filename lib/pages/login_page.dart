@@ -162,7 +162,7 @@ class _LoginPageState extends State<LoginPage> {
             "登录",
             style: TextStyle(
               color: darkColorPurple,
-              fontSize: 20,
+              fontSize: 24,
               fontWeight: FontWeight.w300,
             ),
           ),

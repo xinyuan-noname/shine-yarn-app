@@ -22,6 +22,9 @@ const mainColorPurple60 = Color.fromRGBO(167, 157, 255, 0.6);
 const mainColorPurple50 = Color.fromRGBO(167, 157, 255, 0.5);
 const mainColorPurple40 = Color.fromRGBO(167, 157, 255, 0.4);
 
+const mainColorRed = Color.fromRGBO(255, 83, 83, 1);
+const deepColorRed = Color.fromRGBO(255, 17, 0, 1);
+
 final inputDecorationLight = InputDecoration(
   contentPadding: EdgeInsets.only(left: 10),
   filled: true,
@@ -76,6 +79,16 @@ const TextStyle cardItemTextStyle = TextStyle(
 const bodyPadding = EdgeInsets.symmetric(vertical: 10, horizontal: 20);
 const viewPadding = EdgeInsets.all(16);
 
+const redLinearGradient = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [mainColorRed, deepColorRed],
+);
+const redLinearGradientReversed = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [deepColorRed, mainColorRed],
+);
 const purpleLinearGradient = LinearGradient(
   begin: Alignment.topLeft,
   end: Alignment.bottomRight,
@@ -85,6 +98,11 @@ const blueLinearGradient = LinearGradient(
   begin: Alignment.topLeft,
   end: Alignment.bottomRight,
   colors: [deepColorBlue, mainColorGreenBule],
+);
+const blueLinearGradientReversed = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [mainColorGreenBule, deepColorBlue],
 );
 const whiteLinearGradient = LinearGradient(
   begin: Alignment.topLeft,

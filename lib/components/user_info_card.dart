@@ -144,7 +144,7 @@ class UserInfoCard extends StatelessWidget {
             margin: EdgeInsets.only(left: 10),
             padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0.5),
             decoration: BoxDecoration(
-              color: Colors.redAccent,
+              gradient: redLinearGradientReversed,
               boxShadow: [
                 BoxShadow(
                   color: bgColorLight60,

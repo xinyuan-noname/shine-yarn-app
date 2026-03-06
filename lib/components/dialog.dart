@@ -19,6 +19,7 @@ const dialogContentStyle = TextStyle(
 const dialogActionStyle = TextStyle(
   fontFamily: 'SmileySans',
   color: bgColorLight80,
+  fontSize: 15
 );
 final dialogButtonStyle = TextButton.styleFrom(
   backgroundColor: mainColorGreenBule60,
@@ -137,6 +138,7 @@ Future<String?> showPromptDialog({
             Form(
               key: formKey,
               child: Input(
+                autofocus: true,
                 name: "prompt",
                 label: label,
                 minLength: min ?? 1,
