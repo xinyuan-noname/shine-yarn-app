@@ -19,7 +19,7 @@ class ProfileStorage {
 
   static Future<String> getName() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_nameKey) ?? "???";
+    return prefs.getString(_nameKey) ?? "";
   }
 
   static Future delName() async {
@@ -34,7 +34,7 @@ class ProfileStorage {
 
   static Future<String> getId() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_idKey) ?? "??????????";
+    return prefs.getString(_idKey) ?? "";
   }
 
   static Future delId() async {

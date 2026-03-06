@@ -58,7 +58,6 @@ class ApiAdmin {
         },
       });
       final response = await dio.post('/admin/search/user', data: data);
-      print(response.data);
       return response.data;
     } catch (err) {
       return null;
