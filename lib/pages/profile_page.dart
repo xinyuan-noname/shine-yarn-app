@@ -185,8 +185,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   children: [
                     ListTile(
                       leading: Icon(
-                        Icons.check_rounded,
-                        color: Colors.greenAccent,
+                        Icons.check_circle_rounded,
+                        color: mainColorGreenBule,
                       ),
                       title: Text('强制密码登录'),
                       onTap: () async {
