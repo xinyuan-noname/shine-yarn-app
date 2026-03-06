@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class WsTask {
+  static final List<(String, Completer, String)> _taskRecordList = [];
   static WebSocketChannel? _channel;
 
   static bool get isConnected => _channel != null;
@@ -32,6 +33,8 @@ class WsTask {
             switch (map["type"]) {
               case "ping":
                 _handlePing();
+              case "ack":
+                _handleAck(map);
             }
           }
         },
@@ -54,14 +57,63 @@ class WsTask {
     _channel!.sink.add(message);
   }
 
-  static void sendRemind({required String msg, required List<String> targetList}) {
+  static Future sendRemind({
+    required String msg,
+    required List<String> targetList,
+  }) {
+    final wsi = Uuid().v4();
     final map = {
       "type": "remind",
-      "target": targetList,
-      "ts": DateTime.now().toLocal().toString(),
-      "wsi": Uuid().v4(),
+      "targetList": targetList,
+      "ts": DateTime.now().millisecondsSinceEpoch,
+      "wsi": wsi,
     };
     WsTask.send(jsonEncode(map));
+    return WsTask.recordAndWait(wsi: wsi, type: "remind");
+  }
+
+  static Future recordAndWait({required String wsi, required String type}) {
+    final completer = Completer();
+    _taskRecordList.add((wsi, completer, type));
+    Future.delayed(Duration(seconds: 10)).then((_) {
+      if (!completer.isCompleted) {
+        completer.completeError(
+          TimeoutException("Request timed out after 10 seconds"),
+        );
+      }
+    });
+    return completer.future;
+  }
+
+  static void removeRecordAndDoNext({
+    required (String, Completer, String) record,
+    dynamic result,
+  }) {
+    if (!record.$2.isCompleted) record.$2.complete(result);
+    _taskRecordList.remove(record);
+  }
+
+  static (String, Completer, String) findRecord(String wsi) {
+    return _taskRecordList.firstWhere((ele) => ele.$1 == wsi);
+  }
+
+  static void _handlePing() {
+    final map = {"type": "pong", "ts": DateTime.now().millisecondsSinceEpoch};
+    WsTask.send(jsonEncode(map));
+  }
+
+  static void _handleAck(map) {
+    final wsi = map['wsi'];
+    final record = findRecord(wsi);
+    switch (record.$3) {
+      case "remind":
+        removeRecordAndDoNext(record: record);
+        break;
+    }
+  }
+
+  static Future<void> start() async {
+    await WsTask.connect();
   }
 
   static Future<void> close([int? code, String? reason]) async {
@@ -71,14 +123,5 @@ class WsTask {
 
   static void clear() {
     _channel = null;
-  }
-
-  static void _handlePing() {
-    final map = {"type": "pong", "ts": DateTime.now().toLocal().toString()};
-    WsTask.send(jsonEncode(map));
-  }
-
-  static Future<void> start() async {
-    await WsTask.connect();
   }
 }

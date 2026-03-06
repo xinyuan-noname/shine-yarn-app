@@ -269,43 +269,46 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
         height: 48,
         padding: EdgeInsets.all(3),
         color: bgColorLight60,
-        child: Container(
-          width: 100,
-          alignment: Alignment.center,
-          child: GestureDetector(
-            onTap: () async {
-              final result = await showPromptDialog(
-                context: context,
-                title: "请设置提醒消息, 点击确定以发送",
-                label: "提醒消息",
-                initValue: "请尽快完成",
-              );
-              if (result == null) return;
-              final List<String> list = [];
-              for (final unselectedItem in _unselectedList) {
-                final id = unselectedItem["id"];
-                if (id is String) list.add(id);
-              }
-              WsTask.sendRemind(msg: result, targetList: list);
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: redLinearGradient,
-                borderRadius: BorderRadius.all(Radius.circular(5)),
-                border: Border.all(color: mainColorPurple),
-              ),
-              padding: EdgeInsets.all(5),
-              child: Text(
-                "一键提醒未完成同学",
-                style: const TextStyle(
-                  fontFamily: "SmileySans",
-                  fontSize: 16,
-                  color: bgColorLight,
+        child: _unselectedList.isNotEmpty
+            ? Container(
+                width: 100,
+                alignment: Alignment.center,
+                child: GestureDetector(
+                  onTap: () async {
+                    final result = await showPromptDialog(
+                      context: context,
+                      title: "请设置提醒消息, 点击确定以发送",
+                      label: "提醒消息",
+                      initValue: "请尽快完成",
+                    );
+                    if (result == null) return;
+                    final List<String> list = [];
+                    for (final unselectedItem in _unselectedList) {
+                      final id = unselectedItem["id"];
+                      if (id is String) list.add(id);
+                    }
+                    await WsTask.sendRemind(msg: result, targetList: list);
+                    print("交换完成");
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: redLinearGradient,
+                      borderRadius: BorderRadius.all(Radius.circular(5)),
+                      border: Border.all(color: mainColorPurple),
+                    ),
+                    padding: EdgeInsets.all(5),
+                    child: Text(
+                      "一键提醒未完成同学",
+                      style: const TextStyle(
+                        fontFamily: "SmileySans",
+                        fontSize: 16,
+                        color: bgColorLight,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
-        ),
+              )
+            : SizedBox(),
       ),
     );
   }
