@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:shine/services/event.dart';
 import 'package:shine/services/ws.dart';
-import 'package:shine/storage/remind_storage.dart';
+import 'package:shine/storage/message_storage.dart';
 import 'package:shine/worker/worker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';

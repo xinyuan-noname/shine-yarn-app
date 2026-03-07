@@ -30,7 +30,7 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (Migrator m) => m.createAll(),
     onUpgrade: (Migrator m, int from, int to) async {
-      await m.createTable(remindMessage);
+        await m.createTable(remindMessage);
     },
   );
 

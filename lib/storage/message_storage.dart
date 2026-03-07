@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shine/database/database.dart';
 
 final db = DatabaseProvider.instance;
@@ -6,23 +9,54 @@ class MessageStorageData {
   final int id;
   final DateTime? sentAt;
   final int level;
-  final String source;
+  final String sourceId;
+  final String sourceUsername;
+  final bool readed;
   final String content;
   const MessageStorageData({
     required this.id,
-    required this.source,
+    required this.sourceId,
+    required this.sourceUsername,
     required this.content,
+    this.readed = false,
     this.level = 1,
     this.sentAt,
   });
 }
 
 class MessageStorage {
+  static final String _messageReadedKey = "message_readed_key";
+
+  static Future<void> saveMessageReaded(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> readedList = prefs.getStringList(_messageReadedKey) ?? [];
+    if (!readedList.contains(id.toString())) {
+      readedList.add(id.toString());
+      await prefs.setStringList(_messageReadedKey, readedList);
+    }
+  }
+
+  static Future<bool> isMessageReaded(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> readedList = prefs.getStringList(_messageReadedKey) ?? [];
+    return readedList.contains(id.toString());
+  }
+
+  static Future<void> deleteMessageReaded(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> readedList = prefs.getStringList(_messageReadedKey) ?? [];
+    if (readedList.contains(id.toString())) {
+      readedList.remove(id.toString());
+      await prefs.setStringList(_messageReadedKey, readedList);
+    }
+  }
+
   static Future<List<MessageStorageData>> getAllMessage() async {
     final List<MessageStorageData> result = [];
     result.addAll(await MessageStorage.getAllRemindMessages());
     return result;
   }
+
   static Future<List<MessageStorageData>> getAllRemindMessages() async {
     final result = await db.getAllRemindMessages();
     final list = <MessageStorageData>[];
@@ -30,10 +64,11 @@ class MessageStorage {
       list.add(
         MessageStorageData(
           id: messageData.id,
-          source: messageData.source,
           content: messageData.content,
           level: messageData.level,
           sentAt: messageData.sentAt,
+          sourceId: '',
+          sourceUsername: '',
         ),
       );
     }
@@ -43,9 +78,21 @@ class MessageStorage {
   static Future<MessageStorageData?> getRemindMessage(int id) async {
     final result = await db.getRemindMessage(id);
     if (result == null) return null;
+    String sourceId = '';
+    String sourceUsername = '';
+    final sourceMap = jsonDecode(result.source);
+    if (sourceMap is Map) {
+      if (sourceMap['id'] is String) {
+        sourceId = sourceMap['id'];
+      }
+      if (sourceMap['username'] is String) {
+        sourceId = sourceMap['username'];
+      }
+    }
     return MessageStorageData(
       id: id,
-      source: result.source,
+      sourceId: sourceId,
+      sourceUsername: sourceUsername,
       content: result.content,
       level: result.level,
       sentAt: result.sentAt,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shine/components/message_card.dart';
-import 'package:shine/storage/remind_storage.dart';
+import 'package:shine/storage/message_storage.dart';
 import 'package:shine/theme.dart';
 
 class MessageView extends StatelessWidget {

@@ -4,7 +4,7 @@ import 'package:shine/components/bottom_sheet.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/storage/profile_storage.dart';
-import 'package:shine/storage/remind_storage.dart';
+import 'package:shine/storage/message_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';

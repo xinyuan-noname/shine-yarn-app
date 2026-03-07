@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/line.dart';
-import 'package:shine/storage/remind_storage.dart';
+import 'package:shine/storage/message_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/time.dart';
 
@@ -56,7 +56,7 @@ class MessageCard extends StatelessWidget {
   }
 
   Widget _buildAvatar() {
-    return NetworkAvatar(id: messageData.source);
+    return NetworkAvatar(id: messageData.sourceId);
   }
 
   Widget _buildTime() {
