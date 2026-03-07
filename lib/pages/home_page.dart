@@ -152,6 +152,7 @@ class _HomePageState extends State<HomePage> {
                     await globalNavigatorKey.currentState?.pushNamed(
                       '/profile',
                     );
+                    _loadMine();
                   }
                 },
                 child: NetworkAvatar(id: _id, ts: _ts, radius: 25),

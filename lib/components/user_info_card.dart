@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shine/components/avatar.dart';
 import 'package:shine/components/line.dart';
 import 'dart:math' as math;
 
@@ -46,16 +47,29 @@ class UserInfoCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             gradient: purpleLinearGradient,
           ),
-          child: Padding(
+          child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildUsernameRow(),
-                _buildIdRow(),
-                if (userInfo.containsKey("gender")) _buildGenderRow(),
-                if (userInfo["passwordRequired"] != null) _buildPasswordRow(),
+                Row(
+                  children: [
+                    NetworkAvatar(id: userInfo['id'], radius: 40),
+                    const SizedBox(width: 20),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildUsernameRow(),
+                        _buildIdRow(),
+                        if (userInfo.containsKey("gender")) _buildGenderRow(),
+                        if (userInfo["passwordRequired"] != null)
+                          _buildPasswordRow(),
+                      ],
+                    ),
+                  ],
+                ),
                 bottomLine,
+                const SizedBox(height: 2),
                 if (noOperation != true) _buildOperatorRow(),
               ],
             ),
