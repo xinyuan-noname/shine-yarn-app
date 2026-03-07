@@ -109,7 +109,7 @@ class _HomePageState extends State<HomePage> {
           await _updateTaskData();
         },
       ),
-      MessageView(),
+      MessageView(onRefresh: () async {}, messageList: []),
       UserView(
         userType: _userType,
         userInfoList: _userInfoList,

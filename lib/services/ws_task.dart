@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:shine/services/event.dart';
 import 'package:shine/services/ws.dart';
 import 'package:shine/storage/remind_storage.dart';
 import 'package:uuid/uuid.dart';
@@ -118,17 +119,18 @@ class WsTask {
     }
   }
 
-  static void _handleRemind(Map map) {
+  static Future _handleRemind(Map map) async {
     final String content = map["content"];
     final String from = map["from"];
     final int ts = map["ts"];
     final int level = map["level"];
-    MessageStorage.addRemindMessage(
+    await MessageStorage.addRemindMessage(
       content: content,
       level: level,
       from: from,
       sentAt: DateTime.fromMillisecondsSinceEpoch(ts),
     );
+    EventBus.publish(MessageEvent());
   }
 
   static Future<void> start() async {

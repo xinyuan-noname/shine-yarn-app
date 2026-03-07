@@ -14,7 +14,6 @@ class TaskCard extends StatelessWidget {
   final GestureLongPressCallback? onLongPress;
   final DismissDirectionCallback? onDismissed;
   final TaskStorageData taskData;
-  final VoidCallback? routerChangeCallback;
   final VoidCallback? deleteCallback;
   const TaskCard({
     super.key,
@@ -22,7 +21,6 @@ class TaskCard extends StatelessWidget {
     this.onLongPress,
     required this.taskData,
     this.onDismissed,
-    this.routerChangeCallback,
     this.deleteCallback,
   });
 

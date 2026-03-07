@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:shine/pages/splash_page.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
+import 'package:shine/services/event.dart';
 import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/worker/worker.dart';
@@ -70,5 +71,11 @@ class _MyAppState extends State<MyApp> {
       ),
       home: SplashPage(),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    EventBus.dispose();
   }
 }

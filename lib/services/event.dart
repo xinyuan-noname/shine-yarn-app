@@ -1,34 +1,32 @@
 import 'dart:async';
 
 class EventBus {
-  static final EventBus _instance = EventBus._internal();
-  factory EventBus() => _instance;
-  EventBus._internal();
+  EventBus._();
 
-  final StreamController<MessageEvent> _messageController = StreamController.broadcast();
-  Stream<MessageEvent> get messageStream => _messageController.stream;
+  static final StreamController<MessageEvent> _controller =
+      StreamController<MessageEvent>.broadcast();
 
-  void publish(MessageEvent event) {
-    _messageController.add(event);
+  static Stream<MessageEvent> get stream => _controller.stream;
+
+  static void publish(MessageEvent event) {
+    _controller.add(event);
   }
 
-  void dispose() {
-    _messageController.close();
+  static void dispose() {
+    _controller.close();
   }
 }
 
-// 事件数据类（可扩展）
+// 事件类保持不变
 class MessageEvent {
-  final String content;
   final DateTime timestamp;
   final String? type;
 
   MessageEvent({
-    required this.content,
     this.type,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
 
   @override
-  String toString() => 'MessageEvent(type: $type, content: $content)';
+  String toString() => 'MessageEvent(type: $type)';
 }
