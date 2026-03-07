@@ -61,14 +61,26 @@ class MessageStorage {
     final result = await db.getAllRemindMessages();
     final list = <MessageStorageData>[];
     for (final messageData in result) {
+      String sourceId = '';
+      String sourceUsername = '';
+      final sourceMap = jsonDecode(messageData.source);
+      print(sourceMap);
+      if (sourceMap is Map) {
+        if (sourceMap['id'] is String) {
+          sourceId = sourceMap['id'];
+        }
+        if (sourceMap['username'] is String) {
+          sourceUsername = sourceMap['username'];
+        }
+      }
       list.add(
         MessageStorageData(
           id: messageData.id,
           content: messageData.content,
           level: messageData.level,
           sentAt: messageData.sentAt,
-          sourceId: '',
-          sourceUsername: '',
+          sourceId: sourceId,
+          sourceUsername: sourceUsername,
         ),
       );
     }
@@ -86,7 +98,7 @@ class MessageStorage {
         sourceId = sourceMap['id'];
       }
       if (sourceMap['username'] is String) {
-        sourceId = sourceMap['username'];
+        sourceUsername = sourceMap['username'];
       }
     }
     return MessageStorageData(

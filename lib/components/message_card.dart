@@ -41,7 +41,12 @@ class MessageCard extends StatelessWidget {
                 Row(
                   children: [
                     _buildAvatar(),
-                    Column(children: []),
+                    const SizedBox(width: 10),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [_buildUsername(), _buildContent()],
+                    ),
                   ],
                 ),
                 const SizedBox(height: 1),
@@ -57,6 +62,24 @@ class MessageCard extends StatelessWidget {
 
   Widget _buildAvatar() {
     return NetworkAvatar(id: messageData.sourceId);
+  }
+
+  Widget _buildUsername() {
+    return Text(
+      messageData.sourceUsername,
+      style: const TextStyle(fontFamily: 'SmileySans', fontSize: 22),
+    );
+  }
+
+  Widget _buildContent() {
+    return Text(
+      messageData.content,
+      style: const TextStyle(
+        fontFamily: 'SmileySans',
+        fontSize: 20,
+        color: Colors.grey,
+      ),
+    );
   }
 
   Widget _buildTime() {
