@@ -22,14 +22,13 @@ class MessageCard extends StatelessWidget {
       onTap: onPress,
       child: Card(
         elevation: 2,
-        color: mainColorPurple,
         margin: const EdgeInsets.only(bottom: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         shadowColor: mainColorGreenBule60,
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            gradient: purpleLinearGradient,
+            gradient: whiteLinearGradient,
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),

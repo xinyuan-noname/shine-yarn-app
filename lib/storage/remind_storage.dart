@@ -18,6 +18,11 @@ class MessageStorageData {
 }
 
 class MessageStorage {
+  static Future<List<MessageStorageData>> getAllMessage() async {
+    final List<MessageStorageData> result = [];
+    result.addAll(await MessageStorage.getAllRemindMessages());
+    return result;
+  }
   static Future<List<MessageStorageData>> getAllRemindMessages() async {
     final result = await db.getAllRemindMessages();
     final list = <MessageStorageData>[];

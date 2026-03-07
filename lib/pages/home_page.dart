@@ -5,6 +5,7 @@ import 'package:shine/components/bottom_sheet.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/storage/profile_storage.dart';
+import 'package:shine/storage/remind_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
@@ -30,11 +31,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final List<TaskStorageData> _taskList = [];
+  final List<MessageStorageData> _messageList = [];
+  final List _userInfoList = [];
   String? _avatarPath;
   String _username = "???";
   String _id = "??????????";
   int _currentIndex = 0;
-  List _userInfoList = [];
   String _userType = "guest";
   final ValueNotifier<String> _message = ValueNotifier("");
   final _bottomItemOptions = [
@@ -68,7 +70,8 @@ class _HomePageState extends State<HomePage> {
     await Worker.syncAllUser();
     final result = await ProfileStorage.getUserList();
     if (result != null) {
-      _userInfoList = result;
+      _userInfoList.clear();
+      _userInfoList.addAll(result);
       setState(() {});
     }
   }
@@ -92,9 +95,16 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
+  Future<void> _updateMessageDate() async {
+    _messageList.clear();
+    _messageList.addAll((await MessageStorage.getAllMessage()));
+    setState(() {});
+  }
+
   Future<void> _updateAllData() async {
     _updateUserInfo();
     _updateTaskData();
+    _updateMessageDate();
     _updateMine();
   }
 
@@ -107,7 +117,12 @@ class _HomePageState extends State<HomePage> {
           await _updateTaskData();
         },
       ),
-      MessageView(onRefresh: () async {}, messageList: []),
+      MessageView(
+        messageList: _messageList,
+        onRefresh: () async {
+          await _updateMessageDate();
+        },
+      ),
       UserView(
         userType: _userType,
         userInfoList: _userInfoList,
@@ -163,7 +178,7 @@ class _HomePageState extends State<HomePage> {
                   Row(
                     children: [
                       _buildAccessSignal(),
-                      SizedBox(width: 3),
+                      const SizedBox(width: 3),
                       Text(
                         _id,
                         style: TextStyle(

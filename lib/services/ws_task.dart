@@ -44,7 +44,6 @@ class WsTask {
               case "ack":
                 _handleAck(map);
               case "remind":
-                print(map);
                 _handleRemind(map);
             }
           }
