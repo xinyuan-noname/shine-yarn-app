@@ -399,10 +399,10 @@ class $RemindMessageTable extends RemindMessage
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _fromMeta = const VerificationMeta('from');
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
   @override
-  late final GeneratedColumn<String> from = GeneratedColumn<String>(
-    'from',
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -418,7 +418,7 @@ class $RemindMessageTable extends RemindMessage
     requiredDuringInsert: true,
   );
   @override
-  List<GeneratedColumn> get $columns => [id, content, level, from, sentAt];
+  List<GeneratedColumn> get $columns => [id, content, level, source, sentAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -450,13 +450,13 @@ class $RemindMessageTable extends RemindMessage
     } else if (isInserting) {
       context.missing(_levelMeta);
     }
-    if (data.containsKey('from')) {
+    if (data.containsKey('source')) {
       context.handle(
-        _fromMeta,
-        from.isAcceptableOrUnknown(data['from']!, _fromMeta),
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
       );
     } else if (isInserting) {
-      context.missing(_fromMeta);
+      context.missing(_sourceMeta);
     }
     if (data.containsKey('sent_at')) {
       context.handle(
@@ -487,9 +487,9 @@ class $RemindMessageTable extends RemindMessage
         DriftSqlType.int,
         data['${effectivePrefix}level'],
       )!,
-      from: attachedDatabase.typeMapping.read(
+      source: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}from'],
+        data['${effectivePrefix}source'],
       )!,
       sentAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -509,13 +509,13 @@ class RemindMessageData extends DataClass
   final int id;
   final String content;
   final int level;
-  final String from;
+  final String source;
   final DateTime sentAt;
   const RemindMessageData({
     required this.id,
     required this.content,
     required this.level,
-    required this.from,
+    required this.source,
     required this.sentAt,
   });
   @override
@@ -524,7 +524,7 @@ class RemindMessageData extends DataClass
     map['id'] = Variable<int>(id);
     map['content'] = Variable<String>(content);
     map['level'] = Variable<int>(level);
-    map['from'] = Variable<String>(from);
+    map['source'] = Variable<String>(source);
     map['sent_at'] = Variable<DateTime>(sentAt);
     return map;
   }
@@ -534,7 +534,7 @@ class RemindMessageData extends DataClass
       id: Value(id),
       content: Value(content),
       level: Value(level),
-      from: Value(from),
+      source: Value(source),
       sentAt: Value(sentAt),
     );
   }
@@ -548,7 +548,7 @@ class RemindMessageData extends DataClass
       id: serializer.fromJson<int>(json['id']),
       content: serializer.fromJson<String>(json['content']),
       level: serializer.fromJson<int>(json['level']),
-      from: serializer.fromJson<String>(json['from']),
+      source: serializer.fromJson<String>(json['source']),
       sentAt: serializer.fromJson<DateTime>(json['sentAt']),
     );
   }
@@ -559,7 +559,7 @@ class RemindMessageData extends DataClass
       'id': serializer.toJson<int>(id),
       'content': serializer.toJson<String>(content),
       'level': serializer.toJson<int>(level),
-      'from': serializer.toJson<String>(from),
+      'source': serializer.toJson<String>(source),
       'sentAt': serializer.toJson<DateTime>(sentAt),
     };
   }
@@ -568,13 +568,13 @@ class RemindMessageData extends DataClass
     int? id,
     String? content,
     int? level,
-    String? from,
+    String? source,
     DateTime? sentAt,
   }) => RemindMessageData(
     id: id ?? this.id,
     content: content ?? this.content,
     level: level ?? this.level,
-    from: from ?? this.from,
+    source: source ?? this.source,
     sentAt: sentAt ?? this.sentAt,
   );
   RemindMessageData copyWithCompanion(RemindMessageCompanion data) {
@@ -582,7 +582,7 @@ class RemindMessageData extends DataClass
       id: data.id.present ? data.id.value : this.id,
       content: data.content.present ? data.content.value : this.content,
       level: data.level.present ? data.level.value : this.level,
-      from: data.from.present ? data.from.value : this.from,
+      source: data.source.present ? data.source.value : this.source,
       sentAt: data.sentAt.present ? data.sentAt.value : this.sentAt,
     );
   }
@@ -593,14 +593,14 @@ class RemindMessageData extends DataClass
           ..write('id: $id, ')
           ..write('content: $content, ')
           ..write('level: $level, ')
-          ..write('from: $from, ')
+          ..write('source: $source, ')
           ..write('sentAt: $sentAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, content, level, from, sentAt);
+  int get hashCode => Object.hash(id, content, level, source, sentAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -608,7 +608,7 @@ class RemindMessageData extends DataClass
           other.id == this.id &&
           other.content == this.content &&
           other.level == this.level &&
-          other.from == this.from &&
+          other.source == this.source &&
           other.sentAt == this.sentAt);
 }
 
@@ -616,37 +616,37 @@ class RemindMessageCompanion extends UpdateCompanion<RemindMessageData> {
   final Value<int> id;
   final Value<String> content;
   final Value<int> level;
-  final Value<String> from;
+  final Value<String> source;
   final Value<DateTime> sentAt;
   const RemindMessageCompanion({
     this.id = const Value.absent(),
     this.content = const Value.absent(),
     this.level = const Value.absent(),
-    this.from = const Value.absent(),
+    this.source = const Value.absent(),
     this.sentAt = const Value.absent(),
   });
   RemindMessageCompanion.insert({
     this.id = const Value.absent(),
     required String content,
     required int level,
-    required String from,
+    required String source,
     required DateTime sentAt,
   }) : content = Value(content),
        level = Value(level),
-       from = Value(from),
+       source = Value(source),
        sentAt = Value(sentAt);
   static Insertable<RemindMessageData> custom({
     Expression<int>? id,
     Expression<String>? content,
     Expression<int>? level,
-    Expression<String>? from,
+    Expression<String>? source,
     Expression<DateTime>? sentAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (content != null) 'content': content,
       if (level != null) 'level': level,
-      if (from != null) 'from': from,
+      if (source != null) 'source': source,
       if (sentAt != null) 'sent_at': sentAt,
     });
   }
@@ -655,14 +655,14 @@ class RemindMessageCompanion extends UpdateCompanion<RemindMessageData> {
     Value<int>? id,
     Value<String>? content,
     Value<int>? level,
-    Value<String>? from,
+    Value<String>? source,
     Value<DateTime>? sentAt,
   }) {
     return RemindMessageCompanion(
       id: id ?? this.id,
       content: content ?? this.content,
       level: level ?? this.level,
-      from: from ?? this.from,
+      source: source ?? this.source,
       sentAt: sentAt ?? this.sentAt,
     );
   }
@@ -679,8 +679,8 @@ class RemindMessageCompanion extends UpdateCompanion<RemindMessageData> {
     if (level.present) {
       map['level'] = Variable<int>(level.value);
     }
-    if (from.present) {
-      map['from'] = Variable<String>(from.value);
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
     }
     if (sentAt.present) {
       map['sent_at'] = Variable<DateTime>(sentAt.value);
@@ -694,7 +694,7 @@ class RemindMessageCompanion extends UpdateCompanion<RemindMessageData> {
           ..write('id: $id, ')
           ..write('content: $content, ')
           ..write('level: $level, ')
-          ..write('from: $from, ')
+          ..write('source: $source, ')
           ..write('sentAt: $sentAt')
           ..write(')'))
         .toString();
@@ -917,7 +917,7 @@ typedef $$RemindMessageTableCreateCompanionBuilder =
       Value<int> id,
       required String content,
       required int level,
-      required String from,
+      required String source,
       required DateTime sentAt,
     });
 typedef $$RemindMessageTableUpdateCompanionBuilder =
@@ -925,7 +925,7 @@ typedef $$RemindMessageTableUpdateCompanionBuilder =
       Value<int> id,
       Value<String> content,
       Value<int> level,
-      Value<String> from,
+      Value<String> source,
       Value<DateTime> sentAt,
     });
 
@@ -953,8 +953,8 @@ class $$RemindMessageTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get from => $composableBuilder(
-    column: $table.from,
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -988,8 +988,8 @@ class $$RemindMessageTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get from => $composableBuilder(
-    column: $table.from,
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1017,8 +1017,8 @@ class $$RemindMessageTableAnnotationComposer
   GeneratedColumn<int> get level =>
       $composableBuilder(column: $table.level, builder: (column) => column);
 
-  GeneratedColumn<String> get from =>
-      $composableBuilder(column: $table.from, builder: (column) => column);
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
 
   GeneratedColumn<DateTime> get sentAt =>
       $composableBuilder(column: $table.sentAt, builder: (column) => column);
@@ -1062,13 +1062,13 @@ class $$RemindMessageTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<String> content = const Value.absent(),
                 Value<int> level = const Value.absent(),
-                Value<String> from = const Value.absent(),
+                Value<String> source = const Value.absent(),
                 Value<DateTime> sentAt = const Value.absent(),
               }) => RemindMessageCompanion(
                 id: id,
                 content: content,
                 level: level,
-                from: from,
+                source: source,
                 sentAt: sentAt,
               ),
           createCompanionCallback:
@@ -1076,13 +1076,13 @@ class $$RemindMessageTableTableManager
                 Value<int> id = const Value.absent(),
                 required String content,
                 required int level,
-                required String from,
+                required String source,
                 required DateTime sentAt,
               }) => RemindMessageCompanion.insert(
                 id: id,
                 content: content,
                 level: level,
-                from: from,
+                source: source,
                 sentAt: sentAt,
               ),
           withReferenceMapper: (p0) => p0

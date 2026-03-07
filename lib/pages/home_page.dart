@@ -4,7 +4,6 @@ import 'package:shine/components/avatar.dart';
 import 'package:shine/components/bottom_sheet.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/routes.dart';
-import 'package:shine/services/ws.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/storage/token_storage.dart';
@@ -62,7 +61,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _startWs() async {
-    await WebSocketServer.init();
     Worker.startTaskWebSocket();
   }
 

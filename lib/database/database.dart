@@ -17,7 +17,7 @@ class RemindMessage extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get content => text()();
   IntColumn get level => integer()();
-  TextColumn get from => text()();
+  TextColumn get source => text()();
   DateTimeColumn get sentAt => dateTime()();
 }
 
@@ -98,14 +98,14 @@ class AppDatabase extends _$AppDatabase {
   Future<int> insertRemindMessage({
     required String content,
     required int level,
-    required String from,
+    required String source,
     DateTime? sentAt,
   }) async {
     return await into(remindMessage).insert(
       RemindMessageCompanion(
         content: Value(content),
         level: Value(level),
-        from: Value(from),
+        source: Value(source),
         sentAt: Value(sentAt ?? DateTime.now()),
       ),
     );
@@ -122,10 +122,10 @@ class AppDatabase extends _$AppDatabase {
     )..where((tbl) => tbl.level.equals(level))).get();
   }
 
-  Future<List<RemindMessageData>> getRemindMessagesByFrom(String from) async {
+  Future<List<RemindMessageData>> getRemindMessagesByFrom(String source) async {
     return await (select(
       remindMessage,
-    )..where((tbl) => tbl.from.equals(from))).get();
+    )..where((tbl) => tbl.source.equals(source))).get();
   }
 }
 

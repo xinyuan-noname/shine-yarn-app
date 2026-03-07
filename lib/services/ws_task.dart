@@ -4,12 +4,18 @@ import 'dart:convert';
 import 'package:shine/services/event.dart';
 import 'package:shine/services/ws.dart';
 import 'package:shine/storage/remind_storage.dart';
+import 'package:shine/worker/worker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class WsTask {
   static final List<(String, Completer, String)> _taskRecordList = [];
   static WebSocketChannel? _channel;
+
+  static Timer? _reconnectTimer;
+  static int _reconnectAttempts = 0;
+  static const int _maxReconnectAttempts = 5;
+  static const Duration _reconnectDelay = Duration(seconds: 5);
 
   static bool get isConnected => _channel != null;
 
@@ -22,10 +28,10 @@ class WsTask {
       _channel = WebSocketChannel.connect(Uri.parse(_wsUrl));
       _channel!.sink.done
           .then((_) {
-            WsTask.clear();
+            WsTask.reconnect();
           })
           .catchError((error) {
-            WsTask.clear();
+            WsTask.reconnect();
           });
 
       _channel!.stream.listen(
@@ -38,20 +44,22 @@ class WsTask {
               case "ack":
                 _handleAck(map);
               case "remind":
+                print(map);
                 _handleRemind(map);
             }
           }
         },
         onError: (error) {
-          WsTask.clear();
+          WsTask.reconnect();
         },
         onDone: () {
-          WsTask.clear();
+          WsTask.reconnect();
         },
       );
+      _reconnectAttempts = 0;
     } catch (e) {
       print('Failed to connect WebSocket: $e');
-      WsTask.clear();
+      WsTask.reconnect();
       rethrow;
     }
   }
@@ -121,23 +129,39 @@ class WsTask {
 
   static Future _handleRemind(Map map) async {
     final String content = map["content"];
-    final String from = map["from"];
+    final String source = map["source"];
     final int ts = map["ts"];
     final int level = map["level"];
     await MessageStorage.addRemindMessage(
       content: content,
       level: level,
-      from: from,
+      source: source,
       sentAt: DateTime.fromMillisecondsSinceEpoch(ts),
     );
     EventBus.publish(MessageEvent());
   }
 
   static Future<void> start() async {
+    await WebSocketServer.syncWsToken();
     await WsTask.connect();
   }
 
+  static void reconnect() {
+    WsTask.clear();
+
+    if (_reconnectAttempts < _maxReconnectAttempts) {
+      _reconnectAttempts++;
+
+      _reconnectTimer = Timer(_reconnectDelay, () {
+        Worker.startTaskWebSocket();
+      });
+    }
+  }
+
   static Future<void> close([int? code, String? reason]) async {
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
+
     await _channel?.sink.close(code, reason);
     WsTask.clear();
   }

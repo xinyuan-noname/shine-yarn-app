@@ -6,11 +6,11 @@ class MessageStorageData {
   final int id;
   final DateTime? sentAt;
   final int level;
-  final String from;
+  final String source;
   final String content;
   const MessageStorageData({
     required this.id,
-    required this.from,
+    required this.source,
     required this.content,
     this.level = 1,
     this.sentAt,
@@ -25,7 +25,7 @@ class MessageStorage {
       list.add(
         MessageStorageData(
           id: messageData.id,
-          from: messageData.from,
+          source: messageData.source,
           content: messageData.content,
           level: messageData.level,
           sentAt: messageData.sentAt,
@@ -40,7 +40,7 @@ class MessageStorage {
     if (result == null) return null;
     return MessageStorageData(
       id: id,
-      from: result.from,
+      source: result.source,
       content: result.content,
       level: result.level,
       sentAt: result.sentAt,
@@ -50,13 +50,13 @@ class MessageStorage {
   static Future<int> addRemindMessage({
     required String content,
     required int level,
-    required String from,
+    required String source,
     DateTime? sentAt,
   }) async {
     return await db.insertRemindMessage(
       content: content,
       level: level,
-      from: from,
+      source: source,
       sentAt: sentAt,
     );
   }
@@ -72,8 +72,8 @@ class MessageStorage {
   }
 
   static Future<List<RemindMessageData>> getRemindMessagesByFrom(
-    String from,
+    String source,
   ) async {
-    return await db.getRemindMessagesByFrom(from);
+    return await db.getRemindMessagesByFrom(source);
   }
 }

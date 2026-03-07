@@ -36,7 +36,4 @@ class WebSocketServer {
     return _token;
   }
 
-  static Future<void> init() async {
-    await WebSocketServer.syncWsToken();
-  }
 }
