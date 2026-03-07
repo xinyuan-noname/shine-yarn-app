@@ -13,7 +13,15 @@ class TaskCheck extends Table {
   DateTimeColumn get createdAt => dateTime().nullable()();
 }
 
-@DriftDatabase(tables: [TaskCheck])
+class RemindMessage extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get content => text()();
+  IntColumn get level => integer()();
+  TextColumn get from => text()();
+  DateTimeColumn get sentAt => dateTime()();
+}
+
+@DriftDatabase(tables: [TaskCheck, RemindMessage])
 class AppDatabase extends _$AppDatabase {
   AppDatabase._() : super(_openConnection());
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
@@ -76,6 +84,48 @@ class AppDatabase extends _$AppDatabase {
         databaseDirectory: getApplicationDocumentsDirectory,
       ),
     );
+  }
+
+  Future<List<RemindMessageData>> getAllRemindMessages() async {
+    return await select(remindMessage).get();
+  }
+
+  Future<RemindMessageData?> getRemindMessage(int id) async {
+    final stmt = select(remindMessage)..where((t) => t.id.equals(id));
+    return await stmt.getSingleOrNull();
+  }
+
+  Future<int> insertRemindMessage({
+    required String content,
+    required int level,
+    required String from,
+    DateTime? sentAt,
+  }) async {
+    return await into(remindMessage).insert(
+      RemindMessageCompanion(
+        content: Value(content),
+        level: Value(level),
+        from: Value(from),
+        sentAt: Value(sentAt ?? DateTime.now()),
+      ),
+    );
+  }
+
+  Future<void> deleteRemindMessage(int id) async {
+    final stmt = delete(remindMessage)..where((tbl) => tbl.id.equals(id));
+    await stmt.go();
+  }
+
+  Future<List<RemindMessageData>> getRemindMessagesByLevel(int level) async {
+    return await (select(
+      remindMessage,
+    )..where((tbl) => tbl.level.equals(level))).get();
+  }
+
+  Future<List<RemindMessageData>> getRemindMessagesByFrom(String from) async {
+    return await (select(
+      remindMessage,
+    )..where((tbl) => tbl.from.equals(from))).get();
   }
 }
 

@@ -360,15 +360,360 @@ class TaskCheckCompanion extends UpdateCompanion<TaskCheckData> {
   }
 }
 
+class $RemindMessageTable extends RemindMessage
+    with TableInfo<$RemindMessageTable, RemindMessageData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RemindMessageTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _contentMeta = const VerificationMeta(
+    'content',
+  );
+  @override
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+    'content',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _levelMeta = const VerificationMeta('level');
+  @override
+  late final GeneratedColumn<int> level = GeneratedColumn<int>(
+    'level',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fromMeta = const VerificationMeta('from');
+  @override
+  late final GeneratedColumn<String> from = GeneratedColumn<String>(
+    'from',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sentAtMeta = const VerificationMeta('sentAt');
+  @override
+  late final GeneratedColumn<DateTime> sentAt = GeneratedColumn<DateTime>(
+    'sent_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, content, level, from, sentAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'remind_message';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RemindMessageData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('content')) {
+      context.handle(
+        _contentMeta,
+        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentMeta);
+    }
+    if (data.containsKey('level')) {
+      context.handle(
+        _levelMeta,
+        level.isAcceptableOrUnknown(data['level']!, _levelMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_levelMeta);
+    }
+    if (data.containsKey('from')) {
+      context.handle(
+        _fromMeta,
+        from.isAcceptableOrUnknown(data['from']!, _fromMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fromMeta);
+    }
+    if (data.containsKey('sent_at')) {
+      context.handle(
+        _sentAtMeta,
+        sentAt.isAcceptableOrUnknown(data['sent_at']!, _sentAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sentAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RemindMessageData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RemindMessageData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      )!,
+      level: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}level'],
+      )!,
+      from: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}from'],
+      )!,
+      sentAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}sent_at'],
+      )!,
+    );
+  }
+
+  @override
+  $RemindMessageTable createAlias(String alias) {
+    return $RemindMessageTable(attachedDatabase, alias);
+  }
+}
+
+class RemindMessageData extends DataClass
+    implements Insertable<RemindMessageData> {
+  final int id;
+  final String content;
+  final int level;
+  final String from;
+  final DateTime sentAt;
+  const RemindMessageData({
+    required this.id,
+    required this.content,
+    required this.level,
+    required this.from,
+    required this.sentAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['content'] = Variable<String>(content);
+    map['level'] = Variable<int>(level);
+    map['from'] = Variable<String>(from);
+    map['sent_at'] = Variable<DateTime>(sentAt);
+    return map;
+  }
+
+  RemindMessageCompanion toCompanion(bool nullToAbsent) {
+    return RemindMessageCompanion(
+      id: Value(id),
+      content: Value(content),
+      level: Value(level),
+      from: Value(from),
+      sentAt: Value(sentAt),
+    );
+  }
+
+  factory RemindMessageData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RemindMessageData(
+      id: serializer.fromJson<int>(json['id']),
+      content: serializer.fromJson<String>(json['content']),
+      level: serializer.fromJson<int>(json['level']),
+      from: serializer.fromJson<String>(json['from']),
+      sentAt: serializer.fromJson<DateTime>(json['sentAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'content': serializer.toJson<String>(content),
+      'level': serializer.toJson<int>(level),
+      'from': serializer.toJson<String>(from),
+      'sentAt': serializer.toJson<DateTime>(sentAt),
+    };
+  }
+
+  RemindMessageData copyWith({
+    int? id,
+    String? content,
+    int? level,
+    String? from,
+    DateTime? sentAt,
+  }) => RemindMessageData(
+    id: id ?? this.id,
+    content: content ?? this.content,
+    level: level ?? this.level,
+    from: from ?? this.from,
+    sentAt: sentAt ?? this.sentAt,
+  );
+  RemindMessageData copyWithCompanion(RemindMessageCompanion data) {
+    return RemindMessageData(
+      id: data.id.present ? data.id.value : this.id,
+      content: data.content.present ? data.content.value : this.content,
+      level: data.level.present ? data.level.value : this.level,
+      from: data.from.present ? data.from.value : this.from,
+      sentAt: data.sentAt.present ? data.sentAt.value : this.sentAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RemindMessageData(')
+          ..write('id: $id, ')
+          ..write('content: $content, ')
+          ..write('level: $level, ')
+          ..write('from: $from, ')
+          ..write('sentAt: $sentAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, content, level, from, sentAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RemindMessageData &&
+          other.id == this.id &&
+          other.content == this.content &&
+          other.level == this.level &&
+          other.from == this.from &&
+          other.sentAt == this.sentAt);
+}
+
+class RemindMessageCompanion extends UpdateCompanion<RemindMessageData> {
+  final Value<int> id;
+  final Value<String> content;
+  final Value<int> level;
+  final Value<String> from;
+  final Value<DateTime> sentAt;
+  const RemindMessageCompanion({
+    this.id = const Value.absent(),
+    this.content = const Value.absent(),
+    this.level = const Value.absent(),
+    this.from = const Value.absent(),
+    this.sentAt = const Value.absent(),
+  });
+  RemindMessageCompanion.insert({
+    this.id = const Value.absent(),
+    required String content,
+    required int level,
+    required String from,
+    required DateTime sentAt,
+  }) : content = Value(content),
+       level = Value(level),
+       from = Value(from),
+       sentAt = Value(sentAt);
+  static Insertable<RemindMessageData> custom({
+    Expression<int>? id,
+    Expression<String>? content,
+    Expression<int>? level,
+    Expression<String>? from,
+    Expression<DateTime>? sentAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (content != null) 'content': content,
+      if (level != null) 'level': level,
+      if (from != null) 'from': from,
+      if (sentAt != null) 'sent_at': sentAt,
+    });
+  }
+
+  RemindMessageCompanion copyWith({
+    Value<int>? id,
+    Value<String>? content,
+    Value<int>? level,
+    Value<String>? from,
+    Value<DateTime>? sentAt,
+  }) {
+    return RemindMessageCompanion(
+      id: id ?? this.id,
+      content: content ?? this.content,
+      level: level ?? this.level,
+      from: from ?? this.from,
+      sentAt: sentAt ?? this.sentAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (content.present) {
+      map['content'] = Variable<String>(content.value);
+    }
+    if (level.present) {
+      map['level'] = Variable<int>(level.value);
+    }
+    if (from.present) {
+      map['from'] = Variable<String>(from.value);
+    }
+    if (sentAt.present) {
+      map['sent_at'] = Variable<DateTime>(sentAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RemindMessageCompanion(')
+          ..write('id: $id, ')
+          ..write('content: $content, ')
+          ..write('level: $level, ')
+          ..write('from: $from, ')
+          ..write('sentAt: $sentAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $TaskCheckTable taskCheck = $TaskCheckTable(this);
+  late final $RemindMessageTable remindMessage = $RemindMessageTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [taskCheck];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    taskCheck,
+    remindMessage,
+  ];
 }
 
 typedef $$TaskCheckTableCreateCompanionBuilder =
@@ -567,10 +912,210 @@ typedef $$TaskCheckTableProcessedTableManager =
       TaskCheckData,
       PrefetchHooks Function()
     >;
+typedef $$RemindMessageTableCreateCompanionBuilder =
+    RemindMessageCompanion Function({
+      Value<int> id,
+      required String content,
+      required int level,
+      required String from,
+      required DateTime sentAt,
+    });
+typedef $$RemindMessageTableUpdateCompanionBuilder =
+    RemindMessageCompanion Function({
+      Value<int> id,
+      Value<String> content,
+      Value<int> level,
+      Value<String> from,
+      Value<DateTime> sentAt,
+    });
+
+class $$RemindMessageTableFilterComposer
+    extends Composer<_$AppDatabase, $RemindMessageTable> {
+  $$RemindMessageTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get level => $composableBuilder(
+    column: $table.level,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get from => $composableBuilder(
+    column: $table.from,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get sentAt => $composableBuilder(
+    column: $table.sentAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$RemindMessageTableOrderingComposer
+    extends Composer<_$AppDatabase, $RemindMessageTable> {
+  $$RemindMessageTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get level => $composableBuilder(
+    column: $table.level,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get from => $composableBuilder(
+    column: $table.from,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get sentAt => $composableBuilder(
+    column: $table.sentAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$RemindMessageTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RemindMessageTable> {
+  $$RemindMessageTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+
+  GeneratedColumn<int> get level =>
+      $composableBuilder(column: $table.level, builder: (column) => column);
+
+  GeneratedColumn<String> get from =>
+      $composableBuilder(column: $table.from, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get sentAt =>
+      $composableBuilder(column: $table.sentAt, builder: (column) => column);
+}
+
+class $$RemindMessageTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RemindMessageTable,
+          RemindMessageData,
+          $$RemindMessageTableFilterComposer,
+          $$RemindMessageTableOrderingComposer,
+          $$RemindMessageTableAnnotationComposer,
+          $$RemindMessageTableCreateCompanionBuilder,
+          $$RemindMessageTableUpdateCompanionBuilder,
+          (
+            RemindMessageData,
+            BaseReferences<
+              _$AppDatabase,
+              $RemindMessageTable,
+              RemindMessageData
+            >,
+          ),
+          RemindMessageData,
+          PrefetchHooks Function()
+        > {
+  $$RemindMessageTableTableManager(_$AppDatabase db, $RemindMessageTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RemindMessageTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RemindMessageTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RemindMessageTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> content = const Value.absent(),
+                Value<int> level = const Value.absent(),
+                Value<String> from = const Value.absent(),
+                Value<DateTime> sentAt = const Value.absent(),
+              }) => RemindMessageCompanion(
+                id: id,
+                content: content,
+                level: level,
+                from: from,
+                sentAt: sentAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String content,
+                required int level,
+                required String from,
+                required DateTime sentAt,
+              }) => RemindMessageCompanion.insert(
+                id: id,
+                content: content,
+                level: level,
+                from: from,
+                sentAt: sentAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$RemindMessageTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RemindMessageTable,
+      RemindMessageData,
+      $$RemindMessageTableFilterComposer,
+      $$RemindMessageTableOrderingComposer,
+      $$RemindMessageTableAnnotationComposer,
+      $$RemindMessageTableCreateCompanionBuilder,
+      $$RemindMessageTableUpdateCompanionBuilder,
+      (
+        RemindMessageData,
+        BaseReferences<_$AppDatabase, $RemindMessageTable, RemindMessageData>,
+      ),
+      RemindMessageData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
   $$TaskCheckTableTableManager get taskCheck =>
       $$TaskCheckTableTableManager(_db, _db.taskCheck);
+  $$RemindMessageTableTableManager get remindMessage =>
+      $$RemindMessageTableTableManager(_db, _db.remindMessage);
 }

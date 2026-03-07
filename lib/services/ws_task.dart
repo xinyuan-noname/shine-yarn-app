@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:shine/services/ws.dart';
+import 'package:shine/storage/remind_storage.dart';
 import 'package:uuid/uuid.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -35,6 +36,8 @@ class WsTask {
                 _handlePing();
               case "ack":
                 _handleAck(map);
+              case "remind":
+                _handleRemind(map);
             }
           }
         },
@@ -60,13 +63,16 @@ class WsTask {
   static Future sendRemind({
     required String msg,
     required List<String> targetList,
+    int level = 1,
   }) {
     final wsi = Uuid().v4();
     final map = {
       "type": "remind",
       "targetList": targetList,
+      "content": msg,
       "ts": DateTime.now().millisecondsSinceEpoch,
       "wsi": wsi,
+      "level": level,
     };
     WsTask.send(jsonEncode(map));
     return WsTask.recordAndWait(wsi: wsi, type: "remind");
@@ -102,7 +108,7 @@ class WsTask {
     WsTask.send(jsonEncode(map));
   }
 
-  static void _handleAck(map) {
+  static void _handleAck(Map map) {
     final wsi = map['wsi'];
     final record = findRecord(wsi);
     switch (record.$3) {
@@ -110,6 +116,19 @@ class WsTask {
         removeRecordAndDoNext(record: record);
         break;
     }
+  }
+
+  static void _handleRemind(Map map) {
+    final String content = map["content"];
+    final String from = map["from"];
+    final int ts = map["ts"];
+    final int level = map["level"];
+    MessageStorage.addRemindMessage(
+      content: content,
+      level: level,
+      from: from,
+      sentAt: DateTime.fromMillisecondsSinceEpoch(ts),
+    );
   }
 
   static Future<void> start() async {
