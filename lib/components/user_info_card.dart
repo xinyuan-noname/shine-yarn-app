@@ -55,7 +55,7 @@ class UserInfoCard extends StatelessWidget {
                 Row(
                   children: [
                     NetworkAvatar(id: userInfo['id'], radius: 40),
-                    const SizedBox(width: 20),
+                    const SizedBox(width: 10),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -69,7 +69,7 @@ class UserInfoCard extends StatelessWidget {
                   ],
                 ),
                 bottomLine,
-                const SizedBox(height: 2),
+                const SizedBox(height: 1),
                 if (noOperation != true) _buildOperatorRow(),
               ],
             ),

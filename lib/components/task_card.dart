@@ -132,7 +132,7 @@ class TaskCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 5),
                 bottomLine,
                 _buildCreatedAt(),
               ],

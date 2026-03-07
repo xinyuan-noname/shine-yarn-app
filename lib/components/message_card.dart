@@ -38,7 +38,13 @@ class MessageCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(children: [_buildAvatar()]),
+                Row(
+                  children: [
+                    _buildAvatar(),
+                    Column(children: []),
+                  ],
+                ),
+                const SizedBox(height: 1),
                 bottomLine,
                 if (messageData.sentAt is DateTime) _buildTime(),
               ],
