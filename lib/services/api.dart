@@ -68,6 +68,10 @@ class ApiService {
     return dio.options.baseUrl;
   }
 
+  static Map get headers {
+    return dio.options.headers;
+  }
+
   static setBaseUrl(String url) {
     dio.options.baseUrl = url;
     uploadDio.options.baseUrl = url;

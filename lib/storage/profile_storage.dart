@@ -1,15 +1,12 @@
 import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shine/storage/file_storage.dart';
 
 class ProfileStorage {
   static final String _nameKey = 'name_key';
   static final String _idKey = 'id_key';
   static final String _genderKey = 'gener_key';
   static final String _passwordRequiredKey = 'password_required_key';
-  static final String _avatarNameKey = 'avatar_name_key';
+  static final String _avatarTsKey = 'avatar_ts_key';
   static final String _adminListKey = 'admin_list_key';
   static final String _userListKey = 'user_list_key';
   static Future<void> saveName(String name) async {
@@ -72,36 +69,19 @@ class ProfileStorage {
     await prefs.remove(_passwordRequiredKey);
   }
 
-  static Future<void> saveAvatar(Uint8List data) async {
+  static Future<void> saveAvatarTs(int ts) async {
     final prefs = await SharedPreferences.getInstance();
-    final avatarName = "${DateTime.now().millisecondsSinceEpoch}.jpeg";
-    final avatarRelativePath = 'profiles/avatars/$avatarName';
-    await prefs.setString(_avatarNameKey, avatarName);
-    await FileStorage.saveBytesToAppFolder(
-      relativePath: avatarRelativePath,
-      data: data,
-    );
+    await prefs.setInt(_avatarTsKey, ts);
   }
 
-  static Future<String?> getAvatarPath() async {
+  static Future<int> getAvatarTs() async {
     final prefs = await SharedPreferences.getInstance();
-    final avatarName = prefs.getString(_avatarNameKey);
-    if (avatarName == null) return null;
-    final avatarRelativePath = "profiles/avatars/$avatarName";
-    final fullpath = await FileStorage.getPath(avatarRelativePath);
-    if (await FileStorage.existsFile(fullpath)) {
-      return fullpath;
-    }
-    return null;
+    return prefs.getInt(_avatarTsKey) ?? 0;
   }
 
-  static Future<void> delOutdatedAvatar() async {
+  static Future delAvatarTs() async {
     final prefs = await SharedPreferences.getInstance();
-    final avatarName = prefs.getString(_avatarNameKey);
-    FileStorage.deleteAllExcept(
-      keepFileNames: avatarName == null ? [] : [avatarName],
-      subDirName: 'profiles/avatars',
-    );
+    await prefs.remove(_avatarTsKey);
   }
 
   static Future<void> saveAdminList(List list) async {
@@ -121,6 +101,7 @@ class ProfileStorage {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_adminListKey);
   }
+
   static Future<void> saveUserList(List list) async {
     final prefs = await SharedPreferences.getInstance();
     final s = list.map((e) => jsonEncode(e)).toList();

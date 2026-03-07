@@ -139,13 +139,13 @@ class _RegisterPageState extends State<RegisterPage> {
               Icon(
                 Icons.app_registration_sharp,
                 size: 20,
-                color: darkColorPurple,
+                color: deepColorPurple,
               ),
               SizedBox(width: 10),
               Text(
                 '提交注册',
                 style: TextStyle(
-                  color: darkColorPurple,
+                  color: deepColorPurple,
                   fontSize: 20,
                   fontWeight: FontWeight.w200,
                 ),

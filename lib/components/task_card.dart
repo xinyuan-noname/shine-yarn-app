@@ -79,7 +79,7 @@ class TaskCard extends StatelessWidget {
                           ),
                           BoxShadow(
                             offset: Offset(-1, -1),
-                            color: darkColorPurple,
+                            color: deepColorPurple,
                             blurRadius: 1,
                           ),
                         ],

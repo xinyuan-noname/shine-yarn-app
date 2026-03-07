@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:shine/services/api.dart';
 import 'package:shine/services/api_auth.dart';
@@ -52,10 +51,6 @@ class Worker {
     Worker.scheduleUrl(Duration(milliseconds: 50));
   }
 
-  static syncMyAvatar() async {
-    final avatarData = await ApiProfiles.getMyAvatar();
-    if (avatarData is Uint8List) await ProfileStorage.saveAvatar(avatarData);
-  }
 
   static syncMyProfile() async {
     final result = await ApiProfiles.getMyProfile();
@@ -88,7 +83,6 @@ class Worker {
   }
 
   static syncMyData() async {
-    await Worker.syncMyAvatar();
     await Worker.syncMyProfile();
   }
 

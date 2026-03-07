@@ -161,7 +161,7 @@ class _LoginPageState extends State<LoginPage> {
           child: const Text(
             "登录",
             style: TextStyle(
-              color: darkColorPurple,
+              color: deepColorPurple,
               fontSize: 24,
               fontWeight: FontWeight.w300,
             ),

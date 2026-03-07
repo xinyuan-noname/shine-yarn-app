@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -25,13 +24,13 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String? _avatarPath;
   String _username = "???";
   String? _gender;
   String _id = "??????????";
   bool _isPaswRequired = false;
   String _version = "?";
   int _tapVersionCount = 0;
+  int _ts = 0;
   final _message = ValueNotifier("");
   @override
   void initState() {
@@ -48,13 +47,7 @@ class _ProfilePageState extends State<ProfilePage> {
           width: 100,
           height: 100,
           child: Center(
-            child: _avatarPath != null
-                ? CircleAvatar(
-                    backgroundColor: Colors.transparent,
-                    radius: 50,
-                    backgroundImage: FileImage(File(_avatarPath!)),
-                  )
-                : defaultAvatar50,
+            child: NetworkAvatar(id: _id, ts: _ts, radius: 50),
           ),
         ),
         Positioned(
@@ -402,11 +395,11 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future _refreshMyProfile() async {
-    _avatarPath = await ProfileStorage.getAvatarPath();
     _username = await ProfileStorage.getName();
     _gender = await ProfileStorage.getGender();
     _id = await ProfileStorage.getId();
     _isPaswRequired = await ProfileStorage.getPasswordRequired();
+    _ts = await ProfileStorage.getAvatarTs();
     _version = await getVersionInfo();
     setState(() {});
   }
@@ -456,8 +449,9 @@ class _ProfilePageState extends State<ProfilePage> {
         Navigator.of(context).pop();
       }
       if (success) {
-        await ProfileStorage.saveAvatar(imageData);
-        _avatarPath = await ProfileStorage.getAvatarPath();
+        final ts = DateTime.now().millisecondsSinceEpoch;
+        await ProfileStorage.saveAvatarTs(ts);
+        _ts = ts;
         setState(() {});
       }
     });

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/bottom_sheet.dart';
@@ -33,7 +32,7 @@ class _HomePageState extends State<HomePage> {
   final List<TaskStorageData> _taskList = [];
   final List<MessageStorageData> _messageList = [];
   final List _userInfoList = [];
-  String? _avatarPath;
+  int _ts = 0;
   String _username = "???";
   String _id = "??????????";
   int _currentIndex = 0;
@@ -78,8 +77,8 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadMine() async {
     _username = await ProfileStorage.getName();
-    _avatarPath = await ProfileStorage.getAvatarPath();
     _id = await ProfileStorage.getId();
+    _ts = await ProfileStorage.getAvatarTs();
     _userType = await TokenStorage.getTokenUserType();
     setState(() {});
   }
@@ -155,13 +154,7 @@ class _HomePageState extends State<HomePage> {
                     );
                   }
                 },
-                child: _avatarPath != null
-                    ? CircleAvatar(
-                        backgroundColor: Colors.transparent,
-                        radius: 25,
-                        backgroundImage: FileImage(File(_avatarPath!)),
-                      )
-                    : defaultAvatar25,
+                child: NetworkAvatar(id: _id, ts: _ts, radius: 25),
               ),
               SizedBox(width: 5),
               Column(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shine/database/init_dependencies_datebase.dart';
 import 'package:shine/pages/splash_page.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
@@ -10,8 +11,7 @@ import 'package:shine/worker/worker.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // 👇 预加载自定义字体
+  initializeDatabase();
   final loader = FontLoader('SmileySans');
   loader.addFont(rootBundle.load('assets/fonts/SmileySans-Oblique.ttf'));
   await loader.load();

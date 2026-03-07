@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shine/components/avatar.dart';
+import 'package:shine/components/line.dart';
 import 'package:shine/storage/remind_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/time.dart';
 
 class MessageCard extends StatelessWidget {
   final MessageStorageData messageData;
@@ -34,11 +37,47 @@ class MessageCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [],
+              children: [
+                Row(children: [_buildAvatar()]),
+                bottomLine,
+                if (messageData.sentAt is DateTime) _buildTime(),
+              ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildAvatar() {
+    return NetworkAvatar(id: messageData.source);
+  }
+
+  Widget _buildTime() {
+    final sentAt = messageData.sentAt;
+    return Row(
+      children: [
+        Text(
+          "发送于：",
+          style: const TextStyle(
+            fontFamily: 'SmileySans',
+            fontSize: 12,
+            color: bgColorLight,
+            shadows: [Shadow(color: darkColorPurple, blurRadius: 0.8)],
+          ),
+          softWrap: true,
+        ),
+        Text(
+          sentAt is DateTime ? getLocalTimeString(sentAt) : "未知时间",
+          style: const TextStyle(
+            fontFamily: 'SmileySans',
+            fontSize: 12,
+            color: bgColorLight,
+            shadows: [Shadow(color: darkColorPurple, blurRadius: 0.8)],
+          ),
+          softWrap: true,
+        ),
+      ],
     );
   }
 }

@@ -12,7 +12,8 @@ const mainColorGreenBule50 = Color.fromRGBO(7, 247, 255, 0.50);
 const mainColorGreenBule40 = Color.fromRGBO(7, 247, 255, 0.40);
 const mainColorGreenBule30 = Color.fromRGBO(7, 247, 255, 0.30);
 
-const darkColorPurple = Color.fromRGBO(107, 99, 187, 1);
+const deepColorPurple = Color.fromRGBO(107, 99, 187, 1);
+const darkColorPurple = Color.fromRGBO(52, 49, 84, 1);
 
 const mainColorPurple = Color.fromRGBO(167, 157, 255, 1);
 const mainColorPurple90 = Color.fromRGBO(167, 157, 255, 0.9);
@@ -92,7 +93,7 @@ const redLinearGradientReversed = LinearGradient(
 const purpleLinearGradient = LinearGradient(
   begin: Alignment.topLeft,
   end: Alignment.bottomRight,
-  colors: [darkColorPurple, mainColorPurple],
+  colors: [deepColorPurple, mainColorPurple],
 );
 const blueLinearGradient = LinearGradient(
   begin: Alignment.topLeft,
