@@ -17,7 +17,6 @@ class EventBus {
   }
 }
 
-// 事件类保持不变
 class MessageEvent {
   final DateTime timestamp;
   final String? type;

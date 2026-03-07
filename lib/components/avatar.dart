@@ -31,7 +31,6 @@ class NetworkAvatar extends StatelessWidget {
       },
 
       errorWidget: (context, url, error) {
-        print('【加载失败】$url, error: $error');
         return _buildDefualtAvatar();
       },
     );

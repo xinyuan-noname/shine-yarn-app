@@ -42,10 +42,11 @@ class MessageCard extends StatelessWidget {
                   children: [
                     _buildAvatar(),
                     const SizedBox(width: 10),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [_buildUsername(), _buildContent()],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [_buildUsername(), _buildContent()],
+                      ),
                     ),
                   ],
                 ),
@@ -76,7 +77,7 @@ class MessageCard extends StatelessWidget {
       messageData.content,
       style: const TextStyle(
         fontFamily: 'SmileySans',
-        fontSize: 20,
+        fontSize: 19,
         color: Colors.grey,
       ),
     );

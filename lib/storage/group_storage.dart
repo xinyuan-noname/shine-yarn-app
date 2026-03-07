@@ -7,7 +7,7 @@ enum GroupStorageKey {
   male("male", "group_male_key"),
   female("female", "group_female_key"),
   admin("admin", "group_admin_key"),
-  user("user", "group_position_key"),
+  user("user", "group_user_key"),
   position("position", "group_position_key");
 
   const GroupStorageKey(this.name, this.value);

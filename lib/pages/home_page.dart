@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/bottom_sheet.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/routes.dart';
+import 'package:shine/services/event.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/message_storage.dart';
 import 'package:shine/storage/task_storage.dart';
@@ -32,6 +35,7 @@ class _HomePageState extends State<HomePage> {
   final List<TaskStorageData> _taskList = [];
   final List<MessageStorageData> _messageList = [];
   final List _userInfoList = [];
+  StreamSubscription<MessageEvent>? _subscription;
   int _ts = 0;
   String _username = "???";
   String _id = "??????????";
@@ -55,6 +59,9 @@ class _HomePageState extends State<HomePage> {
       if (!mounted) return;
       _updateTaskData();
     };
+    _subscription = EventBus.stream.listen((event) {
+      _updateMessageDate();
+    });
   }
 
   Future<void> _prepareData() async {
@@ -96,7 +103,9 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _updateMessageDate() async {
     _messageList.clear();
-    _messageList.addAll((await MessageStorage.getAllMessage()));
+    _messageList.addAll(
+      (await MessageStorage.getAllMessage()).reversed.toList(),
+    );
     setState(() {});
   }
 

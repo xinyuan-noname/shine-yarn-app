@@ -64,7 +64,6 @@ class MessageStorage {
       String sourceId = '';
       String sourceUsername = '';
       final sourceMap = jsonDecode(messageData.source);
-      print(sourceMap);
       if (sourceMap is Map) {
         if (sourceMap['id'] is String) {
           sourceId = sourceMap['id'];
