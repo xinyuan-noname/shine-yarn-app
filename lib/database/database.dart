@@ -27,6 +27,14 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (Migrator m) => m.createAll(),
+    onUpgrade: (Migrator m, int from, int to) async {
+      await m.createTable(remindMessage);
+    },
+  );
+
+  @override
   int get schemaVersion => 1;
   Future<List<TaskCheckData>> getAllTaskCheckItems() async {
     return await select(taskCheck).get();
@@ -79,7 +87,7 @@ class AppDatabase extends _$AppDatabase {
 
   static QueryExecutor _openConnection() {
     return driftDatabase(
-      name: 'shine_yarn',
+      name: 'shine_yarn_db',
       native: const DriftNativeOptions(
         databaseDirectory: getApplicationDocumentsDirectory,
       ),
