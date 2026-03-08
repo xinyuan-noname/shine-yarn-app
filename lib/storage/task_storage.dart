@@ -2,8 +2,6 @@ import 'dart:convert';
 
 import 'package:shine/database/database.dart';
 
-final db = DatabaseProvider.instance;
-
 class TaskStorageData {
   final int id;
   final String title;
@@ -31,13 +29,14 @@ class CheckTaskStorageData extends TaskStorageData {
 }
 
 class TaskStorage {
+  static AppDatabase get _db => DatabaseProvider.instance;
   static Future<void> addCheckTask({
     required String title,
     required List finished,
     required List unfinished,
     DateTime? createdAt,
   }) async {
-    await db.insertTaskCheckItem(
+    await _db.insertTaskCheckItem(
       title: title,
       finished: jsonEncode(finished),
       unfinished: jsonEncode(unfinished),
@@ -50,7 +49,7 @@ class TaskStorage {
     List? finished,
     List? unfinished,
   }) async {
-    await db.updateTaskCheckContent(
+    await _db.updateTaskCheckContent(
       id: id,
       title: title,
       finished: finished == null ? null : jsonEncode(finished),
@@ -59,7 +58,7 @@ class TaskStorage {
   }
 
   static Future<CheckTaskStorageData?> getCheckTask({required int id}) async {
-    final data = await db.getTaskCheckItem(id);
+    final data = await _db.getTaskCheckItem(id);
     if (data == null) return null;
     final String title = data.title;
     final DateTime? createdAt = data.createdAt;
@@ -80,7 +79,7 @@ class TaskStorage {
   }
 
   static Future<List<CheckTaskStorageData>> getAllCheckTask() async {
-    final dataList = await db.getAllTaskCheckItems();
+    final dataList = await _db.getAllTaskCheckItems();
     return dataList.map((ele) {
       final df = jsonDecode(ele.finished);
       final du = jsonDecode(ele.unfinished);
@@ -100,7 +99,7 @@ class TaskStorage {
   }
 
   static Future<void> delCheckTask({required int id}) async {
-    await db.deleteTaskCheck(id);
+    await _db.deleteTaskCheck(id);
   }
 
   static Future<List<TaskStorageData>> getAllTask() async {

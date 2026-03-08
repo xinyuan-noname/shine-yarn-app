@@ -128,7 +128,7 @@ class AppDatabase extends _$AppDatabase {
 }
 
 class DatabaseProvider {
-  static late final AppDatabase _instance;
+  static late AppDatabase _instance;
 
   static AppDatabase get instance => _instance;
 

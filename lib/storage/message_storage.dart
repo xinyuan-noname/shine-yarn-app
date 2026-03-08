@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shine/database/database.dart';
 
-final AppDatabase db = DatabaseProvider.instance;
+final AppDatabase _db = DatabaseProvider.instance;
 
 class MessageStorageData {
   final int id;
@@ -37,6 +37,7 @@ class RemindMessageStorageData extends MessageStorageData {
 }
 
 class MessageStorage {
+  static AppDatabase get _db => DatabaseProvider.instance;
   static final String _remindMessageReadedKey = "remind_message_readed_key";
 
   static Future<void> addMessageReaded(int id) async {
@@ -73,7 +74,7 @@ class MessageStorage {
   }
 
   static Future<List<RemindMessageStorageData>> getAllRemindMessages() async {
-    final result = await db.getAllRemindMessages();
+    final result = await _db.getAllRemindMessages();
     final list = <RemindMessageStorageData>[];
     for (final messageData in result) {
       String sourceId = '';
@@ -106,7 +107,7 @@ class MessageStorage {
   }
 
   static Future<RemindMessageStorageData?> getRemindMessage(int id) async {
-    final result = await db.getRemindMessage(id);
+    final result = await _db.getRemindMessage(id);
     if (result == null) return null;
     String sourceId = '';
     String sourceUsername = '';
@@ -136,7 +137,7 @@ class MessageStorage {
     required String source,
     DateTime? sentAt,
   }) async {
-    return await db.insertRemindMessage(
+    return await _db.insertRemindMessage(
       content: content,
       level: level,
       source: source,
@@ -146,18 +147,18 @@ class MessageStorage {
 
   static Future<void> removeRemindMessage(int id) async {
     await MessageStorage.removeReminderMessageReaded(id);
-    await db.deleteRemindMessage(id);
+    await _db.deleteRemindMessage(id);
   }
 
   static Future<List<RemindMessageData>> getRemindMessagesByLevel(
     int level,
   ) async {
-    return await db.getRemindMessagesByLevel(level);
+    return await _db.getRemindMessagesByLevel(level);
   }
 
   static Future<List<RemindMessageData>> getRemindMessagesByFrom(
     String source,
   ) async {
-    return await db.getRemindMessagesByFrom(source);
+    return await _db.getRemindMessagesByFrom(source);
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/input.dart';
+import 'package:shine/database/database.dart';
 import 'package:shine/extensions/text_editing.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api_auth.dart';
@@ -129,30 +130,7 @@ class _LoginPageState extends State<LoginPage> {
         child: ElevatedButton(
           onPressed: () async {
             if (!_formKey.currentState!.validate()) return;
-            _message.value = "正在发送登录请求";
-            showMessageDialog(context, _message);
-            final success = await _toLogin();
-            if (success) {
-              final username = _controllers.asTextMap["username"];
-              final id = _controllers.asTextMap["id"];
-              if (username != null) {
-                await ProfileStorage.saveName(username);
-              }
-              if (id != null) {
-                await ProfileStorage.saveId(id);
-                Worker.syncMyData();
-                Worker.syncAllUser();
-              }
-              if (context.mounted) {
-                Navigator.of(context).pop();
-                globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
-                  '/home',
-                  clearOldRouter,
-                );
-              }
-            } else if (context.mounted) {
-              Navigator.of(context).pop();
-            }
+            await _toLogin();
           },
           style: ElevatedButton.styleFrom(
             side: BorderSide(color: mainColorPurple80, width: 2.0),
@@ -173,7 +151,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future _toLogin() async {
-    return await sendRequestAndChangeMessage(
+    _message.value = "正在发送登录请求";
+    showMessageDialog(context, _message);
+    final success = await sendRequestAndChangeMessage(
       _message,
       request: Future(() async {
         return await ApiAuth.login(_controllers.asTextMap);
@@ -184,6 +164,28 @@ class _LoginPageState extends State<LoginPage> {
       successMessageDuration: Duration(milliseconds: 300),
       failMessageDuration: Duration(milliseconds: 800),
     );
+    if (success) {
+      final username = _controllers.asTextMap["username"];
+      final id = _controllers.asTextMap["id"];
+      if (username != null) {
+        await ProfileStorage.saveName(username);
+        DatabaseProvider.init();
+      }
+      if (id != null) {
+        await ProfileStorage.saveId(id);
+        Worker.syncMyData();
+        Worker.syncAllUser();
+      }
+      if (context.mounted) {
+        Navigator.of(context).pop();
+        globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
+          '/home',
+          clearOldRouter,
+        );
+      }
+    } else if (context.mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   Future _initValue() async {
