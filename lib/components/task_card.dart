@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:shine/components/icon_button.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/pages/home_page.dart';
 import 'package:shine/pages/task_check_page.dart';
@@ -12,7 +14,7 @@ const double largeIconSize = 48;
 class TaskCard extends StatelessWidget {
   final GestureTapCallback? onPress;
   final GestureLongPressCallback? onLongPress;
-  final DismissDirectionCallback? onDismissed;
+  final VoidCallback? onDelete;
   final TaskStorageData taskData;
   final VoidCallback? deleteCallback;
   const TaskCard({
@@ -20,7 +22,7 @@ class TaskCard extends StatelessWidget {
     this.onPress,
     this.onLongPress,
     required this.taskData,
-    this.onDismissed,
+    this.onDelete,
     this.deleteCallback,
   });
 
@@ -36,16 +38,22 @@ class TaskCard extends StatelessWidget {
         HomePageRefreshNotifier.refreshTask();
       },
     };
-    final onDismissedMap = <Type, DismissDirectionCallback>{
-      CheckTaskStorageData: (direction) async {
-        if (direction != DismissDirection.endToStart) return;
+    final onDeleteMap = <Type, VoidCallback>{
+      CheckTaskStorageData: () async {
         await TaskStorage.delCheckTask(id: taskData.id);
+        HomePageRefreshNotifier.refreshTask();
       },
     };
-    return Dismissible(
-      key: ValueKey(taskData.hashCode),
-      direction: DismissDirection.endToStart,
-      onDismissed: onDismissed ?? onDismissedMap[taskData.runtimeType],
+    return Slidable(
+      endActionPane: ActionPane(
+        extentRatio: 0.25,
+        motion: ScrollMotion(),
+        children: [
+          CardDeleteButton(
+            onDelete: onDelete ?? onDeleteMap[taskData.runtimeType],
+          ),
+        ],
+      ),
       child: Card(
         elevation: 2,
         color: mainColorPurple,

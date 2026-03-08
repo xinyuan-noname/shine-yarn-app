@@ -56,6 +56,12 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
           physics: NeverScrollableScrollPhysics(),
           children: [
             _buildBottomSheetItem(
+              icon: Icons.upload,
+              title: '作业收集',
+              onTap: () {},
+            ),
+            //task-check
+            _buildBottomSheetItem(
               icon: Icons.checklist,
               title: '任务清查',
               onTap: () async {
@@ -81,6 +87,20 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
                   HomePageRefreshNotifier.refreshTask();
                 }
               },
+            ),
+            //homework—upload
+
+            //
+            _buildBottomSheetItem(
+              icon: Icons.shuffle,
+              title: '随机选人',
+              onTap: () {},
+            ),
+            //
+            _buildBottomSheetItem(
+              icon: Icons.ballot,
+              title: '投票',
+              onTap: () {},
             ),
           ],
         ),

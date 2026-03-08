@@ -11,43 +11,59 @@ class MessageStorageData {
   final int level;
   final String sourceId;
   final String sourceUsername;
-  final bool readed;
   final String content;
+  final bool readed;
   const MessageStorageData({
     required this.id,
     required this.sourceId,
     required this.sourceUsername,
     required this.content,
-    this.readed = false,
     this.level = 1,
+    this.readed = false,
     this.sentAt,
   });
 }
 
+class RemindMessageStorageData extends MessageStorageData {
+  const RemindMessageStorageData({
+    required super.id,
+    required super.sourceId,
+    required super.sourceUsername,
+    required super.content,
+    super.readed,
+    super.level,
+    super.sentAt,
+  });
+}
+
 class MessageStorage {
-  static final String _messageReadedKey = "message_readed_key";
+  static final String _remindMessageReadedKey = "remind_message_readed_key";
 
   static Future<void> saveMessageReaded(int id) async {
     final prefs = await SharedPreferences.getInstance();
-    List<String> readedList = prefs.getStringList(_messageReadedKey) ?? [];
+    List<String> readedList =
+        prefs.getStringList(_remindMessageReadedKey) ?? [];
     if (!readedList.contains(id.toString())) {
       readedList.add(id.toString());
-      await prefs.setStringList(_messageReadedKey, readedList);
+      await prefs.setStringList(_remindMessageReadedKey, readedList);
     }
   }
 
-  static Future<bool> isMessageReaded(int id) async {
+  static Future<bool> judgeRemindMessageReaded(int id) async {
     final prefs = await SharedPreferences.getInstance();
-    List<String> readedList = prefs.getStringList(_messageReadedKey) ?? [];
+    List<String> readedList =
+        prefs.getStringList(_remindMessageReadedKey) ?? [];
+    print(readedList);
     return readedList.contains(id.toString());
   }
 
-  static Future<void> deleteMessageReaded(int id) async {
+  static Future<void> removeReminderMessageReaded(int id) async {
     final prefs = await SharedPreferences.getInstance();
-    List<String> readedList = prefs.getStringList(_messageReadedKey) ?? [];
+    List<String> readedList =
+        prefs.getStringList(_remindMessageReadedKey) ?? [];
     if (readedList.contains(id.toString())) {
       readedList.remove(id.toString());
-      await prefs.setStringList(_messageReadedKey, readedList);
+      await prefs.setStringList(_remindMessageReadedKey, readedList);
     }
   }
 
@@ -57,9 +73,9 @@ class MessageStorage {
     return result;
   }
 
-  static Future<List<MessageStorageData>> getAllRemindMessages() async {
+  static Future<List<RemindMessageStorageData>> getAllRemindMessages() async {
     final result = await db.getAllRemindMessages();
-    final list = <MessageStorageData>[];
+    final list = <RemindMessageStorageData>[];
     for (final messageData in result) {
       String sourceId = '';
       String sourceUsername = '';
@@ -72,21 +88,26 @@ class MessageStorage {
           sourceUsername = sourceMap['username'];
         }
       }
+      final readed = await MessageStorage.judgeRemindMessageReaded(
+        messageData.id,
+      );
+      print(readed);
       list.add(
-        MessageStorageData(
+        RemindMessageStorageData(
           id: messageData.id,
           content: messageData.content,
           level: messageData.level,
           sentAt: messageData.sentAt,
           sourceId: sourceId,
           sourceUsername: sourceUsername,
+          readed: readed
         ),
       );
     }
     return list;
   }
 
-  static Future<MessageStorageData?> getRemindMessage(int id) async {
+  static Future<RemindMessageStorageData?> getRemindMessage(int id) async {
     final result = await db.getRemindMessage(id);
     if (result == null) return null;
     String sourceId = '';
@@ -100,13 +121,14 @@ class MessageStorage {
         sourceUsername = sourceMap['username'];
       }
     }
-    return MessageStorageData(
+    return RemindMessageStorageData(
       id: id,
       sourceId: sourceId,
       sourceUsername: sourceUsername,
       content: result.content,
       level: result.level,
       sentAt: result.sentAt,
+      readed: await MessageStorage.judgeRemindMessageReaded(id),
     );
   }
 
@@ -125,7 +147,8 @@ class MessageStorage {
   }
 
   static Future<void> removeRemindMessage(int id) async {
-    return await db.deleteRemindMessage(id);
+    await MessageStorage.removeReminderMessageReaded(id);
+    await db.deleteRemindMessage(id);
   }
 
   static Future<List<RemindMessageData>> getRemindMessagesByLevel(

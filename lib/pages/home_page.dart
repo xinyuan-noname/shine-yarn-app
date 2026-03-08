@@ -35,6 +35,7 @@ class _HomePageState extends State<HomePage> {
   final List<TaskStorageData> _taskList = [];
   final List<MessageStorageData> _messageList = [];
   final List _userInfoList = [];
+  // ignore: unused_field
   StreamSubscription<MessageEvent>? _subscription;
   int _ts = 0;
   String _username = "???";
@@ -58,6 +59,10 @@ class _HomePageState extends State<HomePage> {
     HomePageRefreshNotifier._refreshTask = () {
       if (!mounted) return;
       _updateTaskData();
+    };
+    HomePageRefreshNotifier._refreshMessage = () {
+      if (!mounted) return;
+      _updateMessageDate();
     };
     _subscription = EventBus.stream.listen((event) {
       _updateMessageDate();
@@ -278,14 +283,21 @@ class _HomePageState extends State<HomePage> {
 }
 
 class HomePageRefreshNotifier {
-  static bool get isOk => _refreshTask != null;
   static VoidCallback? _refreshTask;
+  static VoidCallback? _refreshMessage;
+
   static void refreshTask() {
     _refreshTask ??= () {};
     _refreshTask!();
   }
 
+  static void refreshMessage() {
+    _refreshMessage ??= () {};
+    _refreshMessage!();
+  }
+
   static void clear() {
     _refreshTask = null;
+    _refreshMessage = null;
   }
 }

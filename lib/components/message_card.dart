@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:shine/components/avatar.dart';
+import 'package:shine/components/icon_button.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/pages/home_page.dart';
 import 'package:shine/storage/message_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/time.dart';
@@ -20,40 +23,59 @@ class MessageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onLongPress: onLongPress,
-      onTap: onPress,
-      child: Card(
-        elevation: 2,
-        margin: const EdgeInsets.only(bottom: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        shadowColor: mainColorGreenBule60,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            gradient: whiteLinearGradient,
+    final onDeleteMap = <Type, VoidCallback>{
+      RemindMessageStorageData: () async {
+        await MessageStorage.removeRemindMessage(messageData.id);
+        HomePageRefreshNotifier.refreshMessage();
+      },
+    };
+    return Slidable(
+      endActionPane: ActionPane(
+        extentRatio: 0.25,
+        motion: ScrollMotion(),
+        children: [
+          CardDeleteButton(
+            onDelete: deleteCallback ?? onDeleteMap[messageData.runtimeType],
           ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    _buildAvatar(),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [_buildUsername(), _buildContent()],
+        ],
+      ),
+      child: GestureDetector(
+        onLongPress: onLongPress,
+        onTap: onPress,
+        child: Card(
+          elevation: 2,
+          margin: const EdgeInsets.only(bottom: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          shadowColor: mainColorGreenBule60,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: whiteLinearGradient,
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      _buildAvatar(),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [_buildUsername(), _buildContent()],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 1),
-                bottomLine,
-                if (messageData.sentAt is DateTime) _buildTime(),
-              ],
+                    ],
+                  ),
+                  const SizedBox(height: 1),
+                  bottomLine,
+                  if (messageData.sentAt is DateTime) _buildTime(),
+                ],
+              ),
             ),
           ),
         ),
@@ -62,7 +84,13 @@ class MessageCard extends StatelessWidget {
   }
 
   Widget _buildAvatar() {
-    return NetworkAvatar(id: messageData.sourceId);
+    return Badge(
+      textColor: bgColorLight,
+      backgroundColor: mainColorRed,
+      smallSize: 10,
+      isLabelVisible: !messageData.readed,
+      child: NetworkAvatar(id: messageData.sourceId),
+    );
   }
 
   Widget _buildUsername() {
