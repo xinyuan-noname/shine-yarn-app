@@ -128,16 +128,9 @@ class AppDatabase extends _$AppDatabase {
 }
 
 class DatabaseProvider {
-  static final Map<String, AppDatabase> _instances = {};
+  static late final AppDatabase _instance;
 
-  static AppDatabase get firstInstance => _instances.entries.first.value;
-  static AppDatabase getInstance(String userId) {
-    if (!_instances.containsKey(userId)) {
-      _instances[userId] = AppDatabase(_openConnection(userId));
-    }
-    return _instances[userId]!;
-  }
-
+  static AppDatabase get instance => _instance;
 
   static QueryExecutor _openConnection(String userId) {
     return driftDatabase(
@@ -148,20 +141,8 @@ class DatabaseProvider {
     );
   }
 
-  static void closeInstance(String userId) {
-    _instances[userId]?.close();
-    _instances.remove(userId);
-  }
-
-  static void closeAllInstances() {
-    for (var db in _instances.values) {
-      db.close();
-    }
-    _instances.clear();
-  }
-
   static Future init() async {
     final id = await ProfileStorage.getId();
-    DatabaseProvider.getInstance(id);
+    _instance = AppDatabase(_openConnection(id));
   }
 }
