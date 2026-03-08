@@ -1,8 +1,10 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shine/services/dio.dart';
 import 'package:shine/utils/device_info.dart';
+import 'package:shine/utils/routes.dart';
 import 'package:shine/worker/worker.dart';
 
 class ApiService {
@@ -16,19 +18,25 @@ class ApiService {
           if (resBody["code"] != null) {
             switch (resBody["code"]) {
               case "INVALID_ACCESS_TOKEN":
-                {
-                  Worker.scheduleRefreshNow();
-                }
+                Fluttertoast.showToast(msg: '正在向服务器认证身份');
+                Worker.scheduleRefreshNow();
                 break;
               case "INVALID_PASSWORD":
-                {
-                  err = DioException(
-                    requestOptions: err.requestOptions,
-                    message: '密码出错',
-                    type: DioExceptionType.badCertificate,
-                  );
-                }
+                err = DioException(
+                  requestOptions: err.requestOptions,
+                  message: '密码出错',
+                  type: DioExceptionType.badCertificate,
+                );
                 break;
+              case "INVALID_REFRESH_TOKEN":
+                err = DioException(
+                  requestOptions: err.requestOptions,
+                  message: "登陆身份出错",
+                  type: DioExceptionType.badCertificate,
+                );
+                if (isOnLoginPageGlobally()) {
+                  goToLoginGlobally();
+                }
             }
           }
         }
@@ -43,6 +51,12 @@ class ApiService {
           err = DioException(
             requestOptions: err.requestOptions,
             message: '服务器网络波动',
+            type: DioExceptionType.connectionError,
+          );
+        } else {
+          err = DioException(
+            requestOptions: err.requestOptions,
+            message: '服务器开小差了哟',
             type: DioExceptionType.connectionError,
           );
         }

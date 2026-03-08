@@ -53,7 +53,6 @@ class MessageStorage {
     final prefs = await SharedPreferences.getInstance();
     List<String> readedList =
         prefs.getStringList(_remindMessageReadedKey) ?? [];
-    print(readedList);
     return readedList.contains(id.toString());
   }
 
@@ -91,7 +90,6 @@ class MessageStorage {
       final readed = await MessageStorage.judgeRemindMessageReaded(
         messageData.id,
       );
-      print(readed);
       list.add(
         RemindMessageStorageData(
           id: messageData.id,

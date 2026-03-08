@@ -19,5 +19,3 @@ final Map<String, WidgetBuilder> appRouters = {
   "/task/check": (_) => TaskCheckPage(),
 };
 final globalNavigatorKey = GlobalKey<NavigatorState>();
-// ignore: prefer_function_declarations_over_variables
-final clearOldRouter = (Route<dynamic> router) => false;

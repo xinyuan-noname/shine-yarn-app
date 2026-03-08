@@ -287,8 +287,11 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
                       final id = unselectedItem["id"];
                       if (id is String) list.add(id);
                     }
-                    await WsTask.sendRemind(msg: result, targetList: list);
-                    print("交换完成");
+                    await WsTask.sendRemind(
+                      msg: result,
+                      targetList: list,
+                      level: 0,
+                    );
                   },
                   child: Container(
                     decoration: BoxDecoration(
