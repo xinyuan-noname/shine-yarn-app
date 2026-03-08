@@ -38,6 +38,7 @@ class WebSocketServer {
   }
 
   static dispose() async {
+    _token = '';
     await WsTask.close();
   }
 }

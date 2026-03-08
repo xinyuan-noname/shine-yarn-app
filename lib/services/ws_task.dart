@@ -12,6 +12,7 @@ class WsTask {
   static final List<(String, Completer, String)> _taskRecordList = [];
   static WebSocketChannel? _channel;
 
+  static int? _closeCode;
   static Timer? _reconnectTimer;
   static int _reconnectAttempts = 0;
   static const int _maxReconnectAttempts = 5;
@@ -28,11 +29,11 @@ class WsTask {
       _channel = WebSocketChannel.connect(Uri.parse(_wsUrl));
       _channel!.sink.done
           .then((_) {
-            if (_channel?.closeCode == 1000) return;
+            if (_channel?.closeCode == 1000 || _closeCode == 1000) return;
             WsTask.reconnect();
           })
           .catchError((error) {
-            if (_channel?.closeCode == 1000) return;
+            if (_channel?.closeCode == 1000 || _closeCode == 1000) return;
             WsTask.reconnect();
           });
 
@@ -51,11 +52,11 @@ class WsTask {
           }
         },
         onError: (error) {
-          if (_channel?.closeCode == 1000) return;
+          if (_channel?.closeCode == 1000 || _closeCode == 1000) return;
           WsTask.reconnect();
         },
         onDone: () {
-          if (_channel?.closeCode == 1000) return;
+          if (_channel?.closeCode == 1000 || _closeCode == 1000) return;
           WsTask.reconnect();
         },
       );
@@ -162,6 +163,7 @@ class WsTask {
   static Future<void> close({int code = 1000, String? reason}) async {
     _reconnectTimer?.cancel();
     _reconnectTimer = null;
+    _closeCode = code;
     await _channel?.sink.close(code, reason);
     WsTask.clear();
   }
