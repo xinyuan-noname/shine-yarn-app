@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/dio.dart';
+import 'package:shine/services/ws_task.dart';
 
 class WebSocketServer {
   static String _token = '';
@@ -36,4 +37,7 @@ class WebSocketServer {
     return _token;
   }
 
+  static dispose() async {
+    await WsTask.close();
+  }
 }

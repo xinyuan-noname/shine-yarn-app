@@ -18,7 +18,6 @@ class ApiService {
           if (resBody["code"] != null) {
             switch (resBody["code"]) {
               case "INVALID_ACCESS_TOKEN":
-                showToast(msg: '正在向服务器认证身份');
                 Worker.scheduleRefreshNow();
                 break;
               case "INVALID_PASSWORD":
@@ -63,7 +62,6 @@ class ApiService {
         }
         Worker.scheduleUrlNow();
       }
-      print(code);
       handler.next(err);
     },
   );

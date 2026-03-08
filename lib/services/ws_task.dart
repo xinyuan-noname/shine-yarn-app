@@ -28,9 +28,11 @@ class WsTask {
       _channel = WebSocketChannel.connect(Uri.parse(_wsUrl));
       _channel!.sink.done
           .then((_) {
+            if (_channel?.closeCode == 1000) return;
             WsTask.reconnect();
           })
           .catchError((error) {
+            if (_channel?.closeCode == 1000) return;
             WsTask.reconnect();
           });
 
@@ -49,9 +51,11 @@ class WsTask {
           }
         },
         onError: (error) {
+          if (_channel?.closeCode == 1000) return;
           WsTask.reconnect();
         },
         onDone: () {
+          if (_channel?.closeCode == 1000) return;
           WsTask.reconnect();
         },
       );
@@ -91,9 +95,7 @@ class WsTask {
     _taskRecordList.add((wsi, completer, type));
     Future.delayed(Duration(seconds: 10)).then((_) {
       if (!completer.isCompleted) {
-        completer.completeError(
-          TimeoutException("发送超时"),
-        );
+        completer.completeError(TimeoutException("发送超时"));
       }
     });
     return completer.future;
@@ -157,10 +159,9 @@ class WsTask {
     }
   }
 
-  static Future<void> close([int? code, String? reason]) async {
+  static Future<void> close({int code = 1000, String? reason}) async {
     _reconnectTimer?.cancel();
     _reconnectTimer = null;
-
     await _channel?.sink.close(code, reason);
     WsTask.clear();
   }

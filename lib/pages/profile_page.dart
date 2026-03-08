@@ -9,6 +9,7 @@ import 'package:shine/components/pick_image.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api_auth.dart';
 import 'package:shine/services/api_profiles.dart';
+import 'package:shine/services/ws.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/device_info.dart';
@@ -363,16 +364,7 @@ class _ProfilePageState extends State<ProfilePage> {
             shadowColor: Colors.transparent,
           ),
           onPressed: () async {
-            _message.value = "正在发送登出请求";
-            showMessageDialog(context, _message);
             await _toLogout();
-            if (context.mounted) {
-              Navigator.of(context).pop();
-            }
-            globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
-              "/login",
-              clearOldRouter,
-            );
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -410,7 +402,9 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future _toLogout() async {
-    return await sendRequestAndChangeMessage(
+    _message.value = "正在发送登出请求";
+    showMessageDialog(context, _message);
+    await sendRequestAndChangeMessage(
       _message,
       request: Future(() async {
         return await ApiAuth.logout();
@@ -418,6 +412,15 @@ class _ProfilePageState extends State<ProfilePage> {
       initMessageList: [],
       messageList: ['正在吊销令牌.', '正在吊销令牌..', '正在吊销令牌...'],
       successMessage: '登出成功',
+    );
+    if (context.mounted) {
+      Navigator.of(context).pop();
+    }
+    WebSocketServer.dispose();
+    Worker.dispose();
+    globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
+      "/login",
+      clearOldRouter,
     );
   }
 

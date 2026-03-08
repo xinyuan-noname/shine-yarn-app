@@ -47,7 +47,7 @@ class Worker {
           ApiService.setBaseUrl(url);
         }
         Worker.scheduleUrl(defaultDuration);
-      } on DioException catch (e) {
+      } on DioException {
         showToast(msg: "服务未就绪");
       } catch (e) {
         showToast(msg: "服务未就绪");
@@ -109,5 +109,10 @@ class Worker {
 
   static startTaskWebSocket() {
     WsTask.start();
+  }
+
+  static void dispose() {
+    _refreshTimer?.cancel();
+    _urlTimer?.cancel();
   }
 }
