@@ -75,10 +75,10 @@ class _HomePageState extends State<HomePage> {
     };
     HomePageRefreshNotifier._refreshMessage = () {
       if (!mounted) return;
-      _updateMessageDate();
+      _updateMessageData();
     };
     _subscription = EventBus.stream.listen((event) {
-      _updateMessageDate();
+      _updateMessageData();
     });
   }
 
@@ -91,6 +91,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _updateUserInfo() async {
+    if (!mounted) return;
     await Worker.syncAllUser();
     final result = await ProfileStorage.getUserList();
     if (result != null) {
@@ -101,6 +102,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _loadMine() async {
+    if (!mounted) return;
     _username = await ProfileStorage.getName();
     _id = await ProfileStorage.getId();
     _ts = await ProfileStorage.getAvatarTs();
@@ -114,12 +116,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _updateTaskData() async {
+    if (!mounted) return;
     _taskList.clear();
     _taskList.addAll((await TaskStorage.getAllTask()).reversed.toList());
     setState(() {});
   }
 
-  Future<void> _updateMessageDate() async {
+  Future<void> _updateMessageData() async {
+    if (!mounted) return;
     _messageList.clear();
     _messageList.addAll(
       (await MessageStorage.getAllMessage()).reversed.toList(),
@@ -130,7 +134,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _updateAllData() async {
     _updateUserInfo();
     _updateTaskData();
-    _updateMessageDate();
+    _updateMessageData();
     _updateMine();
   }
 
@@ -145,7 +149,7 @@ class _HomePageState extends State<HomePage> {
             MessageView(
               messageList: _messageList,
               onRefresh: () async {
-                await _updateMessageDate();
+                await _updateMessageData();
               },
             ),
             TaskView(
