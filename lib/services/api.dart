@@ -46,6 +46,12 @@ class ApiService {
           message: '网络连接出错',
           type: DioExceptionType.connectionError,
         );
+      } else if (code == 429) {
+        err = DioException(
+          requestOptions: err.requestOptions,
+          message: '请求次数太多咯',
+          type: DioExceptionType.badResponse,
+        );
       } else if (code != null && code >= 500) {
         if (code == 530) {
           err = DioException(

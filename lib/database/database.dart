@@ -129,6 +129,7 @@ class AppDatabase extends _$AppDatabase {
 
 class DatabaseProvider {
   static late AppDatabase _instance;
+  static bool initialized = false;
 
   static AppDatabase get instance => _instance;
 
@@ -142,7 +143,9 @@ class DatabaseProvider {
   }
 
   static Future init() async {
+    if (initialized) await _instance.close();
     final id = await ProfileStorage.getId();
     _instance = AppDatabase(_openConnection(id));
+    initialized = true;
   }
 }

@@ -94,7 +94,7 @@ class WsTask {
   static Future recordAndWait({required String wsi, required String type}) {
     final completer = Completer();
     _taskRecordList.add((wsi, completer, type));
-    Future.delayed(Duration(seconds: 10)).then((_) {
+    Future.delayed(Duration(seconds: 4)).then((_) {
       if (!completer.isCompleted) {
         completer.completeError(TimeoutException("发送超时"));
       }
