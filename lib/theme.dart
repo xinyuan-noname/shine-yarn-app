@@ -13,6 +13,13 @@ const mainColorGreenBule40 = Color.fromRGBO(7, 247, 255, 0.40);
 const mainColorGreenBule30 = Color.fromRGBO(7, 247, 255, 0.30);
 
 const deepColorPurple = Color.fromRGBO(107, 99, 187, 1);
+const deepColorPurple90 = Color.fromRGBO(107, 99, 187, 0.9);
+const deepColorPurple80 = Color.fromRGBO(107, 99, 187, 0.8);
+const deepColorPurple70 = Color.fromRGBO(107, 99, 187, 0.7);
+const deepColorPurple60 = Color.fromRGBO(107, 99, 187, 0.6);
+const deepColorPurple50 = Color.fromRGBO(107, 99, 187, 0.5);
+const deepColorPurple40 = Color.fromRGBO(107, 99, 187, 0.4);
+const deepColorPurple30 = Color.fromRGBO(107, 99, 187, 0.3);
 const darkColorPurple = Color.fromRGBO(52, 49, 84, 1);
 
 const mainColorPurple = Color.fromRGBO(167, 157, 255, 1);
@@ -94,6 +101,11 @@ const purpleLinearGradient = LinearGradient(
   begin: Alignment.topLeft,
   end: Alignment.bottomRight,
   colors: [deepColorPurple, mainColorPurple],
+);
+const purpleLinearGradientLight = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [deepColorPurple40, mainColorPurple40],
 );
 const blueLinearGradient = LinearGradient(
   begin: Alignment.topLeft,

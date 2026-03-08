@@ -48,6 +48,13 @@ class _HomePageState extends State<HomePage> {
     (Icons.task_outlined, Icons.task, "任务"),
     (Icons.group_outlined, Icons.group, "成员"),
   ];
+  int _getBadgeCountFromIndex(index) {
+    switch (index) {
+      case 0:
+        return _messageList.where((m) => !m.readed).length;
+    }
+    return 0;
+  }
 
   @override
   void initState() {
@@ -266,15 +273,28 @@ class _HomePageState extends State<HomePage> {
         currentIndex: _currentIndex,
         selectedLabelStyle: selectedTextStyle,
         unselectedLabelStyle: unselectedTextStyle,
-        items: _bottomItemOptions
-            .map(
-              (record) => BottomNavigationBarItem(
-                icon: Icon(record.$1),
-                activeIcon: Icon(record.$2),
-                label: record.$3,
-              ),
-            )
-            .toList(),
+
+        items: List.generate(_bottomItemOptions.length, (index) {
+          final record = _bottomItemOptions[index];
+          final count = _getBadgeCountFromIndex(index);
+          return BottomNavigationBarItem(
+            icon: Badge.count(
+              backgroundColor: mainColorRed,
+              textColor: bgColorLight,
+              isLabelVisible: count != 0,
+              count: count,
+              child: Icon(record.$1),
+            ),
+            activeIcon: Badge.count(
+              backgroundColor: mainColorRed,
+              textColor: bgColorLight,
+              isLabelVisible: count != 0,
+              count: count,
+              child: Icon(record.$2),
+            ),
+            label: record.$3,
+          );
+        }),
         onTap: (value) {
           _currentIndex = value;
           setState(() {});

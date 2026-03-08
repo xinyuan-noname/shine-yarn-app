@@ -39,7 +39,7 @@ class RemindMessageStorageData extends MessageStorageData {
 class MessageStorage {
   static final String _remindMessageReadedKey = "remind_message_readed_key";
 
-  static Future<void> saveMessageReaded(int id) async {
+  static Future<void> addMessageReaded(int id) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> readedList =
         prefs.getStringList(_remindMessageReadedKey) ?? [];

@@ -3,10 +3,21 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/icon_button.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/extensions/list.dart';
 import 'package:shine/pages/home_page.dart';
 import 'package:shine/storage/message_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/time.dart';
+
+final List<Color> _levelColor = [
+  Colors.grey,
+  mainColorPurple,
+  darkColorPurple,
+  mainColorGreenBule,
+  deepColorBlue,
+  mainColorRed,
+  deepColorRed,
+];
 
 class MessageCard extends StatelessWidget {
   final MessageStorageData messageData;
@@ -29,6 +40,12 @@ class MessageCard extends StatelessWidget {
         HomePageRefreshNotifier.refreshMessage();
       },
     };
+    final onPressMap = <Type, VoidCallback>{
+      RemindMessageStorageData: () async {
+        await MessageStorage.addMessageReaded(messageData.id);
+        HomePageRefreshNotifier.refreshMessage();
+      },
+    };
     return Slidable(
       endActionPane: ActionPane(
         extentRatio: 0.25,
@@ -41,14 +58,17 @@ class MessageCard extends StatelessWidget {
       ),
       child: GestureDetector(
         onLongPress: onLongPress,
-        onTap: onPress,
+        onTap: onPress ?? onPressMap[messageData.runtimeType],
         child: Card(
           elevation: 2,
           margin: const EdgeInsets.only(bottom: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          shadowColor: mainColorGreenBule60,
+          shadowColor: _levelColor.safeElementAt(
+            messageData.level,
+            Colors.grey,
+          ),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
@@ -103,10 +123,10 @@ class MessageCard extends StatelessWidget {
   Widget _buildContent() {
     return Text(
       messageData.content,
-      style: const TextStyle(
+      style: TextStyle(
         fontFamily: 'SmileySans',
         fontSize: 19,
-        color: Colors.grey,
+        color: _levelColor.safeElementAt(messageData.level, Colors.grey),
       ),
     );
   }
