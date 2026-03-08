@@ -1,3 +1,4 @@
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shine/database/init_dependencies_datebase.dart';
@@ -70,6 +71,7 @@ class _MyAppState extends State<MyApp> {
         ),
       ),
       home: SplashPage(),
+      builder: BotToastInit(),
     );
   }
 

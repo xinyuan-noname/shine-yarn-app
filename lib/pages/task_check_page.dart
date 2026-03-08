@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/components/toast.dart';
 import 'package:shine/components/user_info_bar.dart';
 import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/group_storage.dart';
@@ -287,11 +288,16 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
                       final id = unselectedItem["id"];
                       if (id is String) list.add(id);
                     }
-                    await WsTask.sendRemind(
-                      msg: result,
-                      targetList: list,
-                      level: 0,
-                    );
+                    try {
+                      await WsTask.sendRemind(
+                        msg: result,
+                        targetList: list,
+                        level: 0,
+                      );
+                      showToast(msg: "发送成功");
+                    }  catch(err) {
+                      showToast(msg: "发送失败, ${err.toString()}");
+                    }
                   },
                   child: Container(
                     decoration: BoxDecoration(

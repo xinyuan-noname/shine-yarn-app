@@ -81,7 +81,6 @@ class _AdminPageState extends State<AdminPage> {
   Future<void> _getUserInfo() async {
     final result = await ApiAdmin.getUserInfo();
     if (result == null) {
-      Future.delayed(Duration(milliseconds: 500));
       await ApiAdmin.getUserInfo();
       return;
     }

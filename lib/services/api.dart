@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shine/components/toast.dart';
 import 'package:shine/services/dio.dart';
 import 'package:shine/utils/device_info.dart';
 import 'package:shine/utils/routes.dart';
@@ -18,7 +18,7 @@ class ApiService {
           if (resBody["code"] != null) {
             switch (resBody["code"]) {
               case "INVALID_ACCESS_TOKEN":
-                Fluttertoast.showToast(msg: '正在向服务器认证身份');
+                showToast(msg: '正在向服务器认证身份');
                 Worker.scheduleRefreshNow();
                 break;
               case "INVALID_PASSWORD":
@@ -34,6 +34,7 @@ class ApiService {
                   message: "登陆身份出错",
                   type: DioExceptionType.badCertificate,
                 );
+                showToast(msg: "身份认证过期, 请重新登录");
                 if (isOnLoginPageGlobally()) {
                   goToLoginGlobally();
                 }

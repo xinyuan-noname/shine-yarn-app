@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
+import 'package:shine/components/toast.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/api_auth.dart';
 import 'package:shine/services/api_group.dart';
@@ -38,19 +40,24 @@ class Worker {
     _urlTimer?.cancel();
     duration ??= defaultDuration;
     _urlTimer = Timer(duration, () async {
-      final url = await ApiService.getBaseUrl();
-      if (url != ApiService.url) {
-        print("更换url为:$url");
-        ApiService.setBaseUrl(url);
+      try {
+        final url = await ApiService.getBaseUrl();
+        if (url != ApiService.url) {
+          print("更换url为:$url");
+          ApiService.setBaseUrl(url);
+        }
+        Worker.scheduleUrl(defaultDuration);
+      } on DioException catch (e) {
+        showToast(msg: "服务未就绪");
+      } catch (e) {
+        showToast(msg: "服务未就绪");
       }
-      Worker.scheduleUrl(defaultDuration);
     });
   }
 
   static scheduleUrlNow() {
     Worker.scheduleUrl(Duration(milliseconds: 50));
   }
-
 
   static syncMyProfile() async {
     final result = await ApiProfiles.getMyProfile();
@@ -75,11 +82,13 @@ class Worker {
         await ProfileStorage.savePasswordRequired(passwordRequired);
       }
     }
+    if (result is String) showToast(msg: result);
   }
 
   static syncAllUser() async {
-    final userInfoList = await ApiProfiles.getUserInfo();
-    if (userInfoList is List) await ProfileStorage.saveUserList(userInfoList);
+    final result = await ApiProfiles.getUserInfo();
+    if (result is List) await ProfileStorage.saveUserList(result);
+    if (result is String) showToast(msg: result);
   }
 
   static syncMyData() async {
@@ -94,7 +103,7 @@ class Worker {
         if (storage is List) continue;
       }
       final result = await ApiGroup.getGlobalGroupData(nameKeyEnum);
-      if(result is List) GroupStorage.saveGroupUserList(nameKeyEnum, result);
+      if (result is List) GroupStorage.saveGroupUserList(nameKeyEnum, result);
     }
   }
 

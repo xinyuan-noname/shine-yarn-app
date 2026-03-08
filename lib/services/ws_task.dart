@@ -92,7 +92,7 @@ class WsTask {
     Future.delayed(Duration(seconds: 10)).then((_) {
       if (!completer.isCompleted) {
         completer.completeError(
-          TimeoutException("Request timed out after 10 seconds"),
+          TimeoutException("发送超时"),
         );
       }
     });
