@@ -18,11 +18,11 @@ import 'package:shine/worker/worker.dart';
 
 const selectedTextStyle = TextStyle(fontFamily: "SmileySans");
 const unselectedTextStyle = TextStyle(fontFamily: "SmileySans");
-const userTypeStyleList = [
-  ("访客", Colors.grey, Color.fromRGBO(255, 255, 255, 0.5)),
-  ("用户", Colors.lightGreen, Color.fromRGBO(255, 255, 255, 0.8)),
-  ("管理员", Colors.amber, Color.fromRGBO(255, 255, 255, 0.9)),
-];
+const userTypeStyleMap = {
+  "guest": ("访客", Colors.grey, Color.fromRGBO(255, 255, 255, 0.5)),
+  "user": ("用户", Colors.lightGreen, Color.fromRGBO(255, 255, 255, 0.8)),
+  "admin": ("管理员", Colors.amber, Color.fromRGBO(255, 255, 255, 0.9)),
+};
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -44,8 +44,8 @@ class _HomePageState extends State<HomePage> {
   String _userType = "guest";
   final ValueNotifier<String> _message = ValueNotifier("");
   final _bottomItemOptions = [
-    (Icons.task_outlined, Icons.task, "任务"),
     (Icons.message_outlined, Icons.message, "消息"),
+    (Icons.task_outlined, Icons.task, "任务"),
     (Icons.group_outlined, Icons.group, "成员"),
   ];
 
@@ -123,31 +123,35 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> viewList = [
-      TaskView(
-        taskList: _taskList,
-        onRefresh: () async {
-          await _updateTaskData();
-        },
-      ),
-      MessageView(
-        messageList: _messageList,
-        onRefresh: () async {
-          await _updateMessageDate();
-        },
-      ),
-      UserView(
-        userType: _userType,
-        userInfoList: _userInfoList,
-        message: _message,
-        onRefresh: () async {
-          await _updateUserInfo();
-        },
-      ),
-    ];
     return Scaffold(
       appBar: _buildAppBar(),
-      body: SafeArea(child: viewList[_currentIndex]),
+      body: SafeArea(
+        child: IndexedStack(
+          index: _currentIndex,
+          children: [
+            MessageView(
+              messageList: _messageList,
+              onRefresh: () async {
+                await _updateMessageDate();
+              },
+            ),
+            TaskView(
+              taskList: _taskList,
+              onRefresh: () async {
+                await _updateTaskData();
+              },
+            ),
+            UserView(
+              userType: _userType,
+              userInfoList: _userInfoList,
+              message: _message,
+              onRefresh: () async {
+                await _updateUserInfo();
+              },
+            ),
+          ],
+        ),
+      ),
       bottomNavigationBar: _buildBottombar(),
     );
   }
@@ -206,25 +210,29 @@ class _HomePageState extends State<HomePage> {
       ),
       bottom: bottomLine,
       actions: [
-        if (_currentIndex == 0)
-          IconButton(
-            onPressed: () {
-              showTaskGridBottomSheet(context);
-            },
-            icon: Icon(Icons.add, size: 32),
-          ),
+        IndexedStack(
+          index: _currentIndex,
+          children: [
+            SizedBox(),
+            IconButton(
+              onPressed: () {
+                showTaskGridBottomSheet(context);
+              },
+              icon: Icon(Icons.add, size: 32),
+            ),
+            SizedBox(),
+          ],
+        ),
       ],
     );
   }
 
   Widget _buildAccessSignal() {
     late (String, Color, Color) r;
-    if (_userType == "admin") {
-      r = userTypeStyleList[2];
-    } else if (_userType == "user") {
-      r = userTypeStyleList[1];
+    if (userTypeStyleMap.containsKey(_userType)) {
+      r = userTypeStyleMap[_userType]!;
     } else {
-      r = userTypeStyleList[0];
+      r = userTypeStyleMap["guest"]!;
     }
     return GestureDetector(
       child: Container(
