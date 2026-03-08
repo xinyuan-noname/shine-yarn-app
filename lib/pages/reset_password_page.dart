@@ -184,6 +184,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         final userInfoCard = UserInfoCard(
           userInfo: userInfo,
           noOperation: true,
+          useAvatar: false,
         );
         return userInfoCard;
       }).toList(),

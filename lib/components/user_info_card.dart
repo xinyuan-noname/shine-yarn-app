@@ -20,6 +20,7 @@ class UserInfoCard extends StatelessWidget {
   final GestureTapCallback? onIssuePswdKey;
   final GestureTapCallback? onPress;
   final GestureLongPressCallback? onLongPress;
+  final bool useAvatar;
   const UserInfoCard({
     super.key,
     required this.userInfo,
@@ -29,6 +30,7 @@ class UserInfoCard extends StatelessWidget {
     this.onLongPress,
     this.onPress,
     this.noOperation,
+    this.useAvatar = true,
   });
 
   @override
@@ -54,7 +56,8 @@ class UserInfoCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    NetworkAvatar(id: userInfo['id'], radius: 40),
+                    if (useAvatar)
+                      NetworkAvatar(id: userInfo['id'], radius: 40),
                     const SizedBox(width: 10),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
