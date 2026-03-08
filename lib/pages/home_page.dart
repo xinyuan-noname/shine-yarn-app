@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/bottom_sheet.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/database/database.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/event.dart';
 import 'package:shine/storage/profile_storage.dart';
@@ -59,7 +60,12 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _init();
+  }
+
+  Future<void> _init() async {
     _loadMine();
+    await DatabaseProvider.init();
     _updateAllData();
     _prepareData();
     _startWs();

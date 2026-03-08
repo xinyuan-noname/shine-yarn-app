@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shine/database/database.dart';
 
+final AppDatabase db = DatabaseProvider.firstInstance;
 
 class MessageStorageData {
   final int id;
@@ -97,7 +98,7 @@ class MessageStorage {
           sentAt: messageData.sentAt,
           sourceId: sourceId,
           sourceUsername: sourceUsername,
-          readed: readed
+          readed: readed,
         ),
       );
     }

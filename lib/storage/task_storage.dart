@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:shine/database/database.dart';
 
-final db = DatabaseProvider.instance;
+final AppDatabase db = DatabaseProvider.firstInstance;
 
 class TaskStorageData {
   final int id;

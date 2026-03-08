@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
 import 'package:path_provider/path_provider.dart';
+import 'package:shine/storage/profile_storage.dart';
 
 part 'database.g.dart';
 
@@ -23,14 +24,12 @@ class RemindMessage extends Table {
 
 @DriftDatabase(tables: [TaskCheck, RemindMessage])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase._() : super(_openConnection());
-  AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
-
+  AppDatabase(QueryExecutor executor) : super(executor);
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (Migrator m) => m.createAll(),
     onUpgrade: (Migrator m, int from, int to) async {
-        await m.createTable(remindMessage);
+      await m.createTable(remindMessage);
     },
   );
 
@@ -85,15 +84,6 @@ class AppDatabase extends _$AppDatabase {
     await stmt.go();
   }
 
-  static QueryExecutor _openConnection() {
-    return driftDatabase(
-      name: 'shine_yarn_db',
-      native: const DriftNativeOptions(
-        databaseDirectory: getApplicationDocumentsDirectory,
-      ),
-    );
-  }
-
   Future<List<RemindMessageData>> getAllRemindMessages() async {
     return await select(remindMessage).get();
   }
@@ -138,7 +128,40 @@ class AppDatabase extends _$AppDatabase {
 }
 
 class DatabaseProvider {
-  static final AppDatabase _instance = AppDatabase._();
+  static final Map<String, AppDatabase> _instances = {};
 
-  static AppDatabase get instance => _instance;
+  static AppDatabase get firstInstance => _instances.entries.first.value;
+  static AppDatabase getInstance(String userId) {
+    if (!_instances.containsKey(userId)) {
+      _instances[userId] = AppDatabase(_openConnection(userId));
+    }
+    return _instances[userId]!;
+  }
+
+
+  static QueryExecutor _openConnection(String userId) {
+    return driftDatabase(
+      name: 'shine_yarn_db_$userId',
+      native: const DriftNativeOptions(
+        databaseDirectory: getApplicationDocumentsDirectory,
+      ),
+    );
+  }
+
+  static void closeInstance(String userId) {
+    _instances[userId]?.close();
+    _instances.remove(userId);
+  }
+
+  static void closeAllInstances() {
+    for (var db in _instances.values) {
+      db.close();
+    }
+    _instances.clear();
+  }
+
+  static Future init() async {
+    final id = await ProfileStorage.getId();
+    DatabaseProvider.getInstance(id);
+  }
 }
