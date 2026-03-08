@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shine/database/database.dart';
+import 'package:shine/storage/profile_storage.dart';
 
 class MessageStorageData {
   final int id;
@@ -36,32 +37,36 @@ class RemindMessageStorageData extends MessageStorageData {
 
 class MessageStorage {
   static AppDatabase get _db => DatabaseProvider.instance;
-  static final String _remindMessageReadedKey = "remind_message_readed_key";
+  static final String _remindMessageReadedKeyPrefix =
+      "remind_message_readed_key_";
 
   static Future<void> addMessageReaded(int id) async {
     final prefs = await SharedPreferences.getInstance();
-    List<String> readedList =
-        prefs.getStringList(_remindMessageReadedKey) ?? [];
+    final userId = await ProfileStorage.getId();
+    final key = '$_remindMessageReadedKeyPrefix$userId';
+    List<String> readedList = prefs.getStringList(key) ?? [];
     if (!readedList.contains(id.toString())) {
       readedList.add(id.toString());
-      await prefs.setStringList(_remindMessageReadedKey, readedList);
+      await prefs.setStringList(key, readedList);
     }
   }
 
   static Future<bool> judgeRemindMessageReaded(int id) async {
     final prefs = await SharedPreferences.getInstance();
-    List<String> readedList =
-        prefs.getStringList(_remindMessageReadedKey) ?? [];
+    final userId = await ProfileStorage.getId();
+    final key = '$_remindMessageReadedKeyPrefix$userId';
+    List<String> readedList = prefs.getStringList(key) ?? [];
     return readedList.contains(id.toString());
   }
 
   static Future<void> removeReminderMessageReaded(int id) async {
     final prefs = await SharedPreferences.getInstance();
-    List<String> readedList =
-        prefs.getStringList(_remindMessageReadedKey) ?? [];
+    final userId = await ProfileStorage.getId();
+    final key = '$_remindMessageReadedKeyPrefix$userId';
+    List<String> readedList = prefs.getStringList(key) ?? [];
     if (readedList.contains(id.toString())) {
       readedList.remove(id.toString());
-      await prefs.setStringList(_remindMessageReadedKey, readedList);
+      await prefs.setStringList(key, readedList);
     }
   }
 
@@ -86,9 +91,7 @@ class MessageStorage {
           sourceUsername = sourceMap['username'];
         }
       }
-      final readed = await MessageStorage.judgeRemindMessageReaded(
-        messageData.id,
-      );
+      final readed = await MessageStorage.judgeRemindMessageReaded(messageData.id);
       list.add(
         RemindMessageStorageData(
           id: messageData.id,

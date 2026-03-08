@@ -40,6 +40,11 @@ class ApiService {
             }
           }
         }
+        err = DioException(
+          requestOptions: err.requestOptions,
+          message: '身份验证失效',
+          type: DioExceptionType.badCertificate,
+        );
       } else if (err.type == DioExceptionType.connectionError) {
         err = DioException(
           requestOptions: err.requestOptions,
