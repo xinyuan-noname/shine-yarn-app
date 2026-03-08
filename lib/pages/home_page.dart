@@ -36,7 +36,6 @@ class _HomePageState extends State<HomePage> {
   final List<TaskStorageData> _taskList = [];
   final List<MessageStorageData> _messageList = [];
   final List _userInfoList = [];
-  // ignore: unused_field
   StreamSubscription<MessageEvent>? _subscription;
   int _ts = 0;
   String _username = "???";
@@ -316,6 +315,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     HomePageRefreshNotifier.clear();
+    _subscription?.cancel();
     super.dispose();
   }
 }

@@ -151,15 +151,4 @@ class MessageStorage {
     await _db.deleteRemindMessage(id);
   }
 
-  static Future<List<RemindMessageData>> getRemindMessagesByLevel(
-    int level,
-  ) async {
-    return await _db.getRemindMessagesByLevel(level);
-  }
-
-  static Future<List<RemindMessageData>> getRemindMessagesByFrom(
-    String source,
-  ) async {
-    return await _db.getRemindMessagesByFrom(source);
-  }
 }

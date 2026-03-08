@@ -2,6 +2,7 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shine/database/init_dependencies_datebase.dart';
+import 'package:shine/notification.dart';
 import 'package:shine/pages/splash_page.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
@@ -16,6 +17,7 @@ void main() async {
   final loader = FontLoader('SmileySans');
   loader.addFont(rootBundle.load('assets/fonts/SmileySans-Oblique.ttf'));
   await loader.load();
+  NotificationService.init();
   runApp(const MyApp());
 }
 

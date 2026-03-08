@@ -20,11 +20,10 @@ class EventBus {
 class MessageEvent {
   final DateTime timestamp;
   final String? type;
+  final String? sourceUser;
 
-  MessageEvent({
-    this.type,
-    DateTime? timestamp,
-  }) : timestamp = timestamp ?? DateTime.now();
+  MessageEvent({this.type, this.sourceUser, DateTime? timestamp})
+    : timestamp = timestamp ?? DateTime.now();
 
   @override
   String toString() => 'MessageEvent(type: $type)';

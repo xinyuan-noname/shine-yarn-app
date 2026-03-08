@@ -134,13 +134,18 @@ class WsTask {
     final String source = map["source"];
     final int ts = map["ts"];
     final int level = map["level"];
+    final mapS = jsonDecode(source);
     await MessageStorage.addRemindMessage(
       content: content,
       level: level,
       source: source,
       sentAt: DateTime.fromMillisecondsSinceEpoch(ts),
     );
-    EventBus.publish(MessageEvent());
+    EventBus.publish(
+      MessageEvent(
+        sourceUser: mapS is Map ? mapS['username'] ?? "未知用户" : "未知用户",
+      ),
+    );
   }
 
   static Future<void> start() async {
