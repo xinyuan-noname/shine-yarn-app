@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:shine/components/toast.dart';
-import 'package:shine/notification.dart';
+import 'package:shine/services/notification.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/api_auth.dart';
 import 'package:shine/services/api_group.dart';
@@ -11,6 +11,7 @@ import 'package:shine/services/event.dart';
 import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/storage/profile_storage.dart';
+import 'package:shine/utils/message.dart';
 
 class Worker {
   static Timer? _refreshTimer;
@@ -114,15 +115,16 @@ class Worker {
     WsTask.start();
   }
 
-  static startListenBadgeUpdate() {
-    int id = 0;
+  static startSystemNotification() {
+    if (_badgeSubscription != null) return;
     _badgeSubscription = EventBus.stream.listen((event) async {
-      NotificationService.showNotification(
-        id: id,
-        title: '你有一条新消息',
+      final count = await countMessageBadge();
+      await NotificationService.showNotification(
+        id: 1000,
+        title: '你有$count条新消息',
         body: '来自${event.sourceUser}',
+        badgeCount: count,
       );
-      id++;
     });
   }
 

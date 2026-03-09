@@ -1,4 +1,3 @@
-// lib/services/notification_service.dart
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -11,7 +10,7 @@ class NotificationService {
     if (kIsWeb) return;
 
     const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('app_icon');
+        AndroidInitializationSettings('ic_stat_format_paint');
     await _notificationsPlugin.initialize(
       onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
       settings: InitializationSettings(android: androidSettings),
@@ -47,6 +46,7 @@ class NotificationService {
     required String body,
     int? badgeCount,
   }) async {
+    print('ok');
     if (kIsWeb) return;
 
     await _notificationsPlugin.show(

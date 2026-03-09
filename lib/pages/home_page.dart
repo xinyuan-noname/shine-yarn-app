@@ -68,6 +68,7 @@ class _HomePageState extends State<HomePage> {
     _updateAllData();
     _prepareData();
     _startWs();
+    Worker.startSystemNotification();
     HomePageRefreshNotifier._refreshTask = () {
       if (!mounted) return;
       _updateTaskData();

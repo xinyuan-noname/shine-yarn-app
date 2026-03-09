@@ -9,6 +9,6 @@ Dio dio = Dio(
 );
 
 final uploadDio = Dio(BaseOptions(
-  connectTimeout: Duration(seconds: 15),
-  receiveTimeout: Duration(seconds: 60), 
+  connectTimeout: Duration(seconds: 10),
+  receiveTimeout: Duration(seconds: 20), 
 ));

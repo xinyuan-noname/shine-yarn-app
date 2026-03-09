@@ -33,18 +33,19 @@ class ApiService {
                   message: "登陆身份出错",
                   type: DioExceptionType.badCertificate,
                 );
-                showToast(msg: "身份认证过期, 请重新登录");
                 if (isOnLoginPageGlobally()) {
+                  showToast(msg: "身份认证过期, 请重新登录");
                   goToLoginGlobally();
                 }
             }
           }
+        } else {
+          err = DioException(
+            requestOptions: err.requestOptions,
+            message: '身份验证失效',
+            type: DioExceptionType.badCertificate,
+          );
         }
-        err = DioException(
-          requestOptions: err.requestOptions,
-          message: '身份验证失效',
-          type: DioExceptionType.badCertificate,
-        );
       } else if (err.type == DioExceptionType.connectionError) {
         err = DioException(
           requestOptions: err.requestOptions,
