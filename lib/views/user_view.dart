@@ -1,11 +1,11 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/user_info_card.dart';
-import 'package:shine/services/api_admin.dart';
+import 'package:shine/services/api_auth.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/auth.dart';
 import 'package:shine/utils/server.dart';
 
 class UserView extends StatelessWidget {
@@ -74,7 +74,7 @@ class UserView extends StatelessWidget {
     final success = await sendRequestAndChangeMessage(
       message,
       request: Future(() async {
-        final result = await ApiAdmin.issuePasswordKey(id);
+        final result = await ApiAuth.issuePasswordKey(id);
         if (result is String) return result;
         if (result is Map && result["passwordKey"] is String) {
           passwordKey = result["passwordKey"];
@@ -90,13 +90,7 @@ class UserView extends StatelessWidget {
       Navigator.of(context).pop();
     }
     if (success) {
-      await Clipboard.setData(ClipboardData(text: "$id的密码令牌: $passwordKey"));
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("已经$id的密码令牌复制到剪切板中")));
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("令牌为: $passwordKey")));
+      await sharePswdKey(id: id, passwordKey: passwordKey);
     }
   }
 }

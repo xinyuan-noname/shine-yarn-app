@@ -104,4 +104,18 @@ class ApiAuth {
       return "重置密码失败";
     }
   }
+
+  static Future issuePasswordKey(String id) async {
+    try {
+      final response = await dio.post(
+        "/auth/issue/password_key",
+        data: {"id": id},
+      );
+      return response.data;
+    } on DioException catch (err) {
+      return err.message ?? "签发密码令牌出错";
+    } catch (err) {
+      return "签名密码令牌出错";
+    }
+  }
 }

@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/icon_button.dart';
 import 'package:shine/components/line.dart';
@@ -11,6 +10,7 @@ import 'package:shine/routes.dart';
 import 'package:shine/services/api_admin.dart';
 import 'package:shine/storage/admin_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/auth.dart';
 import 'package:shine/utils/file.dart';
 import 'package:shine/utils/server.dart';
 
@@ -523,13 +523,7 @@ class _AdminPageState extends State<AdminPage> {
       Navigator.of(context).pop();
     }
     if (success) {
-      await Clipboard.setData(ClipboardData(text: "$id的密码令牌: $passwordKey"));
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("已经$id的密码令牌复制到剪切板中")));
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("令牌为: $passwordKey")));
+      await sharePswdKey(id: id, passwordKey: passwordKey);
     }
   }
 

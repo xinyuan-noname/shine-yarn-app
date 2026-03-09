@@ -4,11 +4,13 @@ import 'package:flutter/services.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/input.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/components/toast.dart';
 import 'package:shine/components/user_info_card.dart';
 import 'package:shine/extensions/text_editing.dart';
 import 'package:shine/services/api_auth.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/auth.dart';
 import 'package:shine/utils/server.dart';
 
 const contentTextStyle = TextStyle(
@@ -37,7 +39,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   final _formKey = GlobalKey<FormState>();
   final List _userInfoList = [];
   String _errorMessage = "获取管理员列表数据中";
-  bool _isChanging = false;
+  int _currentIndex = 0;
   final _controllers = <String, TextEditingController>{};
   final ValueNotifier<String> _message = ValueNotifier("正在发送重置密码请求");
   late final List<Input> _inputs;
@@ -46,12 +48,30 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     super.initState();
     _initInputs();
     _getAdminList();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       final args = ModalRoute.of(context)?.settings.arguments;
       if (args is String) {
         _controllers["id"]?.text = args;
       }
+      final data = await Clipboard.getData('text/plain');
+      final msg = data?.text;
+      print(msg);
+      if (msg == null) return;
+      final map = extractIdAndPassword(msg);
+      print(map);
+      if (map == null) return;
+      final id = map['id'];
+      final passwordKey = map['passwordKey'];
+      if (id is String) {
+        _controllers["id"]?.text = id;
+      }
+      if (passwordKey is String) {
+        _controllers["passwordKey"]?.text = passwordKey;
+      }
+      showToast(msg: "检测到剪切板中包含key");
+      _currentIndex = 1;
+      setState(() {});
     });
   }
 
@@ -162,183 +182,175 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
         centerTitle: true,
         bottom: bottomLine,
       ),
-      body: _isChanging ? _buildSecondViewBody() : _buildFirstViewBody(),
-      bottomSheet: _isChanging
-          ? _buildSecondViewBottom()
-          : _buildFirstViewBottom(),
-    );
-  }
-
-  Widget _buildMainContent() {
-    if (_userInfoList.isEmpty) {
-      return Container(
-        alignment: Alignment.center,
-        child: Text(
-          _errorMessage,
-          style: TextStyle(fontSize: 20, color: Colors.grey),
-        ),
-      );
-    }
-    return CarouselSlider(
-      items: _userInfoList.map((userInfo) {
-        final userInfoCard = UserInfoCard(
-          userInfo: userInfo,
-          noOperation: true,
-          useAvatar: false,
-        );
-        return userInfoCard;
-      }).toList(),
-      options: CarouselOptions(
-        height: 160,
-        enlargeCenterPage: true,
-        autoPlay: true,
-        autoPlayInterval: Duration(seconds: 5),
-        autoPlayAnimationDuration: Duration(milliseconds: 800),
-        autoPlayCurve: Curves.fastOutSlowIn,
-        scrollDirection: Axis.horizontal,
-      ),
-    );
-  }
-
-  Widget _buildFirstViewBody() {
-    return SafeArea(
-      top: false,
-      child: RefreshIndicator(
-        child: SingleChildScrollView(
-          child: Container(
-            height: 725,
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-            child: Column(
-              children: [
-                Text.rich(
-                  TextSpan(
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          SafeArea(
+            top: false,
+            child: RefreshIndicator(
+              child: SingleChildScrollView(
+                child: Container(
+                  height: 725,
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                  child: Column(
                     children: [
-                      TextSpan(text: "请联系以下管理员，获得", style: contentTextStyle),
-                      TextSpan(text: "密码令牌", style: contentStrongTextStyle),
-                      TextSpan(text: "以重置密码。", style: contentTextStyle),
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: "请联系以下管理员，获得",
+                              style: contentTextStyle,
+                            ),
+                            TextSpan(
+                              text: "密码令牌",
+                              style: contentStrongTextStyle,
+                            ),
+                            TextSpan(text: "以重置密码。", style: contentTextStyle),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      _userInfoList.isEmpty
+                          ? Container(
+                              alignment: Alignment.center,
+                              child: Text(
+                                _errorMessage,
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            )
+                          : CarouselSlider(
+                              items: _userInfoList.map((userInfo) {
+                                final userInfoCard = UserInfoCard(
+                                  userInfo: userInfo,
+                                  noOperation: true,
+                                  useAvatar: false,
+                                );
+                                return userInfoCard;
+                              }).toList(),
+                              options: CarouselOptions(
+                                height: 160,
+                                enlargeCenterPage: true,
+                                autoPlay: true,
+                                autoPlayInterval: Duration(seconds: 5),
+                                autoPlayAnimationDuration: Duration(
+                                  milliseconds: 800,
+                                ),
+                                autoPlayCurve: Curves.fastOutSlowIn,
+                                scrollDirection: Axis.horizontal,
+                              ),
+                            ),
+                      const SizedBox(height: 20),
+                      Text("已有密码令牌？请点击下一步。", style: contentTextStyle),
                     ],
                   ),
                 ),
-                SizedBox(height: 20),
-                _buildMainContent(),
-                SizedBox(height: 20),
-                Text("已有密码令牌？请点击下一步。", style: contentTextStyle),
-              ],
-            ),
-          ),
-        ),
-        onRefresh: () async {
-          await _fetchAdminList();
-        },
-      ),
-    );
-  }
-
-  Widget _buildSecondViewBody() {
-    return SafeArea(
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Form(
-          key: _formKey,
-          child: Column(children: _inputs),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFirstViewBottom() {
-    return BottomAppBar(
-      color: bgColorLight80,
-      padding: EdgeInsets.all(0),
-      height: 50,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: const Color.fromRGBO(158, 158, 158, 0.8),
-              width: 0.5,
-            ),
-          ),
-        ),
-        alignment: Alignment.centerRight,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            SizedBox(),
-            GestureDetector(
-              onTap: () async {
-                _isChanging = true;
-                await Future.delayed(Duration(milliseconds: 100));
-                setState(() {});
+              ),
+              onRefresh: () async {
+                await _fetchAdminList();
               },
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Text(
-                    "下一步",
-                    style: TextStyle(fontSize: 20, fontFamily: 'SmileySans'),
-                  ),
-                  const Icon(Icons.chevron_right, size: 28),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSecondViewBottom() {
-    return BottomAppBar(
-      color: bgColorLight80,
-      padding: EdgeInsets.all(0),
-      height: 50,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: const Color.fromRGBO(158, 158, 158, 0.8),
-              width: 0.5,
             ),
           ),
-        ),
-        alignment: Alignment.centerRight,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            GestureDetector(
-              onTap: () async {
-                _isChanging = false;
-                await Future.delayed(Duration(milliseconds: 100));
-                setState(() {});
-              },
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+          SafeArea(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Form(
+                key: _formKey,
+                child: Column(children: _inputs),
+              ),
+            ),
+          ),
+        ],
+      ),
+      bottomSheet: BottomAppBar(
+        color: bgColorLight80,
+        padding: EdgeInsets.all(0),
+        height: 50,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(
+                color: const Color.fromRGBO(158, 158, 158, 0.8),
+                width: 0.5,
+              ),
+            ),
+          ),
+          alignment: Alignment.centerRight,
+          child: IndexedStack(
+            index: _currentIndex,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Icon(Icons.chevron_left, size: 28),
-                  const Text(
-                    "上一步",
-                    style: TextStyle(fontSize: 20, fontFamily: 'SmileySans'),
+                  SizedBox(),
+                  GestureDetector(
+                    onTap: () async {
+                      _currentIndex++;
+                      await Future.delayed(Duration(milliseconds: 100));
+                      setState(() {});
+                    },
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "下一步",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontFamily: 'SmileySans',
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right, size: 28),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            ),
-            GestureDetector(
-              onTap: _resetPassword,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    "提交",
-                    style: TextStyle(fontSize: 20, fontFamily: 'SmileySans'),
+                  GestureDetector(
+                    onTap: () async {
+                      _currentIndex--;
+                      await Future.delayed(Duration(milliseconds: 100));
+                      setState(() {});
+                    },
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.chevron_left, size: 28),
+                        const Text(
+                          "上一步",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontFamily: 'SmileySans',
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const Icon(Icons.chevron_right, size: 28),
+                  GestureDetector(
+                    onTap: _resetPassword,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "提交",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontFamily: 'SmileySans',
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right, size: 28),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
