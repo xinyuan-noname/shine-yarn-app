@@ -21,6 +21,7 @@ class NotificationService {
     }
   }
 
+
   static Future<void> _requestAndroidPermission() async {
     if (Platform.isAndroid) {
       if (Platform.version.startsWith('Android 13') ||
@@ -46,7 +47,6 @@ class NotificationService {
     required String body,
     int? badgeCount,
   }) async {
-    print('ok');
     if (kIsWeb) return;
 
     await _notificationsPlugin.show(

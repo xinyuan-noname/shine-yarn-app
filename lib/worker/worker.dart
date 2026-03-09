@@ -17,6 +17,7 @@ class Worker {
   static Timer? _refreshTimer;
   static Timer? _urlTimer;
   static StreamSubscription<MessageEvent>? _badgeSubscription;
+
   static scheduleRefresh(Duration? duration) {
     const defaultDuration = Duration(minutes: 14, seconds: 30);
     _refreshTimer?.cancel();
@@ -116,13 +117,17 @@ class Worker {
   }
 
   static startSystemNotification() {
+    Worker.startMessageNotification();
+  }
+
+  static startMessageNotification() {
     if (_badgeSubscription != null) return;
     _badgeSubscription = EventBus.stream.listen((event) async {
       final count = await countMessageBadge();
       await NotificationService.showNotification(
         id: 1000,
         title: '你有$count条新消息',
-        body: '来自${event.sourceUser}',
+        body: '来自${event.sourceUser}等',
         badgeCount: count,
       );
     });
