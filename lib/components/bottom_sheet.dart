@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/pages/home_page.dart';
 import 'package:shine/pages/task_check_page.dart';
+import 'package:shine/pages/task_draw_page.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/theme.dart';
@@ -58,7 +59,7 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
             _buildBottomSheetItem(
               icon: Icons.upload,
               title: '作业收集',
-              onTap: () {},
+              onTap: () async {},
             ),
             //task-check
             _buildBottomSheetItem(
@@ -66,41 +67,56 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
               title: '任务清查',
               onTap: () async {
                 Navigator.of(context).pop();
-                final result = await showDropDownDialog<GroupStorageKey>(
+                final result = await showGroupStorageKeySelectionDialog(
                   context: context,
-                  title: "选择清查的范围",
-                  items: [
-                    (GroupStorageKey.entire, "所有学生"),
-                    (GroupStorageKey.male, "所有男生"),
-                    (GroupStorageKey.female, "所有女生"),
-                    (GroupStorageKey.position, "所有班委"),
-                    (GroupStorageKey.user, "所有非班委"),
-                    (GroupStorageKey.admin, "所有管理员"),
-                  ],
-                  initialValue: GroupStorageKey.entire,
+                  title: "选择清查的群组",
                 );
                 if (result is GroupStorageKey) {
                   await globalNavigatorKey.currentState?.pushNamed(
                     '/task/check',
-                    arguments: TaskCheckArgs(groupStorageKey: result),
+                    arguments: TaskCheckPageArgs(groupStorageKey: result),
                   );
                   HomePageRefreshNotifier.refreshTask();
                 }
               },
             ),
-            //homework—upload
-
-            //
+            //task-draw
             _buildBottomSheetItem(
               icon: Icons.shuffle,
               title: '随机选人',
-              onTap: () {},
+              onTap: () async {
+                Navigator.of(context).pop();
+                final result = await showGroupStorageKeySelectionDialog(
+                  context: context,
+                  title: '选择一个群组作为本次选人的范围',
+                );
+                if (result is GroupStorageKey) {
+                  await globalNavigatorKey.currentState?.pushNamed(
+                    '/task/draw',
+                    arguments: TaskDrawPageArgs(groupStorageKey: result),
+                  );
+                  HomePageRefreshNotifier.refreshTask();
+                }
+              },
             ),
             //
             _buildBottomSheetItem(
               icon: Icons.ballot,
               title: '投票',
-              onTap: () {},
+              onTap: () async {
+                Navigator.of(context).pop();
+                final result = await showGroupStorageKeySelectionDialog(
+                  context: context,
+                  title: '选择本次参与投票的群组',
+                );
+                if (result is GroupStorageKey) {
+                  await globalNavigatorKey.currentState?.pushNamed(
+                    '/task/vote',
+                    arguments: TaskCheckPageArgs(groupStorageKey: result),
+                  );
+                  HomePageRefreshNotifier.refreshTask();
+                }
+              },
             ),
           ],
         ),

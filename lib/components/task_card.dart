@@ -33,7 +33,7 @@ class TaskCard extends StatelessWidget {
         final CheckTaskStorageData data = taskData as CheckTaskStorageData;
         await globalNavigatorKey.currentState?.pushNamed(
           '/task/check',
-          arguments: TaskCheckArgs(data: data),
+          arguments: TaskCheckPageArgs(data: data),
         );
         HomePageRefreshNotifier.refreshTask();
       },

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shine/components/input.dart';
 import 'package:shine/routes.dart';
+import 'package:shine/storage/group_storage.dart';
 import 'package:shine/theme.dart';
 
 const dialogTitleStyle = TextStyle(
@@ -19,7 +20,7 @@ const dialogContentStyle = TextStyle(
 const dialogActionStyle = TextStyle(
   fontFamily: 'SmileySans',
   color: bgColorLight80,
-  fontSize: 15
+  fontSize: 15,
 );
 final dialogButtonStyle = TextButton.styleFrom(
   backgroundColor: mainColorGreenBule60,
@@ -265,6 +266,26 @@ Future<T?> showDropDownDialog<T>({
   return completer.future;
 }
 
+Future<GroupStorageKey?> showGroupStorageKeySelectionDialog({
+  required BuildContext context,
+  required String title,
+  GroupStorageKey initialValue = GroupStorageKey.entire,
+}) {
+  return showDropDownDialog<GroupStorageKey>(
+    context: context,
+    title: title,
+    items: [
+      (GroupStorageKey.entire, "所有学生"),
+      (GroupStorageKey.male, "所有男生"),
+      (GroupStorageKey.female, "所有女生"),
+      (GroupStorageKey.position, "所有班委"),
+      (GroupStorageKey.user, "所有非班委"),
+      (GroupStorageKey.admin, "所有管理员"),
+    ],
+    initialValue: initialValue,
+  );
+}
+
 Future gotoAdminDialog(BuildContext context) async {
   final result = await showConfrimDialog(
     context: context,
@@ -273,4 +294,21 @@ Future gotoAdminDialog(BuildContext context) async {
   );
   if (!result) return null;
   return await globalNavigatorKey.currentState?.pushNamed('/admin');
+}
+/// 显示未完成任务保存确认对话框
+Future<String?> showUnfinishedTaskSaveDialog({
+  required BuildContext context,
+  int min = 2,
+  int max = 8,
+}) {
+  return showPromptDialog(
+    context: context,
+    title: "该任务暂未完成，是否保存？(名称在$min到$max个字符之间)",
+    label: "任务名称",
+    confirmText: "保存",
+    cancelText: "退出",
+    min: min,
+    max: max,
+    initValue: '',
+  );
 }

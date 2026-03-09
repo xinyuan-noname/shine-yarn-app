@@ -75,13 +75,29 @@ const listTitleStyle = TextStyle(
   color: mainColorGreenBule,
   fontSize: 20,
 );
+const listTitlePurpleStyle = TextStyle(
+  fontFamily: "SmileySans",
+  color: mainColorPurple,
+  fontSize: 20,
+);
 
 const TextStyle cardItemTextStyle = TextStyle(
   fontFamily: 'SmileySans',
-  fontSize: 19.2,
+  fontSize: 18,
   color: bgColorLight80,
   fontWeight: FontWeight.w300,
   letterSpacing: 1.2,
+);
+
+const TextStyle tabLabelStyle = TextStyle(
+  fontFamily: 'SmileySans',
+  fontSize: 19.2,
+  letterSpacing: 1.2,
+);
+
+const TextStyle purpleButtonStyle = TextStyle(
+  fontFamily: 'SmileySans',
+  fontSize: 19.2,
 );
 
 const bodyPadding = EdgeInsets.symmetric(vertical: 10, horizontal: 20);

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:shine/components/custom_back_handler.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/toast.dart';
@@ -35,7 +36,7 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
 
   Future<void> _handleArgs() async {
     final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is TaskCheckArgs) {
+    if (args is TaskCheckPageArgs) {
       final groupStorageKey = args.groupStorageKey;
       final data = args.data;
       if (groupStorageKey is GroupStorageKey) {
@@ -62,24 +63,10 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        if (!mounted) return;
-        const min = 2;
-        const max = 8;
+    return CustomBackHandler(
+      onWillPop: () async {
         if (_unselectedList.isNotEmpty && _taskId == null) {
-          final title = await showPromptDialog(
-            context: context,
-            title: "该任务暂未完成，是否保存？(名称在$min到$max个字符之间)",
-            label: "任务名称",
-            confirmText: "保存",
-            cancelText: "退出",
-            min: min,
-            max: max,
-            initValue: '',
-          );
+          final title = await showUnfinishedTaskSaveDialog(context: context);
           if (title is String) {
             await TaskStorage.addCheckTask(
               title: title,
@@ -99,7 +86,7 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
             );
           }
         }
-        Navigator.of(context).pop();
+        return true;
       },
       child: Scaffold(
         appBar: _buildAppBar(),
@@ -109,6 +96,7 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
     );
   }
 
+  // ... existing code ...
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       title: Text(_title, style: titleTextStyle),
@@ -178,6 +166,12 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
                                 _unselectedList.remove(unselectedItem);
                                 _selectedList.add(unselectedItem);
                                 setState(() {});
+                                showToast(msg: "任务($_title)完成");
+                              },
+                              onDismissed: (direction) {
+                                _unselectedList.remove(unselectedItem);
+                                setState(() {});
+                                showToast(msg: "任务($_title)完成");
                               },
                             );
                           }
@@ -240,6 +234,10 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
                                 _unselectedList.add(selectedItem);
                                 setState(() {});
                               },
+                              onDismissed: (direction) {
+                                _selectedList.remove(selectedItem);
+                                setState(() {});
+                              },
                             );
                           }
                         }
@@ -295,7 +293,7 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
                         level: 0,
                       );
                       showToast(msg: "发送成功");
-                    }  catch(err) {
+                    } catch (err) {
                       showToast(msg: "发送失败, ${err.toString()}");
                     }
                   },
@@ -323,8 +321,8 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
   }
 }
 
-class TaskCheckArgs {
+class TaskCheckPageArgs {
   final CheckTaskStorageData? data;
   final GroupStorageKey? groupStorageKey;
-  const TaskCheckArgs({this.groupStorageKey, this.data});
+  const TaskCheckPageArgs({this.groupStorageKey, this.data});
 }
