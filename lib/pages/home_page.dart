@@ -13,13 +13,12 @@ import 'package:shine/storage/task_storage.dart';
 import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/views/message_view.dart';
+import 'package:shine/views/schedule_view.dart';
 import 'package:shine/views/task_view.dart';
 import 'package:shine/views/user_view.dart';
 import 'package:shine/worker/worker.dart';
 
-const selectedTextStyle = TextStyle(fontFamily: "SmileySans");
-const unselectedTextStyle = TextStyle(fontFamily: "SmileySans");
-const userTypeStyleMap = {
+const _userTypeStyleMap = {
   "guest": ("访客", Colors.grey, Color.fromRGBO(255, 255, 255, 0.5)),
   "user": ("用户", Colors.lightGreen, Color.fromRGBO(255, 255, 255, 0.8)),
   "admin": ("管理员", Colors.amber, Color.fromRGBO(255, 255, 255, 0.9)),
@@ -46,6 +45,7 @@ class _HomePageState extends State<HomePage> {
   final _bottomItemOptions = [
     (Icons.message_outlined, Icons.message, "消息"),
     (Icons.task_outlined, Icons.task, "任务"),
+    (Icons.schedule_outlined, Icons.schedule_send, "日程"),
     (Icons.group_outlined, Icons.group, "成员"),
   ];
   int _getBadgeCountFromIndex(index) {
@@ -158,6 +158,7 @@ class _HomePageState extends State<HomePage> {
                 await _updateTaskData();
               },
             ),
+            ScheduleView(),
             UserView(
               userType: _userType,
               userInfoList: _userInfoList,
@@ -238,6 +239,7 @@ class _HomePageState extends State<HomePage> {
               icon: Icon(Icons.add, size: 32),
             ),
             SizedBox(),
+            SizedBox(),
           ],
         ),
       ],
@@ -246,10 +248,10 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildAccessSignal() {
     late (String, Color, Color) r;
-    if (userTypeStyleMap.containsKey(_userType)) {
-      r = userTypeStyleMap[_userType]!;
+    if (_userTypeStyleMap.containsKey(_userType)) {
+      r = _userTypeStyleMap[_userType]!;
     } else {
-      r = userTypeStyleMap["guest"]!;
+      r = _userTypeStyleMap["guest"]!;
     }
     return GestureDetector(
       child: Container(
@@ -280,10 +282,10 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       child: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
-        selectedLabelStyle: selectedTextStyle,
-        unselectedLabelStyle: unselectedTextStyle,
-
+        selectedLabelStyle: const TextStyle(fontFamily: "SmileySans"),
+        unselectedLabelStyle: const TextStyle(fontFamily: "SmileySans"),
         items: List.generate(_bottomItemOptions.length, (index) {
           final record = _bottomItemOptions[index];
           final count = _getBadgeCountFromIndex(index);
