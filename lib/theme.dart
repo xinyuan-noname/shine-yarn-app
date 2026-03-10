@@ -61,6 +61,11 @@ const TextStyle bottomSheetGridTitleTextStyle = TextStyle(
   fontSize: 12,
   color: mainColorGreenBule,
 );
+const TextStyle bottomTitleTextStyle = TextStyle(
+  fontFamily: "SmileySans",
+  fontSize: 12,
+  color: Colors.grey,
+);
 
 const hintStyle = TextStyle(fontFamily: "SmileySans", color: bgColorLight60);
 const inputStyle = TextStyle(fontFamily: "SmileySans", color: bgColorLight);
@@ -75,10 +80,10 @@ const listTitleStyle = TextStyle(
   color: mainColorGreenBule,
   fontSize: 20,
 );
-const listTitlePurpleStyle = TextStyle(
+const expansionListTitleStyle = TextStyle(
   fontFamily: "SmileySans",
-  color: mainColorPurple,
   fontSize: 20,
+  fontWeight: FontWeight.w500
 );
 
 const TextStyle cardItemTextStyle = TextStyle(

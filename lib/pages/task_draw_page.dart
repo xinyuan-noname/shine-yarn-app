@@ -3,11 +3,16 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shine/components/avatar.dart';
+import 'package:shine/components/custom_back_handler.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
-import 'package:shine/extensions/list.dart';
+import 'package:shine/components/task.dart';
+import 'package:shine/components/toast.dart';
+import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/image.dart';
+import 'package:shine/utils/share.dart';
 
 class TaskDrawPage extends StatefulWidget {
   const TaskDrawPage({super.key});
@@ -18,7 +23,7 @@ class TaskDrawPage extends StatefulWidget {
 
 class _TaskDrawPageState extends State<TaskDrawPage> {
   int? _taskId;
-  String _title = "清查任务";
+  String _title = "随机选人";
   bool _reproducible = false;
   final TextEditingController _drawNumberController = TextEditingController(
     text: "1",
@@ -44,6 +49,7 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
   int get _maxDrawLength =>
       _reproducible ? _inRangeUserIdList.length : _remainingIdList.length;
 
+  final GlobalKey _key = GlobalKey();
   @override
   void initState() {
     super.initState();
@@ -60,8 +66,6 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       await _handleArgs();
-      print(_inRangeUserList);
-      print(_inRangeUserList.whereType<Map<String, dynamic>>());
     });
     final allUserOrNull = await GroupStorage.getGroupUserList(
       GroupStorageKey.entire,
@@ -97,48 +101,58 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
     }
   }
 
+  void _correctValue() {
+    int? currentValue = int.tryParse(_drawNumberController.text);
+    if (currentValue == null) {
+      _drawNumberController.text = '1';
+      return;
+    }
+    if (currentValue < 1) {
+      _drawNumberController.text = '1';
+    }
+    if (currentValue > _maxDrawLength) {
+      _drawNumberController.text = _maxDrawLength.toString();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-        int? currentValue = int.tryParse(_drawNumberController.text);
-        if (currentValue == null) {
-          _drawNumberController.text = '1';
-          return;
-        }
-        if (currentValue < 1) {
-          _drawNumberController.text = '1';
-        }
-        if (currentValue > _maxDrawLength) {
-          _drawNumberController.text = _maxDrawLength.toString();
-        }
-      },
-      child: Scaffold(
-        appBar: _buildAppBar(),
-        body: DefaultTabController(
-          length: 2,
-          child: SafeArea(
-            child: Column(
-              children: [
-                TabBar(
-                  tabs: [Text("进行抽取"), Text("抽取范围")],
-                  labelStyle: tabLabelStyle,
-                  padding: EdgeInsets.only(top: 2),
-                ),
-                Expanded(
-                  child: TabBarView(
-                    children: [
-                      _buildDrawingWidget(),
-                      Container(
-                        padding: bodyPadding,
-                        child: Center(child: Text('Page 2')),
+    return CustomBackHandler(
+      child: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+          _correctValue();
+        },
+        child: RepaintBoundary(
+          key: _key,
+          child: Scaffold(
+            appBar: _buildAppBar(),
+            body: DefaultTabController(
+              length: 2,
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    TabBar(
+                      tabs: [Text("进行抽取"), Text("抽取范围")],
+                      labelStyle: tabLabelStyle,
+                      padding: EdgeInsets.only(top: 2),
+                    ),
+                    Expanded(
+                      child: TabBarView(
+                        children: [
+                          _buildDrawingWidget(),
+                          Container(
+                            padding: bodyPadding,
+                            child: Center(child: Text('Page 2')),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
+            bottomNavigationBar: _buildBottomBar(),
           ),
         ),
       ),
@@ -195,7 +209,7 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
                         NetworkAvatar(id: id, radius: 25),
                         Text(
                           username,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontFamily: "SmileySans",
                             fontSize: 14,
                           ),
@@ -209,8 +223,8 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
                     ExpansionTile(
                       initiallyExpanded: i == 0,
                       title: Text(
-                        "第${_drawResult.length - i}次抽取结果",
-                        style: listTitlePurpleStyle,
+                        "第${_drawResult.length - i}次抽取结果(${avatarList.length}人)",
+                        style: expansionListTitleStyle,
                       ),
                       children: [
                         Wrap(direction: Axis.horizontal, children: avatarList),
@@ -325,7 +339,10 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
                           _reproducible = !_reproducible;
                           setState(() {});
                         },
-                        child: Text("成员可重复"),
+                        child: Text(
+                          "成员可重复(余:${_remainingIdList.length}人)",
+                          style: labelStyle,
+                        ),
                       ),
                     ],
                   ),
@@ -363,6 +380,68 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
     _drawResult.add(drawnIds);
 
     setState(() {});
+  }
+
+  Widget _buildBottomBar() {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: const Color.fromRGBO(158, 158, 158, 0.8),
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: BottomAppBar(
+        height: 60,
+        padding: EdgeInsets.symmetric(horizontal: 30),
+        color: bgColorLight60,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            buildBottomItem(
+              onTap: () async {
+                final result = await showPromptDialog(
+                  context: context,
+                  title: "请设置提醒消息, 点击确定以发送",
+                  label: "提醒消息",
+                  initValue: "恭喜你被抽中了",
+                );
+                if (result == null) return;
+                try {
+                  await WsTask.sendRemind(
+                    msg: result,
+                    targetList: _selectedIdList,
+                    level: 0,
+                  );
+                  showToast(msg: "发送成功");
+                } catch (err) {
+                  showToast(msg: "发送失败, ${err.toString()}");
+                }
+              },
+              icon: Icons.notifications_outlined,
+              title: '一键提醒',
+            ),
+            buildBottomItem(
+              onTap: () async {
+                final image = await captureWidgetToPng(globalKey: _key);
+                if (image == null) {
+                  showToast(msg: "获取屏幕信息失败");
+                  return;
+                }
+                await shareImage(
+                  image: image,
+                  name: "draw_task.png",
+                  title: _title,
+                );
+              },
+              icon: Icons.share_outlined,
+              title: '分享到...',
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

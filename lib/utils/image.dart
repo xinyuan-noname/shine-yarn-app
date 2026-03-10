@@ -1,6 +1,10 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 
@@ -21,3 +25,29 @@ img.Image _cropSquare(img.Image src) {
   final y = (src.height - size) ~/ 2;
   return img.copyCrop(src, x: x, y: y, width: size, height: size);
 }
+
+Future<Uint8List?> captureWidgetToPng({
+    required GlobalKey globalKey,
+    double pixelRatio = 2.0,
+  }) async {
+    try {
+      final renderObject = globalKey.currentContext?.findRenderObject();
+      if (renderObject == null) {
+        debugPrint("❌ captureWidgetToPng: RenderObject is null");
+        return null;
+      }
+
+      if (renderObject is! RenderRepaintBoundary) {
+        debugPrint("❌ captureWidgetToPng: Widget must be wrapped with RepaintBoundary");
+        return null;
+      }
+
+      final image = await renderObject.toImage(pixelRatio: pixelRatio);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      return byteData?.buffer.asUint8List();
+    } catch (e, stack) {
+      debugPrint("❌ captureWidgetToPng failed: $e\n$stack");
+      return null;
+    }
+  }
+

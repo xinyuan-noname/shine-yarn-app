@@ -4,12 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:shine/components/custom_back_handler.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/components/task.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/components/user_info_bar.dart';
 import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/image.dart';
+import 'package:shine/utils/share.dart';
 
 const _titlePadding = EdgeInsets.only(left: 15);
 
@@ -25,6 +28,7 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
   String _title = "清查任务";
   final List _unselectedList = [];
   final List _selectedList = [];
+  final GlobalKey _key = GlobalKey();
   @override
   void initState() {
     super.initState();
@@ -88,15 +92,17 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
         }
         return true;
       },
-      child: Scaffold(
-        appBar: _buildAppBar(),
-        body: _buildBodyContent(),
-        bottomNavigationBar: _buildBottomBar(),
+      child: RepaintBoundary(
+        key: _key,
+        child: Scaffold(
+          appBar: _buildAppBar(),
+          body: (_buildBodyContent()),
+          bottomNavigationBar: _buildBottomBar(),
+        ),
       ),
     );
   }
 
-  // ... existing code ...
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       title: Text(_title, style: titleTextStyle),
@@ -166,12 +172,16 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
                                 _unselectedList.remove(unselectedItem);
                                 _selectedList.add(unselectedItem);
                                 setState(() {});
-                                showToast(msg: "任务($_title)完成");
+                                if (_unselectedList.isEmpty) {
+                                  showToast(msg: "任务($_title)完成");
+                                }
                               },
                               onDismissed: (direction) {
                                 _unselectedList.remove(unselectedItem);
                                 setState(() {});
-                                showToast(msg: "任务($_title)完成");
+                                if (_unselectedList.isEmpty) {
+                                  showToast(msg: "任务($_title)完成");
+                                }
                               },
                             );
                           }
@@ -265,55 +275,58 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
         ),
       ),
       child: BottomAppBar(
-        height: 48,
-        padding: EdgeInsets.all(3),
+        height: 60,
+        padding: EdgeInsets.symmetric(horizontal: 30),
         color: bgColorLight60,
         child: _unselectedList.isNotEmpty
-            ? Container(
-                width: 100,
-                alignment: Alignment.center,
-                child: GestureDetector(
-                  onTap: () async {
-                    final result = await showPromptDialog(
-                      context: context,
-                      title: "请设置提醒消息, 点击确定以发送",
-                      label: "提醒消息",
-                      initValue: "请尽快完成",
-                    );
-                    if (result == null) return;
-                    final List<String> list = [];
-                    for (final unselectedItem in _unselectedList) {
-                      final id = unselectedItem["id"];
-                      if (id is String) list.add(id);
-                    }
-                    try {
-                      await WsTask.sendRemind(
-                        msg: result,
-                        targetList: list,
-                        level: 0,
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  buildBottomItem(
+                    onTap: () async {
+                      final result = await showPromptDialog(
+                        context: context,
+                        title: "请设置提醒消息, 点击确定以发送",
+                        label: "提醒消息",
+                        initValue: "请尽快完成",
                       );
-                      showToast(msg: "发送成功");
-                    } catch (err) {
-                      showToast(msg: "发送失败, ${err.toString()}");
-                    }
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: redLinearGradient,
-                      borderRadius: BorderRadius.all(Radius.circular(5)),
-                      border: Border.all(color: mainColorPurple),
-                    ),
-                    padding: EdgeInsets.all(5),
-                    child: Text(
-                      "一键提醒未完成同学",
-                      style: const TextStyle(
-                        fontFamily: "SmileySans",
-                        fontSize: 16,
-                        color: bgColorLight,
-                      ),
-                    ),
+                      if (result == null) return;
+                      final List<String> list = [];
+                      for (final unselectedItem in _unselectedList) {
+                        final id = unselectedItem["id"];
+                        if (id is String) list.add(id);
+                      }
+                      try {
+                        await WsTask.sendRemind(
+                          msg: result,
+                          targetList: list,
+                          level: 0,
+                        );
+                        showToast(msg: "发送成功");
+                      } catch (err) {
+                        showToast(msg: "发送失败, ${err.toString()}");
+                      }
+                    },
+                    icon: Icons.notifications_outlined,
+                    title: '一键提醒',
                   ),
-                ),
+                  buildBottomItem(
+                    onTap: () async {
+                      final image = await captureWidgetToPng(globalKey: _key);
+                      if (image == null) {
+                        showToast(msg: "获取屏幕信息失败");
+                        return;
+                      }
+                      await shareImage(
+                        image: image,
+                        name: "check_task.png",
+                        title: _title,
+                      );
+                    },
+                    icon: Icons.share_outlined,
+                    title: '分享到...',
+                  ),
+                ],
               )
             : SizedBox(),
       ),

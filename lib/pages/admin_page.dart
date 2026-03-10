@@ -10,7 +10,7 @@ import 'package:shine/routes.dart';
 import 'package:shine/services/api_admin.dart';
 import 'package:shine/storage/admin_storage.dart';
 import 'package:shine/theme.dart';
-import 'package:shine/utils/auth.dart';
+import 'package:shine/utils/share.dart';
 import 'package:shine/utils/file.dart';
 import 'package:shine/utils/server.dart';
 
