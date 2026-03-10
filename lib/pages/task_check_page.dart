@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shine/components/custom_back_handler.dart';
 import 'package:shine/components/dialog.dart';
+import 'package:shine/components/dual_column_list.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/task.dart';
 import 'package:shine/components/toast.dart';
@@ -14,7 +15,6 @@ import 'package:shine/theme.dart';
 import 'package:shine/utils/image.dart';
 import 'package:shine/utils/share.dart';
 
-const _titlePadding = EdgeInsets.only(left: 15);
 
 class TaskCheckPage extends StatefulWidget {
   const TaskCheckPage({super.key});
@@ -132,138 +132,74 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
 
   Widget _buildBodyContent() {
     return SafeArea(
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              children: [
-                Container(
-                  alignment: Alignment.center,
-                  width: double.infinity,
-                  padding: _titlePadding,
-                  decoration: BoxDecoration(
-                    gradient: purpleLinearGradient,
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(5),
-                      bottomRight: Radius.circular(5),
-                    ),
-                  ),
-                  child: Text(
-                    "未完成的同学(${_unselectedList.length})",
-                    style: listTitleStyle,
-                  ),
+      child: DualColumnList(
+        leftTitle: "未完成的同学",
+        rightTitle: "已完成的同学",
+        leftItems: _unselectedList,
+        rightItems: _selectedList,
+        leftItemBuilder: (context, item, index) {
+          if (item is Map<String, dynamic>) {
+            final id = item["id"];
+            final username = item["username"];
+            if (id is String && username is String) {
+              return UserInfoBar(
+                id: id,
+                username: username,
+                onTap: () {
+                  _unselectedList.remove(item);
+                  _selectedList.add(item);
+                  setState(() {});
+                  if (_unselectedList.isEmpty) {
+                    showToast(msg: "任务($_title)完成");
+                  }
+                },
+                onDismissed: (direction) {
+                  _unselectedList.remove(item);
+                  setState(() {});
+                  if (_unselectedList.isEmpty) {
+                    showToast(msg: "任务($_title)完成");
+                  }
+                },
+              );
+            }
+          }
+          return null;
+        },
+        rightItemBuilder: (context, item, index) {
+          if (item is Map<String, dynamic>) {
+            final id = item["id"];
+            final username = item["username"];
+            if (id is String && username is String) {
+              return UserInfoBar(
+                id: id,
+                username: username,
+                idStyle: const TextStyle(
+                  fontFamily: "SmileySans",
+                  color: Colors.grey,
+                  fontSize: 15,
                 ),
-                SizedBox(height: 1),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.only(left: 16),
-                    child: ListView.builder(
-                      itemCount: _unselectedList.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final unselectedItem = _unselectedList[index];
-                        if (unselectedItem is Map) {
-                          final id = unselectedItem["id"];
-                          final username = unselectedItem["username"];
-                          if (id is String && username is String) {
-                            return UserInfoBar(
-                              id: id,
-                              username: username,
-                              onTap: () {
-                                _unselectedList.remove(unselectedItem);
-                                _selectedList.add(unselectedItem);
-                                setState(() {});
-                                if (_unselectedList.isEmpty) {
-                                  showToast(msg: "任务($_title)完成");
-                                }
-                              },
-                              onDismissed: (direction) {
-                                _unselectedList.remove(unselectedItem);
-                                setState(() {});
-                                if (_unselectedList.isEmpty) {
-                                  showToast(msg: "任务($_title)完成");
-                                }
-                              },
-                            );
-                          }
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
+                usernameStyle: const TextStyle(
+                  fontFamily: "SmileySans",
+                  color: Colors.grey,
+                  fontSize: 15,
                 ),
-              ],
-            ),
-          ),
-          Container(width: 2, color: const Color.fromRGBO(189, 189, 189, 0.6)),
-          Expanded(
-            child: Column(
-              children: [
-                Container(
-                  alignment: Alignment.center,
-                  width: double.infinity,
-                  padding: _titlePadding,
-                  decoration: BoxDecoration(
-                    color: mainColorPurple,
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(5),
-                      bottomRight: Radius.circular(5),
-                    ),
-                  ),
-                  child: Text(
-                    "已完成的同学(${_selectedList.length})",
-                    style: listTitleStyle,
-                  ),
-                ),
-                SizedBox(height: 1),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: ListView.builder(
-                      itemCount: _selectedList.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final selectedItem = _selectedList[index];
-                        if (selectedItem is Map) {
-                          final id = selectedItem["id"];
-                          final username = selectedItem["username"];
-                          if (id is String && username is String) {
-                            return UserInfoBar(
-                              id: id,
-                              username: username,
-                              idStyle: const TextStyle(
-                                fontFamily: "SmileySans",
-                                color: Colors.grey,
-                                fontSize: 15,
-                              ),
-                              usernameStyle: const TextStyle(
-                                fontFamily: "SmileySans",
-                                color: Colors.grey,
-                                fontSize: 15,
-                              ),
-                              onTap: () {
-                                _selectedList.remove(selectedItem);
-                                _unselectedList.add(selectedItem);
-                                setState(() {});
-                              },
-                              onDismissed: (direction) {
-                                _selectedList.remove(selectedItem);
-                                setState(() {});
-                              },
-                            );
-                          }
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+                onTap: () {
+                  _selectedList.remove(item);
+                  _unselectedList.add(item);
+                  setState(() {});
+                },
+                onDismissed: (direction) {
+                  _selectedList.remove(item);
+                  setState(() {});
+                },
+              );
+            }
+          }
+          return null;
+        },
       ),
     );
   }
-
   Widget _buildBottomBar() {
     return Container(
       decoration: BoxDecoration(

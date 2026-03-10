@@ -5,9 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/custom_back_handler.dart';
 import 'package:shine/components/dialog.dart';
+import 'package:shine/components/dual_column_list.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/task.dart';
 import 'package:shine/components/toast.dart';
+import 'package:shine/components/user_info_bar.dart';
 import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/theme.dart';
@@ -30,8 +32,14 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
   );
   final List _allUserList = [];
   final List _inRangeUserList = [];
-  List get _outRangeUserList =>
-      _allUserList.where((user) => !_inRangeUserList.contains(user)).toList();
+  List get _outRangeUserList => _allUserList
+      .where(
+        (user) => !_inRangeUserList.any((userIn) {
+          if (user == null || userIn == null) return false;
+          return user["id"] == userIn["id"];
+        }),
+      )
+      .toList();
 
   final List<List<String>> _drawResult = [];
   List<List<String>> get _drawResultReversed => _drawResult.reversed.toList();
@@ -141,10 +149,7 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
                       child: TabBarView(
                         children: [
                           _buildDrawingWidget(),
-                          Container(
-                            padding: bodyPadding,
-                            child: Center(child: Text('Page 2')),
-                          ),
+                          _buildRangeWidget()
                         ],
                       ),
                     ),
@@ -352,6 +357,59 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildRangeWidget() {
+    return DualColumnList(
+      leftTitle: "能抽到的同学",
+      rightTitle: "不被抽到的同学",
+      leftItems: _inRangeUserList,
+      rightItems: _outRangeUserList,
+      leftItemBuilder: (context, item, index) {
+        if (item is Map<String, dynamic>) {
+          final id = item["id"];
+          final username = item["username"];
+          if (id is String && username is String) {
+            return UserInfoBar(
+              id: id,
+              username: username,
+              onTap: () {
+                _inRangeUserList.remove(item);
+                setState(() {});
+              },
+            );
+          }
+        }
+        return null;
+      },
+      rightItemBuilder: (context, item, index) {
+        if (item is Map<String, dynamic>) {
+          final id = item["id"];
+          final username = item["username"];
+          if (id is String && username is String) {
+            return UserInfoBar(
+              id: id,
+              username: username,
+              idStyle: const TextStyle(
+                fontFamily: "SmileySans",
+                color: Colors.grey,
+                fontSize: 15,
+              ),
+              usernameStyle: const TextStyle(
+                fontFamily: "SmileySans",
+                color: Colors.grey,
+                fontSize: 15,
+              ),
+              onTap: () {
+                _inRangeUserList.add(item);
+                setState(() {});
+              },
+            );
+          }
+        }
+        return null;
+      },
     );
   }
 
