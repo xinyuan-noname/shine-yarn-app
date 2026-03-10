@@ -5,7 +5,6 @@ import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/task.dart';
 import 'package:shine/components/toast.dart';
-import 'package:shine/services/ws_task.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/image.dart';
 import 'package:shine/utils/share.dart';
@@ -20,10 +19,9 @@ class TaskVotePage extends StatefulWidget {
 class _TaskVotePageState extends State<TaskVotePage> {
   final GlobalKey _key = GlobalKey();
   int? _taskId;
-  String _title = "投票";
+  String _title = "作业提交";
 
-  final List<String?> _voteItemList = [null, null];
-  final TextEditingController _votingTitleController = TextEditingController();
+  final TextEditingController _uploadTitleController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +41,7 @@ class _TaskVotePageState extends State<TaskVotePage> {
                 child: Column(
                   children: [
                     TabBar(
-                      tabs: [Text("进行投票"), Text("参与人员")],
+                      tabs: [Text("提交设置"), Text("完成情况")],
                       labelStyle: tabLabelStyle,
                       padding: EdgeInsets.only(top: 2),
                     ),
@@ -113,10 +111,10 @@ class _TaskVotePageState extends State<TaskVotePage> {
             TextField(
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.symmetric(horizontal: 2),
-                hintText: "请输入本次投票的标题",
+                hintText: "请输入本次作业提交的标题",
                 hintStyle: textFieldHintStyle,
               ),
-              controller: _votingTitleController,
+              controller: _uploadTitleController,
               textAlign: TextAlign.start,
               style: textFieldStyle,
               inputFormatters: [
@@ -125,84 +123,6 @@ class _TaskVotePageState extends State<TaskVotePage> {
             ),
             const SizedBox(height: 5),
             bottomLine,
-            Expanded(
-              child: ListView.builder(
-                itemCount: _voteItemList.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == _voteItemList.length) {
-                    return GestureDetector(
-                      onTap: () {
-                        _voteItemList.add(null);
-                        setState(() {});
-                      },
-                      child: Expanded(
-                        child: Container(
-                          margin: EdgeInsets.symmetric(vertical: 2),
-                          padding: EdgeInsets.symmetric(vertical: 5),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.add_circle_outline_outlined,
-                                color: Colors.grey,
-                              ),
-                              SizedBox(width: 8),
-                              Text("添加选项", style: textFieldHintStyle),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-                  return GestureDetector(
-                    onTap: () {
-                      if (index > 0) {
-                        _voteItemList.removeAt(index);
-                        setState(() {});
-                      }
-                    },
-                    child: Container(
-                      margin: EdgeInsets.symmetric(vertical: 2),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(width: 1, color: bgColorLight),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          index > 0
-                              ? const Icon(
-                                  Icons.remove_circle_outline,
-                                  color: Color.fromRGBO(158, 158, 158, 1),
-                                )
-                              : const Icon(
-                                  Icons.panorama_fish_eye,
-                                  color: Color.fromRGBO(158, 158, 158, 0.5),
-                                ),
-                          Expanded(
-                            child: TextField(
-                              decoration: InputDecoration(
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 2,
-                                ),
-                                hintText: "选项$index",
-                                hintStyle: textFieldHintStyle,
-                              ),
-                              textAlign: TextAlign.start,
-                              style: textFieldStyle,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.deny(RegExp(r'\s')),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
           ],
         ),
       ),
@@ -228,12 +148,12 @@ class _TaskVotePageState extends State<TaskVotePage> {
           children: [
             buildBottomItem(
               onTap: () async {
-                // final result = await showPromptDialog(
-                //   context: context,
-                //   title: "请设置提醒消息, 点击确定以发送",
-                //   label: "提醒消息",
-                //   initValue: "恭喜你被抽中了",
-                // );
+                final result = await showPromptDialog(
+                  context: context,
+                  title: "请设置提醒消息, 点击确定以发送",
+                  label: "提醒消息",
+                  initValue: "恭喜你被抽中了",
+                );
                 // if (result == null) return;
                 // try {
                 //   await WsTask.sendRemind(
