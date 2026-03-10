@@ -59,7 +59,10 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
             _buildBottomSheetItem(
               icon: Icons.upload,
               title: '作业收集',
-              onTap: () async {},
+              onTap: () async {
+                Navigator.of(context).pop();
+                await globalNavigatorKey.currentState?.pushNamed('/task/upload');
+              },
             ),
             //task-check
             _buildBottomSheetItem(

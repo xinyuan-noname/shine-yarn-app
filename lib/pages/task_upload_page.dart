@@ -9,14 +9,14 @@ import 'package:shine/theme.dart';
 import 'package:shine/utils/image.dart';
 import 'package:shine/utils/share.dart';
 
-class TaskVotePage extends StatefulWidget {
-  const TaskVotePage({super.key});
+class TaskUploadPage extends StatefulWidget {
+  const TaskUploadPage({super.key});
 
   @override
-  State<TaskVotePage> createState() => _TaskVotePageState();
+  State<TaskUploadPage> createState() => _TaskUploadPageState();
 }
 
-class _TaskVotePageState extends State<TaskVotePage> {
+class _TaskUploadPageState extends State<TaskUploadPage> {
   final GlobalKey _key = GlobalKey();
   int? _taskId;
   String _title = "作业提交";

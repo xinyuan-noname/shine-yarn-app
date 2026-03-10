@@ -8,6 +8,7 @@ import 'package:shine/pages/register_page.dart';
 import 'package:shine/pages/reset_password_page.dart';
 import 'package:shine/pages/task_check_page.dart';
 import 'package:shine/pages/task_draw_page.dart';
+import 'package:shine/pages/task_upload_page.dart';
 import 'package:shine/pages/task_vote_page.dart';
 
 final Map<String, WidgetBuilder> appRouters = {
@@ -21,5 +22,6 @@ final Map<String, WidgetBuilder> appRouters = {
   "/task/check": (_) => TaskCheckPage(),
   "/task/draw": (_) => TaskDrawPage(),
   "/task/vote": (_) => TaskVotePage(),
+  "/task/upload":(_)=>TaskUploadPage()
 };
 final globalNavigatorKey = GlobalKey<NavigatorState>();
