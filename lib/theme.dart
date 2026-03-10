@@ -104,6 +104,15 @@ const TextStyle purpleButtonStyle = TextStyle(
   fontFamily: 'SmileySans',
   fontSize: 19.2,
 );
+const TextStyle textFieldStyle = TextStyle(
+  fontFamily: 'SmileySans',
+  fontSize: 19.2,
+);
+const TextStyle textFieldHintStyle = TextStyle(
+  fontFamily: 'SmileySans',
+  fontSize: 19.2,
+  color: Colors.grey
+);
 
 const bodyPadding = EdgeInsets.symmetric(vertical: 10, horizontal: 20);
 const viewPadding = EdgeInsets.all(16);

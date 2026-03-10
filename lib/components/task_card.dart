@@ -9,7 +9,7 @@ import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/time.dart';
 
-const double largeIconSize = 48;
+const double _largeIconSize = 48;
 
 class TaskCard extends StatelessWidget {
   final GestureTapCallback? onPress;
@@ -105,14 +105,7 @@ class TaskCard extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               if (taskData.personal)
-                                Transform.translate(
-                                  offset: Offset(0, 0),
-                                  child: Icon(
-                                    Icons.lock,
-                                    size: 20,
-                                    color: bgColorLight,
-                                  ),
-                                ),
+                                Icon(Icons.lock, size: 20, color: bgColorLight,),
                               Expanded(
                                 child: Text(
                                   taskData.title,
@@ -126,6 +119,7 @@ class TaskCard extends StatelessWidget {
                               ),
                             ],
                           ),
+                          const SizedBox(height: 2),
                           _buildTaskTag(),
                         ],
                       ),
@@ -155,11 +149,11 @@ class TaskCard extends StatelessWidget {
     if (taskData is CheckTaskStorageData) {
       return Icon(
         Icons.checklist_rounded,
-        size: largeIconSize,
+        size: _largeIconSize,
         color: mainColorPurple,
       );
     }
-    return Icon(Icons.task, size: largeIconSize);
+    return Icon(Icons.task, size: _largeIconSize);
   }
 
   Widget _buildTaskTag() {
@@ -170,8 +164,7 @@ class TaskCard extends StatelessWidget {
       type = "未知任务";
     }
     return Container(
-      margin: EdgeInsets.only(left: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0.5),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
       decoration: BoxDecoration(
         gradient: purpleLinearGradient,
         boxShadow: [

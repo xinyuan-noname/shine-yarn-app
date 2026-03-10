@@ -147,10 +147,7 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
                     ),
                     Expanded(
                       child: TabBarView(
-                        children: [
-                          _buildDrawingWidget(),
-                          _buildRangeWidget()
-                        ],
+                        children: [_buildDrawingWidget(), _buildRangeWidget()],
                       ),
                     ),
                   ],
@@ -413,33 +410,6 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
     );
   }
 
-  void _performDraw() {
-    int drawNumber = int.tryParse(_drawNumberController.text) ?? 1;
-
-    List<String> availableIds = _reproducible
-        ? _inRangeUserIdList
-        : _remainingIdList;
-
-    // 确保抽取人数不超过可用人数
-    if (drawNumber > availableIds.length) {
-      drawNumber = availableIds.length;
-    }
-
-    if (drawNumber <= 0 || availableIds.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('没有足够的用户可供抽取')));
-      return;
-    }
-
-    final random = Random();
-    final shuffledIds = availableIds.toList()..shuffle(random);
-    final drawnIds = shuffledIds.take(drawNumber).toList();
-    _drawResult.add(drawnIds);
-
-    setState(() {});
-  }
-
   Widget _buildBottomBar() {
     return Container(
       decoration: BoxDecoration(
@@ -500,6 +470,32 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
         ),
       ),
     );
+  }
+
+  void _performDraw() {
+    int drawNumber = int.tryParse(_drawNumberController.text) ?? 1;
+
+    List<String> availableIds = _reproducible
+        ? _inRangeUserIdList
+        : _remainingIdList;
+
+    if (drawNumber > availableIds.length) {
+      drawNumber = availableIds.length;
+    }
+
+    if (drawNumber <= 0 || availableIds.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('没有足够的用户可供抽取')));
+      return;
+    }
+
+    final random = Random();
+    final shuffledIds = availableIds.toList()..shuffle(random);
+    final drawnIds = shuffledIds.take(drawNumber).toList();
+    _drawResult.add(drawnIds);
+
+    setState(() {});
   }
 }
 

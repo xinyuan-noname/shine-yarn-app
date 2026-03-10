@@ -105,17 +105,7 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
               title: '投票',
               onTap: () async {
                 Navigator.of(context).pop();
-                final result = await showGroupStorageKeySelectionDialog(
-                  context: context,
-                  title: '选择本次参与投票的群组',
-                );
-                if (result is GroupStorageKey) {
-                  await globalNavigatorKey.currentState?.pushNamed(
-                    '/task/vote',
-                    arguments: TaskCheckPageArgs(groupStorageKey: result),
-                  );
-                  HomePageRefreshNotifier.refreshTask();
-                }
+                await globalNavigatorKey.currentState?.pushNamed('/task/vote');
               },
             ),
           ],

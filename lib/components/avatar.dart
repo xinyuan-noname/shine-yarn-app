@@ -48,7 +48,7 @@ class NetworkAvatar extends StatelessWidget {
             color: Color.fromRGBO(255, 255, 255, 0.2),
             spreadRadius: 1,
             blurRadius: 2,
-            offset: Offset(0, 3), // changes position of shadow
+            offset: Offset(0, 3), 
           ),
         ],
       ),
