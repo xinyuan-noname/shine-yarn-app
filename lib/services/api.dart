@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:shine/components/toast.dart';
+import 'package:shine/config/app_config.dart';
 import 'package:shine/services/dio.dart';
 import 'package:shine/utils/device_info.dart';
 import 'package:shine/utils/routes.dart';
@@ -78,9 +79,7 @@ class ApiService {
     },
   );
   static getBaseUrl() async {
-    final response = await Dio().get(
-      "https://gitee.com/xinyuanwm/asset/raw/main/url.txt",
-    );
+    final response = await Dio().get(AppConfig.assetUrl);
     final url = response.data;
     return url;
   }
