@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:shine/components/toast.dart';
+import 'package:shine/services/api_admin.dart';
 import 'package:shine/services/notification.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/api_auth.dart';
@@ -17,6 +19,16 @@ class Worker {
   static Timer? _refreshTimer;
   static Timer? _urlTimer;
   static StreamSubscription<MessageEvent>? _badgeSubscription;
+  static bool _elevate = false;
+  static _afterRefresh() async {
+    if (_elevate) {
+      final result = await ApiAdmin.elevate();
+      if (result is String) {
+        _elevate = false;
+        showToast(msg: result);
+      }
+    }
+  }
 
   static scheduleRefresh(Duration? duration) {
     const defaultDuration = Duration(minutes: 14, seconds: 30);
@@ -28,6 +40,7 @@ class Worker {
         return;
       }
       await ApiAuth.refresh();
+      _afterRefresh();
       Worker.scheduleRefresh(defaultDuration);
     });
   }
@@ -38,6 +51,15 @@ class Worker {
 
   static stopRefresh() {
     _refreshTimer?.cancel();
+  }
+
+  static scheduleElevate() {
+    _elevate = true;
+  }
+
+  static scheduleElevateNow() {
+    _elevate = true;
+    Worker.scheduleRefreshNow();
   }
 
   static scheduleUrl(Duration? duration) {

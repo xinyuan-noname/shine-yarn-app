@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
+import 'package:shine/config/app_config.dart';
 import 'package:shine/pages/home_page.dart';
 import 'package:shine/pages/task_check_page.dart';
 import 'package:shine/pages/task_draw_page.dart';
@@ -61,7 +62,9 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
               title: '作业收集',
               onTap: () async {
                 Navigator.of(context).pop();
-                await globalNavigatorKey.currentState?.pushNamed('/task/upload');
+                await globalNavigatorKey.currentState?.pushNamed(
+                  '/task/upload',
+                );
               },
             ),
             //task-check
@@ -103,14 +106,17 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
               },
             ),
             //
-            _buildBottomSheetItem(
-              icon: Icons.ballot,
-              title: '投票',
-              onTap: () async {
-                Navigator.of(context).pop();
-                await globalNavigatorKey.currentState?.pushNamed('/task/vote');
-              },
-            ),
+            if (!AppConfig.isProduction)
+              _buildBottomSheetItem(
+                icon: Icons.ballot,
+                title: '投票',
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  await globalNavigatorKey.currentState?.pushNamed(
+                    '/task/vote',
+                  );
+                },
+              ),
           ],
         ),
       );

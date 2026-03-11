@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/icon_button.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/components/toast.dart';
 import 'package:shine/components/user_info_card.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api_admin.dart';
@@ -13,6 +14,7 @@ import 'package:shine/theme.dart';
 import 'package:shine/utils/share.dart';
 import 'package:shine/utils/file.dart';
 import 'package:shine/utils/server.dart';
+import 'package:shine/worker/worker.dart';
 
 class AdminPage extends StatefulWidget {
   const AdminPage({super.key});
@@ -123,12 +125,31 @@ class _AdminPageState extends State<AdminPage> {
                             style: bottomListTitleTextStyle,
                           ),
                           onTap: () async {
-                            if (context.mounted) {
-                              Navigator.of(context).pop();
-                              _registerFromExcel();
-                              await _getUserInfo();
-                              setState(() {});
+                            if (!context.mounted) return;
+                            Navigator.of(context).pop();
+                            _registerFromExcel();
+                            await _getUserInfo();
+                            setState(() {});
+                          },
+                        ),
+                        ListTile(
+                          leading: Icon(Icons.upgrade_outlined),
+                          title: Text('提升权限', style: bottomListTitleTextStyle),
+                          onTap: () async {
+                            if (!context.mounted) return;
+                            Navigator.of(context).pop();
+                            final result = await Worker.scheduleElevate();
+                            if (result is String) {
+                              showToast(msg: result);
                             }
+                          },
+                        ),
+                        ListTile(
+                          leading: Icon(Icons.date_range),
+                          title: Text('学期设置', style: bottomListTitleTextStyle),
+                          onTap: () async {
+                            if (!context.mounted) return;
+                            Navigator.of(context).pop();
                           },
                         ),
                       ],
