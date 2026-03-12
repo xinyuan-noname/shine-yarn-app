@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/components/toast.dart';
+import 'package:shine/services/api_semesters.dart';
 import 'package:shine/theme.dart';
 
 class SemesterPage extends StatefulWidget {
@@ -109,10 +111,20 @@ class _SemesterPageState extends State<SemesterPage> {
   Widget _buildBottomBar() {
     return BottomAppBar(
       height: 60,
-      padding: EdgeInsets.symmetric(horizontal: 30,vertical: 5),
+      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 5),
       color: bgColorLight60,
       child: ElevatedButton(
         onPressed: () async {
+          final result = await ApiSemesters.createSemester(
+            semesterName: _semesterName,
+            startedAt: _startedAt,
+            phaseList: _phaseList,
+          );
+          if (result is String) {
+            showToast(msg: result);
+          } else {
+            showToast(msg: "创建新学期成功");
+          }
         },
         style: ElevatedButton.styleFrom(
           side: BorderSide(color: mainColorPurple80, width: 2.0),

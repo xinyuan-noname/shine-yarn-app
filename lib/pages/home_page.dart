@@ -9,6 +9,7 @@ import 'package:shine/routes.dart';
 import 'package:shine/services/event.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/message_storage.dart';
+import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
@@ -56,6 +57,9 @@ class _HomePageState extends State<HomePage> {
     return 0;
   }
 
+  String? _semesterName;
+  DateTime? _semesterStartedAt;
+  List<List<TimeOfDay>>? _semesterPhaseList;
   @override
   void initState() {
     super.initState();
@@ -131,11 +135,20 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
+  Future<void> _updateSemesterData() async {
+    if (!mounted) return;
+    await Worker.syncSemester();
+    _semesterName = await SemesterStorage.getCurrentSemesterName();
+    _semesterStartedAt = await SemesterStorage.getCurrentSemesterStartedAt();
+    _semesterPhaseList = await SemesterStorage.getCurrentSemesterPhaseList();
+  }
+
   Future<void> _updateAllData() async {
     _updateUserInfo();
     _updateTaskData();
     _updateMessageData();
     _updateMine();
+    _updateSemesterData();
   }
 
   @override

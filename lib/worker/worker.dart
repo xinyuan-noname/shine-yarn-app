@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/services/api_admin.dart';
+import 'package:shine/services/api_semesters.dart';
 import 'package:shine/services/notification.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/api_auth.dart';
@@ -12,6 +13,7 @@ import 'package:shine/services/event.dart';
 import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/storage/profile_storage.dart';
+import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/utils/message.dart';
 
 class Worker {
@@ -131,8 +133,33 @@ class Worker {
         if (storage is List) continue;
       }
       final result = await ApiGroup.getGlobalGroupData(nameKeyEnum);
-      if (result is List) GroupStorage.saveGroupUserList(nameKeyEnum, result);
+      if (result is List) {
+        await GroupStorage.saveGroupUserList(nameKeyEnum, result);
+      }
     }
+  }
+
+  static syncSemester() async {
+    final result = await ApiSemesters.getCurrentSemester();
+    print(result.message);
+    print(result.phaseList);
+    print(result.semesterName);
+    print(result.startedAt);
+    if (result.message is String) return;
+    final phaseList = result.phaseList;
+    final semesterName = result.semesterName;
+    final startedAt = result.startedAt;
+    if (phaseList == null || semesterName == null || startedAt == null) {
+      return;
+    }
+    final name = await SemesterStorage.getCurrentSemesterName();
+    print(result);
+    if (name != null && name == semesterName) return;
+    await Future.wait([
+      SemesterStorage.setCurrentSemesterName(semesterName),
+      SemesterStorage.setCurrentSemesterPhaseList(phaseList),
+      SemesterStorage.setCurrentSemesterStartedAt(startedAt),
+    ]);
   }
 
   static startTaskWebSocket() {
