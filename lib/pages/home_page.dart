@@ -6,6 +6,7 @@ import 'package:shine/components/bottom_sheet.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/database/database.dart';
 import 'package:shine/routes.dart';
+import 'package:shine/services/api_subjects.dart';
 import 'package:shine/services/event.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/message_storage.dart';
@@ -13,6 +14,7 @@ import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/course.dart';
 import 'package:shine/views/message_view.dart';
 import 'package:shine/views/schedule_view.dart';
 import 'package:shine/views/task_view.dart';
@@ -60,6 +62,7 @@ class _HomePageState extends State<HomePage> {
   String? _semesterName;
   DateTime? _semesterStartedAt;
   final List<List<TimeOfDay>> _semesterPhaseList = [];
+  final List<CourseData> _subjectInfo = [];
   @override
   void initState() {
     super.initState();
@@ -141,11 +144,27 @@ class _HomePageState extends State<HomePage> {
     _semesterName = await SemesterStorage.getCurrentSemesterName();
     _semesterStartedAt = await SemesterStorage.getCurrentSemesterStartedAt();
     final r = await SemesterStorage.getCurrentSemesterPhaseList();
-    print(r);
     if (r != null) {
+      _semesterPhaseList.clear();
       _semesterPhaseList.addAll(r);
     }
     setState(() {});
+  }
+
+  Future<void> _updateScheduleData() async {
+    final result = await ApiSubjects.getCurrentSubjects();
+    if (result is List) {
+      //{subjectName: 信号与系统, courseType: 专业课, teachers: [徐秀知 *], schedule: [{weekday: 1, period: [3, 4], weeks: [1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 16], location: 东二C217}, {weekday: 3, period: [5, 6], weeks: [1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 16], location: 东二C217}], credit: 3.5, alias: 信号系统, semester: 2025-2026 第2学期}
+      
+      _subjectInfo.clear();
+      _subjectInfo.addAll(
+        result.whereType<Map<String,dynamic>>().map((e) {
+          print(e);
+          return CourseData.fromJson(e);
+        }).toList(),
+      );
+      setState(() {});
+    }
   }
 
   Future<void> _updateAllData() async {
@@ -154,6 +173,7 @@ class _HomePageState extends State<HomePage> {
     _updateMessageData();
     _updateMine();
     _updateSemesterData();
+    _updateScheduleData();
   }
 
   @override
@@ -180,8 +200,10 @@ class _HomePageState extends State<HomePage> {
               semesterPhaseList: _semesterPhaseList,
               semesterName: _semesterName,
               semesterStartedAt: _semesterStartedAt,
+              subjectInfoList: _subjectInfo,
               onRefresh: () async {
                 await _updateSemesterData();
+                await _updateScheduleData();
               },
               showDate: DateTime.now(),
             ),

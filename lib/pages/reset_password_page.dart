@@ -56,10 +56,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       }
       final data = await Clipboard.getData('text/plain');
       final msg = data?.text;
-      print(msg);
       if (msg == null) return;
       final map = extractIdAndPassword(msg);
-      print(map);
       if (map == null) return;
       final id = map['id'];
       final passwordKey = map['passwordKey'];

@@ -65,10 +65,8 @@ class MessageCard extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          shadowColor: _levelColor.safeElementAt(
-            messageData.level,
-            Colors.grey,
-          ),
+          shadowColor:
+              _levelColor.safeElementAt(messageData.level) ?? Colors.grey,
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
@@ -126,7 +124,7 @@ class MessageCard extends StatelessWidget {
       style: TextStyle(
         fontFamily: 'SmileySans',
         fontSize: 19,
-        color: _levelColor.safeElementAt(messageData.level, Colors.grey),
+        color: _levelColor.safeElementAt(messageData.level) ?? Colors.grey,
       ),
     );
   }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/extensions/list.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/course.dart';
 import 'package:shine/utils/time.dart';
 import 'package:week_of_year/date_week_extensions.dart';
 
@@ -11,6 +13,7 @@ const _timeTextStyle = TextStyle(
   color: Colors.grey,
 );
 const double _cellWidth = 35;
+const double _courseHeight = 60;
 
 class ScheduleView extends StatelessWidget {
   final String? semesterName;
@@ -18,6 +21,7 @@ class ScheduleView extends StatelessWidget {
   final List<List<TimeOfDay>> semesterPhaseList;
   final RefreshCallback onRefresh;
   final DateTime showDate;
+  final List<CourseData>? subjectInfoList;
   const ScheduleView({
     super.key,
     this.semesterName,
@@ -25,6 +29,7 @@ class ScheduleView extends StatelessWidget {
     required this.semesterPhaseList,
     required this.onRefresh,
     required this.showDate,
+    this.subjectInfoList,
   });
 
   @override
@@ -85,12 +90,18 @@ class ScheduleView extends StatelessWidget {
                       ),
                       bottomLineSmall,
                       SizedBox(
-                        height: 475,
-                        child: SingleChildScrollView(
-                          padding: EdgeInsets.only(top: 10),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [_genPhaseList()],
+                        height: 480,
+                        child: RefreshIndicator(
+                          onRefresh: onRefresh,
+                          child: SingleChildScrollView(
+                            padding: EdgeInsets.all(0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                _genPhaseList(),
+                                ..._genCourseColumn(),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -129,6 +140,81 @@ class ScheduleView extends StatelessWidget {
         .toList();
   }
 
+  List<(CourseBasicInfo, CourseSchedule)> _getshowSubjectInfoList() {
+    if (subjectInfoList == null) return [];
+    final List<(CourseBasicInfo, CourseSchedule)> result = [];
+    for (final subject in subjectInfoList!) {
+      final schedule = subject.findScheduleByWeek(_getShowTimeWeek());
+      if (schedule == null) continue;
+      for (final scheduleItem in schedule) {
+        result.add((subject.basicInfo, scheduleItem));
+      }
+    }
+    result.sort((a, b) {
+      final r = a.$2.weekday.compareTo(b.$2.weekday);
+      if (r == 0) return a.$2.period[0].compareTo(b.$2.period[0]);
+      return r;
+    });
+    return result;
+  }
+
+  List<Widget> _genCourseColumn() {
+    final list = _getshowSubjectInfoList();
+    return getWeekDates(showDate).map((d) {
+      return SizedBox(
+        width: _cellWidth,
+        child: Column(children: _genCourseRow(list, d)),
+      );
+    }).toList();
+  }
+
+  List<Widget> _genCourseRow(
+    List<(CourseBasicInfo, CourseSchedule)> list,
+    DateTime date,
+  ) {
+    final List<Widget> children = [];
+    for (int i = 1; i <= semesterPhaseList.length; i++) {
+      final scheduleItem = list.safeElementAt(0);
+      if (scheduleItem == null) {
+        children.add(SizedBox(height: _courseHeight));
+        continue;
+      }
+      if (scheduleItem.$2.weekday == date.weekday &&
+          scheduleItem.$2.start == i) {
+        children.add(
+          Container(
+            height: _courseHeight * scheduleItem.$2.periodLength,
+            decoration: BoxDecoration(color: mainColorPurple),
+            child: Wrap(
+              children: [
+                Text(
+                  scheduleItem.$1.alias ?? scheduleItem.$1.subjectName,
+                  style: const TextStyle(
+                    fontFamily: "SmileySans",
+                    fontSize: 12,
+                  ),
+                ),
+                Text(
+                  scheduleItem.$2.location,
+                  style: const TextStyle(
+                    fontFamily: "SmileySans",
+                    fontSize: 12,
+                    color: bgColorLight60,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+        i = scheduleItem.$2.end;
+        list.remove(scheduleItem);
+        continue;
+      }
+      children.add(SizedBox(height: _courseHeight));
+    }
+    return children;
+  }
+
   Widget _genPhaseList() {
     return SizedBox(
       width: _cellWidth,
@@ -138,7 +224,7 @@ class ScheduleView extends StatelessWidget {
           final start = phase[0];
           final end = phase[1];
           return SizedBox(
-            height: 60,
+            height: _courseHeight,
             child: Column(
               children: [
                 Text(
@@ -162,6 +248,13 @@ class ScheduleView extends StatelessWidget {
     if (semesterStartedAt == null) return 0;
     final s = semesterStartedAt?.weekOfYear ?? 1;
     final e = DateTime.now().weekOfYear;
+    return e - s + 1;
+  }
+
+  int _getShowTimeWeek() {
+    if (semesterStartedAt == null) return 0;
+    final s = semesterStartedAt?.weekOfYear ?? 1;
+    final e = showDate.weekOfYear;
     return e - s + 1;
   }
 }
