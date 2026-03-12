@@ -3,8 +3,8 @@ import 'dart:typed_data';
 
 import 'package:crypton/crypton.dart';
 import 'package:dio/dio.dart';
+import 'package:shine/services/api.dart';
 import 'package:shine/services/dio.dart';
-import 'package:shine/storage/token_storage.dart';
 import 'package:shine/utils/string.dart';
 
 class ApiAdmin {
@@ -206,7 +206,7 @@ class ApiAdmin {
       final response = await dio.post("/admin/elevate", data: data);
       final String? accessToken = response.data['accessToken'];
       if (accessToken is String) {
-        TokenStorage.setAccessToken(accessToken);
+        ApiService.setAccessToken(accessToken);
       }
       return null;
     } on DioException catch (err) {

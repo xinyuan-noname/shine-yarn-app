@@ -1,6 +1,7 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shine/database/init_dependencies_datebase.dart';
 import 'package:shine/services/notification.dart';
 import 'package:shine/pages/splash_page.dart';
@@ -74,6 +75,12 @@ class _MyAppState extends State<MyApp> {
       ),
       home: SplashPage(),
       builder: BotToastInit(),
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate, 
+      ],
+      supportedLocales: [Locale('zh', 'CN')],
     );
   }
 

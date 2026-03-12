@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/services/api_admin.dart';
 import 'package:shine/services/notification.dart';
@@ -25,7 +24,9 @@ class Worker {
       final result = await ApiAdmin.elevate();
       if (result is String) {
         _elevate = false;
-        showToast(msg: result);
+        showToast(msg: "$result, 请稍后再试");
+      } else {
+        showToast(msg: "你的权限已成功提升至管理员");
       }
     }
   }

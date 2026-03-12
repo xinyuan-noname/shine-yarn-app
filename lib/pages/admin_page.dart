@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/icon_button.dart';
 import 'package:shine/components/line.dart';
-import 'package:shine/components/toast.dart';
 import 'package:shine/components/user_info_card.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api_admin.dart';
@@ -138,10 +137,7 @@ class _AdminPageState extends State<AdminPage> {
                           onTap: () async {
                             if (!context.mounted) return;
                             Navigator.of(context).pop();
-                            final result = await Worker.scheduleElevate();
-                            if (result is String) {
-                              showToast(msg: result);
-                            }
+                            await Worker.scheduleElevateNow();
                           },
                         ),
                         ListTile(
@@ -150,6 +146,9 @@ class _AdminPageState extends State<AdminPage> {
                           onTap: () async {
                             if (!context.mounted) return;
                             Navigator.of(context).pop();
+                            globalNavigatorKey.currentState?.pushNamed(
+                              '/admin/semester',
+                            );
                           },
                         ),
                       ],

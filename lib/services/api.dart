@@ -74,6 +74,12 @@ class ApiService {
           );
         }
         Worker.scheduleUrlNow();
+      } else {
+        err = DioException(
+          requestOptions: err.requestOptions,
+          message: '请求出错',
+          type: DioExceptionType.unknown,
+        );
       }
       handler.next(err);
     },
@@ -96,12 +102,12 @@ class ApiService {
     return dio.options.headers;
   }
 
-  static setBaseUrl(String url) {
+  static void setBaseUrl(String url) {
     dio.options.baseUrl = url;
     uploadDio.options.baseUrl = url;
   }
 
-  static setAccessToken(String accessToken) {
+  static void setAccessToken(String accessToken) {
     dio.options.headers['Authorization'] = 'Bearer $accessToken';
     uploadDio.options.headers['Authorization'] = 'Bearer $accessToken';
   }
