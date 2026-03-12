@@ -141,10 +141,6 @@ class Worker {
 
   static syncSemester() async {
     final result = await ApiSemesters.getCurrentSemester();
-    print(result.message);
-    print(result.phaseList);
-    print(result.semesterName);
-    print(result.startedAt);
     if (result.message is String) return;
     final phaseList = result.phaseList;
     final semesterName = result.semesterName;
@@ -153,7 +149,6 @@ class Worker {
       return;
     }
     final name = await SemesterStorage.getCurrentSemesterName();
-    print(result);
     if (name != null && name == semesterName) return;
     await Future.wait([
       SemesterStorage.setCurrentSemesterName(semesterName),

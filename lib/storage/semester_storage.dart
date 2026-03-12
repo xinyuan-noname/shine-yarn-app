@@ -78,7 +78,7 @@ class SemesterStorage {
     final phaseListStr = prefs.getString(_currentSemesterPhaseList);
     if (phaseListStr == null) return null;
     final phaseList = jsonDecode(phaseListStr);
-    final resultPhaseList = [];
+    final List<List<TimeOfDay>> resultPhaseList = [];
     for (final phase in phaseList) {
       if (phase is! List) continue;
       final start = phase[0];
@@ -95,6 +95,7 @@ class SemesterStorage {
         TimeOfDay(hour: end[0], minute: end[1]),
       ]);
     }
+    if (resultPhaseList.isNotEmpty) return resultPhaseList;
     return null;
   }
 

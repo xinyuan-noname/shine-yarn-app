@@ -71,6 +71,20 @@ class ApiSemesters {
       return ApiSemesterResult("获取学期失败");
     }
   }
+
+  static Future<String?> deleteCurrentSemester({
+    required String semesterName,
+  }) async {
+    try {
+      final d = {"semesterName": semesterName};
+      await dio.delete("/semesters/delete", data: d);
+      return null;
+    } on DioException catch (e) {
+      return e.message ?? "删除学期失败";
+    } catch (e) {
+      return "删除学期失败";
+    }
+  }
 }
 
 class ApiSemesterResult {

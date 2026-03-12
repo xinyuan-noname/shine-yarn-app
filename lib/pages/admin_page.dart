@@ -5,10 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/icon_button.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/components/toast.dart';
 import 'package:shine/components/user_info_card.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api_admin.dart';
+import 'package:shine/services/api_semesters.dart';
 import 'package:shine/storage/admin_storage.dart';
+import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/share.dart';
 import 'package:shine/utils/file.dart';
@@ -149,6 +152,29 @@ class _AdminPageState extends State<AdminPage> {
                             globalNavigatorKey.currentState?.pushNamed(
                               '/admin/semester',
                             );
+                          },
+                        ),
+                        ListTile(
+                          leading: Icon(Icons.date_range),
+                          title: Text('删除当前学期信息', style: bottomListTitleTextStyle),
+                          onTap: () async {
+                            if (!context.mounted) return;
+                            Navigator.of(context).pop();
+                            final semesterName =
+                                await SemesterStorage.getCurrentSemesterName();
+                            if (semesterName == null) {
+                              showToast(msg: "本地暂无当前学期信息");
+                              return;
+                            }
+                            final result =
+                                await ApiSemesters.deleteCurrentSemester(
+                                  semesterName: semesterName,
+                                );
+                            if (result is String) {
+                              showToast(msg: result);
+                            } else {
+                              showToast(msg: "删除当前学期信息成功");
+                            }
                           },
                         ),
                       ],

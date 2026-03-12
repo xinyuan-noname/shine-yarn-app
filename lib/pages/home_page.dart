@@ -59,7 +59,7 @@ class _HomePageState extends State<HomePage> {
 
   String? _semesterName;
   DateTime? _semesterStartedAt;
-  List<List<TimeOfDay>>? _semesterPhaseList;
+  final List<List<TimeOfDay>> _semesterPhaseList = [];
   @override
   void initState() {
     super.initState();
@@ -140,7 +140,12 @@ class _HomePageState extends State<HomePage> {
     await Worker.syncSemester();
     _semesterName = await SemesterStorage.getCurrentSemesterName();
     _semesterStartedAt = await SemesterStorage.getCurrentSemesterStartedAt();
-    _semesterPhaseList = await SemesterStorage.getCurrentSemesterPhaseList();
+    final r = await SemesterStorage.getCurrentSemesterPhaseList();
+    print(r);
+    if (r != null) {
+      _semesterPhaseList.addAll(r);
+    }
+    setState(() {});
   }
 
   Future<void> _updateAllData() async {
@@ -171,7 +176,15 @@ class _HomePageState extends State<HomePage> {
                 await _updateTaskData();
               },
             ),
-            ScheduleView(),
+            ScheduleView(
+              semesterPhaseList: _semesterPhaseList,
+              semesterName: _semesterName,
+              semesterStartedAt: _semesterStartedAt,
+              onRefresh: () async {
+                await _updateSemesterData();
+              },
+              showDate: DateTime.now(),
+            ),
             UserView(
               userType: _userType,
               userInfoList: _userInfoList,
