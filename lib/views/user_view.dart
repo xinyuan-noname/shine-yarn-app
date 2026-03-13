@@ -3,19 +3,18 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/user_info_card.dart';
+import 'package:shine/services/api.dart';
 import 'package:shine/services/api_auth.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/share.dart';
 import 'package:shine/utils/server.dart';
 
 class UserView extends StatelessWidget {
-  final String userType;
   final List userInfoList;
   final ValueNotifier<String> message;
   final RefreshCallback onRefresh;
   const UserView({
     super.key,
-    required this.userType,
     required this.userInfoList,
     required this.message,
     required this.onRefresh,
@@ -56,7 +55,7 @@ class UserView extends StatelessWidget {
         final id = userInfo["id"];
         final userInfoCard = UserInfoCard(
           userInfo: userInfo,
-          onIssuePswdKey: userType == "admin"
+          onIssuePswdKey: ApiService.userType == "admin"
               ? () {
                   _issuePasswordKey(id, context);
                 }

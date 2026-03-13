@@ -6,6 +6,7 @@ import 'package:shine/components/bottom_sheet.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/database/database.dart';
 import 'package:shine/routes.dart';
+import 'package:shine/services/api.dart';
 import 'package:shine/services/api_schedule.dart';
 import 'package:shine/services/api_subjects.dart';
 import 'package:shine/services/event.dart';
@@ -13,7 +14,6 @@ import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/message_storage.dart';
 import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/storage/task_storage.dart';
-import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/course.dart';
 import 'package:shine/views/message_view.dart';
@@ -44,7 +44,6 @@ class _HomePageState extends State<HomePage> {
   String _username = "???";
   String _id = "??????????";
   int _currentIndex = 0;
-  String _userType = "guest";
   final ValueNotifier<String> _message = ValueNotifier("");
   final _bottomItemOptions = [
     (Icons.message_outlined, Icons.message, "消息"),
@@ -116,7 +115,6 @@ class _HomePageState extends State<HomePage> {
     _username = await ProfileStorage.getName();
     _id = await ProfileStorage.getId();
     _ts = await ProfileStorage.getAvatarTs();
-    _userType = await TokenStorage.getTokenUserType();
     setState(() {});
   }
 
@@ -222,7 +220,6 @@ class _HomePageState extends State<HomePage> {
               showDate: _showDate,
             ),
             UserView(
-              userType: _userType,
               userInfoList: _userInfoList,
               message: _message,
               onRefresh: () async {
@@ -310,8 +307,8 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildAccessSignal() {
     late (String, Color, Color) r;
-    if (_userTypeStyleMap.containsKey(_userType)) {
-      r = _userTypeStyleMap[_userType]!;
+    if (_userTypeStyleMap.containsKey(ApiService.userType)) {
+      r = _userTypeStyleMap[ApiService.userType]!;
     } else {
       r = _userTypeStyleMap["guest"]!;
     }

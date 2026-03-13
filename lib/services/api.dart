@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/config/app_config.dart';
 import 'package:shine/services/dio.dart';
@@ -9,6 +10,7 @@ import 'package:shine/utils/routes.dart';
 import 'package:shine/worker/worker.dart';
 
 class ApiService {
+  static String _accessToken = '';
   static final _errorInterceptor = InterceptorsWrapper(
     onError: (DioException err, handler) {
       final res = err.response;
@@ -101,6 +103,11 @@ class ApiService {
   static Map get headers {
     return dio.options.headers;
   }
+  static String get userType{
+    if (_accessToken.isEmpty) return "guest";
+    final payload = JwtDecoder.decode(_accessToken);
+    return payload["userType"] ?? "guest";
+  }
 
   static void setBaseUrl(String url) {
     dio.options.baseUrl = url;
@@ -108,6 +115,7 @@ class ApiService {
   }
 
   static void setAccessToken(String accessToken) {
+    _accessToken = accessToken;
     dio.options.headers['Authorization'] = 'Bearer $accessToken';
     uploadDio.options.headers['Authorization'] = 'Bearer $accessToken';
   }

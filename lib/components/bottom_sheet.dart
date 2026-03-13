@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
+import 'package:shine/components/toast.dart';
 import 'package:shine/config/app_config.dart';
 import 'package:shine/pages/home_page.dart';
 import 'package:shine/pages/task_check_page.dart';
 import 'package:shine/pages/task_draw_page.dart';
 import 'package:shine/routes.dart';
+import 'package:shine/services/api.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/time.dart';
@@ -129,6 +131,10 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
               title: '作业收集',
               onTap: () async {
                 Navigator.of(context).pop();
+                if (ApiService.userType != "admin") {
+                  showToast(msg: "权限不足!");
+                  return;
+                }
                 await globalNavigatorKey.currentState?.pushNamed(
                   '/task/upload',
                 );
@@ -140,6 +146,10 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
               title: '任务清查',
               onTap: () async {
                 Navigator.of(context).pop();
+                if (ApiService.userType == "guest") {
+                  showToast(msg: "游客(无密码登录用户)暂不支持发起任务");
+                  return;
+                }
                 final result = await showGroupStorageKeySelectionDialog(
                   context: context,
                   title: "选择清查的群组",
@@ -159,6 +169,10 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
               title: '随机选人',
               onTap: () async {
                 Navigator.of(context).pop();
+                if (ApiService.userType == "guest") {
+                  showToast(msg: "游客(无密码登录用户)暂不支持发起任务");
+                  return;
+                }
                 final result = await showGroupStorageKeySelectionDialog(
                   context: context,
                   title: '选择一个群组作为本次选人的范围',
@@ -179,6 +193,10 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
                 title: '投票',
                 onTap: () async {
                   Navigator.of(context).pop();
+                  if (ApiService.userType == "guest") {
+                    showToast(msg: "游客(无密码登录用户)暂不支持发起任务");
+                    return;
+                  }
                   await globalNavigatorKey.currentState?.pushNamed(
                     '/task/vote',
                   );
