@@ -14,6 +14,18 @@ const _timeTextStyle = TextStyle(
 );
 const double _cellWidth = 35;
 const double _courseHeight = 60;
+const List<Color> _courseColorList = [
+  mainColorPurple50,
+  mainColorPurple60,
+  mainColorPurple70,
+  mainColorPurple80,
+  mainColorPurple90,
+  mainColorPurple,
+  deepColorPurple,
+  darkColorPurple,
+];
+
+typedef ChangeShowWeekCallback = void Function(DateTime d);
 
 class ScheduleView extends StatelessWidget {
   final String? semesterName;
@@ -22,12 +34,14 @@ class ScheduleView extends StatelessWidget {
   final RefreshCallback onRefresh;
   final DateTime showDate;
   final List<CourseData>? subjectInfoList;
+  final ChangeShowWeekCallback onChangeShowDate;
   const ScheduleView({
     super.key,
     this.semesterName,
     this.semesterStartedAt,
     required this.semesterPhaseList,
     required this.onRefresh,
+    required this.onChangeShowDate,
     required this.showDate,
     this.subjectInfoList,
   });
@@ -168,6 +182,15 @@ class ScheduleView extends StatelessWidget {
     }).toList();
   }
 
+  Widget _genEmptyCourse() {
+    return Container(
+      height: _courseHeight,
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: mainColorGrey20)),
+      ),
+    );
+  }
+
   List<Widget> _genCourseRow(
     List<(CourseBasicInfo, CourseSchedule)> list,
     DateTime date,
@@ -176,7 +199,7 @@ class ScheduleView extends StatelessWidget {
     for (int i = 1; i <= semesterPhaseList.length; i++) {
       final scheduleItem = list.safeElementAt(0);
       if (scheduleItem == null) {
-        children.add(SizedBox(height: _courseHeight));
+        children.add(_genEmptyCourse());
         continue;
       }
       if (scheduleItem.$2.weekday == date.weekday &&
@@ -184,7 +207,10 @@ class ScheduleView extends StatelessWidget {
         children.add(
           Container(
             height: _courseHeight * scheduleItem.$2.periodLength,
-            decoration: BoxDecoration(color: mainColorPurple),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: mainColorGrey20)),
+              color: _courseColorList.elementAt(date.weekday - 1),
+            ),
             child: Wrap(
               children: [
                 Text(
@@ -210,7 +236,7 @@ class ScheduleView extends StatelessWidget {
         list.remove(scheduleItem);
         continue;
       }
-      children.add(SizedBox(height: _courseHeight));
+      children.add(_genEmptyCourse());
     }
     return children;
   }

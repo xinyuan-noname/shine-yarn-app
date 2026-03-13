@@ -29,6 +29,9 @@ const mainColorPurple70 = Color.fromRGBO(167, 157, 255, 0.7);
 const mainColorPurple60 = Color.fromRGBO(167, 157, 255, 0.6);
 const mainColorPurple50 = Color.fromRGBO(167, 157, 255, 0.5);
 const mainColorPurple40 = Color.fromRGBO(167, 157, 255, 0.4);
+const mainColorPurple30 = Color.fromRGBO(167, 157, 255, 0.3);
+
+const mainColorGrey20 = Color.fromRGBO(158, 158, 158, 0.2);
 
 const mainColorRed = Color.fromRGBO(255, 83, 83, 1);
 const deepColorRed = Color.fromRGBO(255, 17, 0, 1);
@@ -83,7 +86,7 @@ const listTitleStyle = TextStyle(
 const expansionListTitleStyle = TextStyle(
   fontFamily: "SmileySans",
   fontSize: 20,
-  fontWeight: FontWeight.w500
+  fontWeight: FontWeight.w500,
 );
 
 const TextStyle cardItemTextStyle = TextStyle(
@@ -111,7 +114,7 @@ const TextStyle textFieldStyle = TextStyle(
 const TextStyle textFieldHintStyle = TextStyle(
   fontFamily: 'SmileySans',
   fontSize: 19.2,
-  color: Colors.grey
+  color: Colors.grey,
 );
 
 const bodyPadding = EdgeInsets.symmetric(vertical: 10, horizontal: 20);

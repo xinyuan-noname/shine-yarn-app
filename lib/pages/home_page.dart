@@ -63,6 +63,7 @@ class _HomePageState extends State<HomePage> {
   DateTime? _semesterStartedAt;
   final List<List<TimeOfDay>> _semesterPhaseList = [];
   final List<CourseData> _subjectInfo = [];
+  DateTime _showDate = DateTime.now();
   @override
   void initState() {
     super.initState();
@@ -155,10 +156,10 @@ class _HomePageState extends State<HomePage> {
     final result = await ApiSubjects.getCurrentSubjects();
     if (result is List) {
       //{subjectName: 信号与系统, courseType: 专业课, teachers: [徐秀知 *], schedule: [{weekday: 1, period: [3, 4], weeks: [1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 16], location: 东二C217}, {weekday: 3, period: [5, 6], weeks: [1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 14, 15, 16], location: 东二C217}], credit: 3.5, alias: 信号系统, semester: 2025-2026 第2学期}
-      
+
       _subjectInfo.clear();
       _subjectInfo.addAll(
-        result.whereType<Map<String,dynamic>>().map((e) {
+        result.whereType<Map<String, dynamic>>().map((e) {
           print(e);
           return CourseData.fromJson(e);
         }).toList(),
@@ -205,7 +206,11 @@ class _HomePageState extends State<HomePage> {
                 await _updateSemesterData();
                 await _updateScheduleData();
               },
-              showDate: DateTime.now(),
+              onChangeShowDate: (DateTime d) {
+                _showDate = d;
+                setState(() {});
+              },
+              showDate: _showDate,
             ),
             UserView(
               userType: _userType,
