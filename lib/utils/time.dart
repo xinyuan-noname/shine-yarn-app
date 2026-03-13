@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 String getLocalTimeString(DateTime time) {
   try {
     return time.toLocal().toString();
@@ -21,6 +23,14 @@ bool isToday(DateTime date) {
   return now.year == date.year &&
       now.month == date.month &&
       now.day == date.day;
+}
+
+bool isInDuration(
+  TimeOfDay d, {
+  required TimeOfDay start,
+  required TimeOfDay end,
+}) {
+  return d.isAfter(start) && d.isBefore(end);
 }
 
 String getCnWeekDayName(DateTime date) {

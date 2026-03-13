@@ -196,6 +196,7 @@ class ScheduleView extends StatelessWidget {
     DateTime date,
   ) {
     final List<Widget> children = [];
+    final index = date.weekday - 1;
     for (int i = 1; i <= semesterPhaseList.length; i++) {
       final scheduleItem = list.safeElementAt(0);
       if (scheduleItem == null) {
@@ -209,7 +210,7 @@ class ScheduleView extends StatelessWidget {
             height: _courseHeight * scheduleItem.$2.periodLength,
             decoration: BoxDecoration(
               border: Border(bottom: BorderSide(color: mainColorGrey20)),
-              color: _courseColorList.elementAt(date.weekday - 1),
+              color: _courseColorList.elementAt(index),
             ),
             child: Wrap(
               children: [
@@ -225,7 +226,7 @@ class ScheduleView extends StatelessWidget {
                   style: const TextStyle(
                     fontFamily: "SmileySans",
                     fontSize: 12,
-                    color: bgColorLight60,
+                    color: bgColorLight,
                   ),
                 ),
               ],
