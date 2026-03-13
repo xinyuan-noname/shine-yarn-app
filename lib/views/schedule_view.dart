@@ -269,14 +269,23 @@ class ScheduleView extends StatelessWidget {
     (CourseBasicInfo, CourseSchedule) scheduleItem,
     ScheduleData? scheduleData,
   ) {
-    final dataAlias = scheduleData?.alias;
-    if (dataAlias is String && dataAlias.isNotEmpty) {
-      return dataAlias;
+    final dataLocation = scheduleData?.location;
+    if (dataLocation is String && dataLocation.isNotEmpty) {
+      return dataLocation;
     }
     if (scheduleItem.$2.location.isNotEmpty) {
       return scheduleItem.$2.location;
     }
     return "暂无场地信息";
+  }
+
+  String _getCourseName(
+    (CourseBasicInfo, CourseSchedule) scheduleItem,
+    ScheduleData? scheduleData,
+  ) {
+    final aliasData = scheduleData?.alias;
+    if (aliasData is String && aliasData.isNotEmpty) return aliasData;
+    return scheduleItem.$1.alias ?? scheduleItem.$1.subjectName;
   }
 
   List<Widget> _genCourseRow({
@@ -300,6 +309,8 @@ class ScheduleView extends StatelessWidget {
             currentScheduleData?.periodStart == i) {
           mappedScheduleData = scheduleDataList.safeRemoveAt(0);
         }
+        print(currentScheduleData);
+        print(mappedScheduleData);
         children.add(
           InkWell(
             child: Container(
@@ -321,7 +332,7 @@ class ScheduleView extends StatelessWidget {
                     child: Wrap(
                       children: [
                         Text(
-                          scheduleItem.$1.alias ?? scheduleItem.$1.subjectName,
+                          _getCourseName(scheduleItem, mappedScheduleData),
                           style: const TextStyle(
                             fontFamily: "SmileySans",
                             fontSize: 10,
@@ -349,7 +360,7 @@ class ScheduleView extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
-                          Icons.science, 
+                          Icons.science,
                           size: 10,
                           color: Colors.white,
                         ),
