@@ -9,6 +9,7 @@ import 'package:shine/pages/task_draw_page.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/time.dart';
 
 Widget _buildBottomSheetItem({
   required IconData icon,
@@ -37,6 +38,72 @@ Widget _buildBottomSheetItem({
       ),
     ),
   );
+}
+
+Future<DateTime?> showWeekBottomSheet(
+  BuildContext context, {
+  required DateTime startedAt,
+  required DateTime selectedDate,
+}) {
+  final completer = Completer<DateTime?>();
+  final future = showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: mainColorPurple,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+        child: GridView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 5,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.5,
+          ),
+          itemCount: 20,
+          itemBuilder: (BuildContext context, int index) {
+            DateTime date = startedAt.add(Duration(days: index * 7));
+            return GestureDetector(
+              onTap: () {
+                Navigator.of(context).pop();
+                completer.complete(date);
+              },
+              child: Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(width: 1, color: mainColorGreenBule60),
+                  gradient: selectedDate.inSameWeek(date)
+                      ? purpleLinearGradient
+                      : null,
+                  boxShadow: [
+                    if (selectedDate.inSameWeek(date))
+                      BoxShadow(color: mainColorOrange50, blurRadius: 5),
+                  ],
+                ),
+                child: Text(
+                  inCurrentWeek(date) ? "当前周" : "第${index + 1}周",
+                  style: bottomSheetGridTitleTextStyle,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          },
+        ),
+      );
+    },
+  );
+  future.then((_) {
+    if (!completer.isCompleted) {
+      completer.complete(null);
+    }
+  });
+  return completer.future;
 }
 
 Future<void> showTaskGridBottomSheet(BuildContext context) async {

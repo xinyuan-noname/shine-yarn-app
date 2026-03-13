@@ -12,7 +12,7 @@ const mainColorGreenBule50 = Color.fromRGBO(7, 247, 255, 0.50);
 const mainColorGreenBule40 = Color.fromRGBO(7, 247, 255, 0.40);
 const mainColorGreenBule30 = Color.fromRGBO(7, 247, 255, 0.30);
 
-const deepColorPurple = Color.fromRGBO(107, 99, 187, 1);
+const deepColorPurple = Color.fromARGB(255, 107, 99, 187);
 const deepColorPurple90 = Color.fromRGBO(107, 99, 187, 0.9);
 const deepColorPurple80 = Color.fromRGBO(107, 99, 187, 0.8);
 const deepColorPurple70 = Color.fromRGBO(107, 99, 187, 0.7);
@@ -22,19 +22,25 @@ const deepColorPurple40 = Color.fromRGBO(107, 99, 187, 0.4);
 const deepColorPurple30 = Color.fromRGBO(107, 99, 187, 0.3);
 const darkColorPurple = Color.fromRGBO(52, 49, 84, 1);
 
-const mainColorPurple = Color.fromRGBO(167, 157, 255, 1);
-const mainColorPurple90 = Color.fromRGBO(167, 157, 255, 0.9);
-const mainColorPurple80 = Color.fromRGBO(167, 157, 255, 0.8);
-const mainColorPurple70 = Color.fromRGBO(167, 157, 255, 0.7);
-const mainColorPurple60 = Color.fromRGBO(167, 157, 255, 0.6);
-const mainColorPurple50 = Color.fromRGBO(167, 157, 255, 0.5);
-const mainColorPurple40 = Color.fromRGBO(167, 157, 255, 0.4);
-const mainColorPurple30 = Color.fromRGBO(167, 157, 255, 0.3);
+const mainColorPurple = Color.fromARGB(255, 167, 157, 255);
+const mainColorPurple90 = Color.fromARGB(230, 167, 157, 255);
+const mainColorPurple80 = Color.fromARGB(204, 167, 157, 255);
+const mainColorPurple70 = Color.fromARGB(179, 167, 157, 255);
+const mainColorPurple60 = Color.fromARGB(153, 167, 157, 255);
+const mainColorPurple50 = Color.fromARGB(128, 167, 157, 255);
+const mainColorPurple40 = Color.fromARGB(102, 167, 157, 255);
+const mainColorPurple30 = Color.fromARGB(77, 167, 157, 255);
 
 const mainColorGrey20 = Color.fromRGBO(158, 158, 158, 0.2);
 
 const mainColorRed = Color.fromRGBO(255, 83, 83, 1);
+const mainColorRed70 = Color.fromARGB(179, 255, 83, 83);
+const mainColorRed50 = Color.fromARGB(128, 255, 83, 83);
+const mainColorRed20 = Color.fromARGB(51, 255, 83, 83);
 const deepColorRed = Color.fromRGBO(255, 17, 0, 1);
+
+const mainColorOrange = Color.fromRGBO(255, 204, 128, 1);
+const mainColorOrange50 = Color.fromRGBO(255, 204, 128, 0.5);
 
 final inputDecorationLight = InputDecoration(
   contentPadding: EdgeInsets.only(left: 10),
@@ -154,4 +160,9 @@ const whiteLinearGradient = LinearGradient(
   begin: Alignment.topLeft,
   end: Alignment.bottomRight,
   colors: [Colors.white, bgColorLight],
+);
+const greyLinearGradient = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [Colors.grey, mainColorGrey20],
 );

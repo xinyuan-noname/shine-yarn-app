@@ -39,7 +39,7 @@ class SplashPage extends StatelessWidget {
                 Shadow(
                   offset: Offset(1, 1),
                   blurRadius: 4,
-                  color: Colors.orange.shade200.withAlpha(135),
+                  color: mainColorOrange50,
                 ),
               ],
             ),

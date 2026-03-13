@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:week_of_year/date_week_extensions.dart';
 
 String getLocalTimeString(DateTime time) {
   try {
@@ -25,12 +25,9 @@ bool isToday(DateTime date) {
       now.day == date.day;
 }
 
-bool isInDuration(
-  TimeOfDay d, {
-  required TimeOfDay start,
-  required TimeOfDay end,
-}) {
-  return d.isAfter(start) && d.isBefore(end);
+bool inCurrentWeek(DateTime date) {
+  final now = DateTime.now();
+  return date.year == now.year && date.weekOfYear == now.weekOfYear;
 }
 
 String getCnWeekDayName(DateTime date) {
@@ -52,4 +49,10 @@ String getCnWeekDayName(DateTime date) {
       return '日';
   }
   return '未知';
+}
+
+extension DateTimeExtension on DateTime {
+  inSameWeek(DateTime date) {
+    return year == date.year && weekOfYear == date.weekOfYear;
+  }
 }

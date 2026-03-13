@@ -86,3 +86,111 @@ class CourseData {
   String? get alias => basicInfo.alias;
   String? get semester => basicInfo.semester;
 }
+
+/// 单节课的安排数据
+class ScheduleData {
+  /// 学期名称
+  final String semester;
+
+  /// 周次
+  final int week;
+
+  /// 星期几 (1-7 对应周一到周日)
+  final int weekday;
+
+  /// 开始节次
+  final int periodStart;
+
+  /// 地点
+  final String? location;
+
+  /// 是否是实验课 (1 表示是实验，0 表示不是)
+  final bool? isExperiment;
+
+  /// 课程别名
+  final String? alias;
+
+  /// 作业信息
+  final String? homework;
+
+  /// 总结信息
+  final String? summary;
+
+  /// 问题信息
+  final String? issue;
+
+  const ScheduleData({
+    required this.semester,
+    required this.week,
+    required this.weekday,
+    required this.periodStart,
+    this.location,
+    this.isExperiment,
+    this.alias,
+    this.homework,
+    this.summary,
+    this.issue,
+  });
+
+  factory ScheduleData.fromJson(Map<String, dynamic> json) {
+    return ScheduleData(
+      semester: json['semester'],
+      week: json['week'],
+      weekday: json['weekday'],
+      periodStart: json['period_start'],
+      location: json['location'],
+      isExperiment: json['is_experiment'],
+      alias: json['alias'],
+      homework: json['homework'],
+      summary: json['summary'],
+      issue: json['issue'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'semester': semester,
+      'week': week,
+      'weekday': weekday,
+      'period_start': periodStart,
+      'location': location,
+      'is_experiment': isExperiment,
+      'alias': alias,
+      'homework': homework,
+      'summary': summary,
+      'issue': issue,
+    };
+  }
+
+  ScheduleData copyWith({
+    String? semester,
+    int? week,
+    int? weekday,
+    int? periodStart,
+    int? periodEnd,
+    String? location,
+    bool? isExperiment,
+    String? alias,
+    String? homework,
+    String? summary,
+    String? issue,
+  }) {
+    return ScheduleData(
+      semester: semester ?? this.semester,
+      week: week ?? this.week,
+      weekday: weekday ?? this.weekday,
+      periodStart: periodStart ?? this.periodStart,
+      location: location ?? this.location,
+      isExperiment: isExperiment ?? this.isExperiment,
+      alias: alias ?? this.alias,
+      homework: homework ?? this.homework,
+      summary: summary ?? this.summary,
+      issue: issue ?? this.issue,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'ScheduleData{semester: $semester, week: $week, weekday: $weekday, periodStart: $periodStart, location: $location, isExperiment: $isExperiment, alias: $alias, homework: $homework, summary: $summary, issue: $issue}';
+  }
+}
