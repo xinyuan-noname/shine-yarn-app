@@ -6,11 +6,14 @@ import 'package:shine/components/avatar.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/pick_image.dart';
+import 'package:shine/components/toast.dart';
 import 'package:shine/routes.dart';
+import 'package:shine/services/api.dart';
 import 'package:shine/services/api_auth.dart';
 import 'package:shine/services/api_profiles.dart';
 import 'package:shine/services/ws.dart';
 import 'package:shine/storage/profile_storage.dart';
+import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/device_info.dart';
 import 'package:shine/utils/image.dart';
@@ -188,10 +191,21 @@ class _ProfilePageState extends State<ProfilePage> {
                         await ApiAuth.changePasswordRequired({
                           "passwordRequired": 1,
                         });
+                        _isPaswRequired = true;
                         await ProfileStorage.savePasswordRequired(true);
                         Navigator.of(context).pop();
-                        globalNavigatorKey.currentState
-                            ?.pushNamedAndRemoveUntil("/login", clearOldRouter);
+                        if (ApiService.userType == "guest") {
+                          await Future.wait([
+                            showToast(msg: "检测到处于游客状态，正在跳转至登录页"),
+                            TokenStorage.deleteAccessToken(),
+                            TokenStorage.deleteRefreshToken(),
+                          ]);
+                          globalNavigatorKey.currentState
+                              ?.pushNamedAndRemoveUntil(
+                                "/login",
+                                clearOldRouter,
+                              );
+                        }
                         setState(() {});
                       },
                     ),
@@ -199,7 +213,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       leading: Icon(Icons.error, color: Colors.redAccent),
                       title: Text('可无密码登录'),
                       onTap: () async {
-                        ApiAuth.changePasswordRequired({"passwordRequired": 0});
+                        await ApiAuth.changePasswordRequired({
+                          "passwordRequired": 0,
+                        });
+                        _isPaswRequired = false;
                         await ProfileStorage.savePasswordRequired(false);
                         Navigator.of(context).pop();
                         setState(() {});

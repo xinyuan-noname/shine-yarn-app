@@ -123,6 +123,9 @@ const TextStyle textFieldHintStyle = TextStyle(
   color: Colors.grey,
 );
 
+
+const TextStyle viewEmptyTextStyle = TextStyle(fontSize: 20, color: Colors.grey);
+
 const bodyPadding = EdgeInsets.symmetric(vertical: 10, horizontal: 20);
 const viewPadding = EdgeInsets.all(16);
 

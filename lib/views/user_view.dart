@@ -47,7 +47,7 @@ class UserView extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               "暂无用户数据",
-              style: TextStyle(fontSize: 20, color: Colors.grey),
+              style: viewEmptyTextStyle,
             ),
           );
         }

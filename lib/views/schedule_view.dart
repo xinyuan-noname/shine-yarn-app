@@ -309,8 +309,6 @@ class ScheduleView extends StatelessWidget {
             currentScheduleData?.periodStart == i) {
           mappedScheduleData = scheduleDataList.safeRemoveAt(0);
         }
-        print(currentScheduleData);
-        print(mappedScheduleData);
         children.add(
           InkWell(
             child: Container(

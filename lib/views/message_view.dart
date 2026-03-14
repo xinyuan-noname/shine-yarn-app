@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:shine/components/message_card.dart';
 import 'package:shine/storage/message_storage.dart';
@@ -23,13 +25,16 @@ class MessageView extends StatelessWidget {
       onRefresh: onRefresh,
       child: ListView.builder(
         padding: viewPadding,
-        itemCount: messageList.length,
+        itemCount: max(messageList.length, 1),
         itemBuilder: (context, index) {
+          if (messageList.isEmpty) {
+            return Container(
+              alignment: Alignment.center,
+              child: Text("消息很干净哟", style: viewEmptyTextStyle),
+            );
+          }
           final data = messageList[index];
-          return MessageCard(
-            messageData: data,
-            deleteCallback: deleteCallback,
-          );
+          return MessageCard(messageData: data, deleteCallback: deleteCallback);
         },
       ),
     );

@@ -21,6 +21,9 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
   int? _taskId;
   String _title = "作业提交";
 
+  String _selectedMimeType = "";
+  String _taskName = "";
+  String _subject = "";
   final TextEditingController _uploadTitleController = TextEditingController();
 
   @override
@@ -120,9 +123,86 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
               inputFormatters: [
                 FilteringTextInputFormatter.deny(RegExp(r'\s')),
               ],
+              onChanged: (value) {
+                _taskName = value;
+              },
             ),
             const SizedBox(height: 5),
             bottomLine,
+            const SizedBox(height: 5),
+            Text("科目:", style: labelStyle),
+            Autocomplete<String>(
+              optionsBuilder: (TextEditingValue v) async {
+                return [];
+              },
+              fieldViewBuilder:
+                  (
+                    context,
+                    textEditingController,
+                    focusNode,
+                    onFieldSubmitted,
+                  ) {
+                    return TextField(
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.symmetric(horizontal: 2),
+                        hintText: "请输入本次作业的科目",
+                        hintStyle: TextStyle(
+                          fontFamily: "SmileySans",
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      controller: _uploadTitleController,
+                      textAlign: TextAlign.start,
+                      style: labelStyle,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                      ],
+                      onChanged: (value) {
+                        _subject = value;
+                      },
+                    );
+                  },
+            ),
+            bottomLineSmall,
+            Text("格式:", style: labelStyle),
+            DropdownButton<String>(
+              style: const TextStyle(
+                fontFamily: "SmileySans",
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Colors.black,
+              ),
+              value: _selectedMimeType,
+              items: [
+                DropdownMenuItem(value: "", child: Text("不限格式")),
+                DropdownMenuItem(
+                  value:
+                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                  child: Text("word文档"),
+                ),
+                DropdownMenuItem(
+                  value: "application/pdf",
+                  child: Text("pdf文档"),
+                ),
+                DropdownMenuItem(
+                  value:
+                      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  child: Text("excel表格"),
+                ),
+                DropdownMenuItem(value: "image", child: Text("图片")),
+                DropdownMenuItem(value: "image/jpeg", child: Text("jpg图片")),
+                DropdownMenuItem(value: "image/png", child: Text("png图片")),
+                DropdownMenuItem(value: "video/mp4", child: Text("mp4视频")),
+              ],
+              onChanged: (String? value) {
+                if (value == null) return;
+                _selectedMimeType = value;
+                setState(() {});
+              },
+            ),
+            bottomLineSmall,
           ],
         ),
       ),
