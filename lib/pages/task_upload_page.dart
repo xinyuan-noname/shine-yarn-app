@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:shine/components/custom_back_handler.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/task.dart';
 import 'package:shine/components/toast.dart';
+import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/image.dart';
 import 'package:shine/utils/share.dart';
@@ -16,6 +18,49 @@ class TaskUploadPage extends StatefulWidget {
   State<TaskUploadPage> createState() => _TaskUploadPageState();
 }
 
+class _NameNode {
+  int _deleteEmptyTimes = 0;
+  final bool isText;
+  final String value;
+  String? content;
+  TextEditingController? controller;
+  FocusNode? focusNode;
+  Function(bool)? onDelete;
+  bool get deleteLastNode => _deleteEmptyTimes > 0;
+  _NameNode({
+    required this.value,
+    this.content,
+    this.isText = true,
+    this.onDelete,
+  }) {
+    if (isText) {
+      controller = TextEditingController(text: content);
+      focusNode = FocusNode(
+        onKeyEvent: (node, event) {
+          if (event is KeyDownEvent) {
+            if (event.logicalKey == LogicalKeyboardKey.backspace ||
+                event.logicalKey == LogicalKeyboardKey.delete) {
+              if (controller!.text.isEmpty) {
+                _deleteEmptyTimes++;
+              } else {
+                _deleteEmptyTimes = 0;
+              }
+              if (onDelete is VoidCallback) onDelete!(deleteLastNode);
+              return KeyEventResult.handled;
+            }
+          }
+          return KeyEventResult.ignored;
+        },
+      );
+    }
+  }
+
+  dispose() {
+    controller?.dispose();
+    focusNode?.dispose();
+  }
+}
+
 class _TaskUploadPageState extends State<TaskUploadPage> {
   final GlobalKey _key = GlobalKey();
   int? _taskId;
@@ -23,8 +68,22 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
 
   String _selectedMimeType = "";
   String _taskName = "";
-  String _subject = "";
-  final TextEditingController _uploadTitleController = TextEditingController();
+  final List<_NameNode> _nameNodeList = [_NameNode(value: "")];
+  final List<String> _subjectNameList = [];
+  final TextEditingController _subjectController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _init();
+  }
+
+  Future _init() async {
+    _subjectNameList.addAll(
+      await SubjectStorage.getCurrentSemesterName() ?? [],
+    );
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +109,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                     ),
                     Expanded(
                       child: TabBarView(
-                        children: [_buildVotingWidget(), Container()],
+                        children: [_buildUploadWidget(), Container()],
                       ),
                     ),
                   ],
@@ -91,7 +150,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
     );
   }
 
-  Widget _buildVotingWidget() {
+  Widget _buildUploadWidget() {
     return Container(
       padding: bodyPadding,
       child: Container(
@@ -117,7 +176,6 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                 hintText: "请输入本次作业提交的标题",
                 hintStyle: textFieldHintStyle,
               ),
-              controller: _uploadTitleController,
               textAlign: TextAlign.start,
               style: textFieldStyle,
               inputFormatters: [
@@ -130,43 +188,56 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
             const SizedBox(height: 5),
             bottomLine,
             const SizedBox(height: 5),
-            Text("科目:", style: labelStyle),
-            Autocomplete<String>(
-              optionsBuilder: (TextEditingValue v) async {
-                return [];
+            Text(
+              "科目:",
+              style: const TextStyle(fontFamily: "SmileySans", fontSize: 16),
+            ),
+            TypeAheadField<String>(
+              builder: (context, controller, focusNode) {
+                return TextField(
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.symmetric(horizontal: 2),
+                    hintText: "请输入科目",
+                    hintStyle: const TextStyle(
+                      fontFamily: "SmileySans",
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  textAlign: TextAlign.start,
+                  style: const TextStyle(
+                    fontFamily: "SmileySans",
+                    fontSize: 16,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                  ],
+                  controller: controller,
+                  focusNode: focusNode,
+                );
               },
-              fieldViewBuilder:
-                  (
-                    context,
-                    textEditingController,
-                    focusNode,
-                    onFieldSubmitted,
-                  ) {
-                    return TextField(
-                      decoration: InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(horizontal: 2),
-                        hintText: "请输入本次作业的科目",
-                        hintStyle: TextStyle(
-                          fontFamily: "SmileySans",
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      controller: _uploadTitleController,
-                      textAlign: TextAlign.start,
-                      style: labelStyle,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.deny(RegExp(r'\s')),
-                      ],
-                      onChanged: (value) {
-                        _subject = value;
-                      },
-                    );
-                  },
+              controller: _subjectController,
+              itemBuilder: (context, value) {
+                return ListTile(title: Text(value, style: labelStyle));
+              },
+              onSelected: (value) {
+                _subjectController.text = value;
+              },
+              suggestionsCallback: (search) {
+                if (search.isEmpty) return _subjectNameList;
+                return _subjectNameList.where((sub) {
+                  int i = 0;
+                  for (final char in search.split("")) {
+                    i = sub.substring(i).indexOf(char);
+                    if (i == -1) return false;
+                  }
+                  return true;
+                }).toList();
+              },
             ),
             bottomLineSmall,
-            Text("格式:", style: labelStyle),
+            const SizedBox(height: 5),
+            const Text("格式:", style: labelStyle),
             DropdownButton<String>(
               style: const TextStyle(
                 fontFamily: "SmileySans",
@@ -203,9 +274,140 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
               },
             ),
             bottomLineSmall,
+            const SizedBox(height: 5),
+            Text(
+              "文件名:",
+              style: const TextStyle(fontFamily: "SmileySans", fontSize: 16),
+            ),
+            _buildFileNameWidget(),
+            _buildFormationWidget(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFileNameWidget() {
+    final List<Widget> children = [];
+    final List<Widget> wl = List.generate(_nameNodeList.length, (index) {
+      final node = _nameNodeList[index];
+      if (node.isText) {
+        return IntrinsicWidth(
+          child: TextField(
+            scrollPadding: EdgeInsets.all(0),
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.all(0),
+              hintText: index == 0 && _nameNodeList.length == 1
+                  ? "请设置文件名"
+                  : null,
+              hintStyle: const TextStyle(
+                fontFamily: "SmileySans",
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+            ),
+            textAlign: TextAlign.start,
+            style: const TextStyle(fontFamily: "SmileySans", fontSize: 16),
+            inputFormatters: [
+              FilteringTextInputFormatter.deny(RegExp(r'[\s$\{\}]')),
+            ],
+            controller: node.controller,
+            focusNode: node.focusNode,
+          ),
+        );
+      }
+      return GestureDetector(
+        child: Container(
+          padding: EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            gradient: blueLinearGradient,
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Text(
+            node.content ?? "",
+            style: const TextStyle(
+              fontFamily: "SmileySans",
+              fontSize: 16,
+              color: bgColorLight,
+            ),
+          ),
+        ),
+        onTap: () {
+          _nameNodeList.removeRange(index, index + 2);
+          setState(() {});
+        },
+      );
+    }).toList();
+    children.addAll(wl);
+    return GestureDetector(
+      onTap: () {
+        final last = _nameNodeList.elementAt(_nameNodeList.length - 1);
+        if (last.focusNode != null) {
+          FocusScope.of(context).unfocus();
+          last.focusNode?.requestFocus();
+        }
+      },
+      child: Container(
+        padding: EdgeInsets.all(1),
+        alignment: Alignment.centerLeft,
+        decoration: BoxDecoration(gradient: whiteLinearGradient),
+        child: Row(children: children),
+      ),
+    );
+  }
+
+  final List<List<String>> _formationInfo = [
+    ["major", "专业"],
+    ["class", "班级"],
+    ["username", "姓名"],
+    ["id", "学号"],
+    ["free", "自由输入"],
+  ];
+  Widget _buildFormationWidget() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: _formationInfo.map((e) {
+        return GestureDetector(
+          child: Container(
+            padding: EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              gradient: blueLinearGradient,
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: Text(
+              e[1],
+              style: const TextStyle(
+                fontFamily: "SmileySans",
+                fontSize: 16,
+                color: bgColorLight,
+              ),
+            ),
+          ),
+          onTap: () {
+            final buttonNode = _NameNode(
+              value: e[0],
+              content: e[1],
+              isText: false,
+            );
+            final textNode = _NameNode(
+              value: "",
+              onDelete: (f) {
+                if (f) {
+                  _nameNodeList.remove(buttonNode);
+                }
+              },
+            );
+            _nameNodeList.add(buttonNode);
+            _nameNodeList.add(textNode);
+            setState(() {});
+            final last = _nameNodeList.elementAt(_nameNodeList.length - 1);
+            if (last.focusNode != null) {
+              FocusScope.of(context).unfocus();
+              last.focusNode?.requestFocus();
+            }
+          },
+        );
+      }).toList(),
     );
   }
 
@@ -269,5 +471,14 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _subjectController.dispose();
+    for (final node in _nameNodeList) {
+      node.dispose();
+    }
   }
 }

@@ -16,7 +16,7 @@ class WsTask {
   static Timer? _reconnectTimer;
   static int _reconnectAttempts = 0;
   static const int _maxReconnectAttempts = 5;
-  static const Duration _reconnectDelay = Duration(seconds: 5);
+  static const Duration _reconnectDelay = Duration(seconds: 15);
 
   static bool get isConnected => _channel != null;
 
@@ -62,7 +62,6 @@ class WsTask {
       );
       _reconnectAttempts = 0;
     } catch (e) {
-      print('Failed to connect WebSocket: $e');
       WsTask.reconnect();
       rethrow;
     }
@@ -158,7 +157,7 @@ class WsTask {
 
     if (_reconnectAttempts < _maxReconnectAttempts) {
       _reconnectAttempts++;
-
+      _reconnectTimer?.cancel();
       _reconnectTimer = Timer(_reconnectDelay, () {
         Worker.startTaskWebSocket();
       });

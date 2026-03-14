@@ -11,8 +11,8 @@ bool isOnLoginPageGlobally() {
 // ignore: prefer_function_declarations_over_variables
 final clearOldRouter = (Route<dynamic> router) => false;
 
-void goToLoginGlobally() {
-  globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
+Future goToLoginGlobally() async {
+  await globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
     '/login',
     clearOldRouter,
   );

@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:shine/services/api.dart';
 import 'package:shine/services/dio.dart';
 
 class ApiProfiles {
@@ -49,6 +50,7 @@ class ApiProfiles {
   }
 
   static Future getMyProfile() async {
+    if (!ApiService.prepared) return "服务未就绪";
     try {
       final response = await dio.get('/profiles/my');
       return response.data;
@@ -60,6 +62,7 @@ class ApiProfiles {
   }
 
   static Future getUserInfoByList({required List idList, Map? config}) async {
+    if (!ApiService.prepared) return "服务未就绪";
     try {
       config ??= {
         "gender": true,
@@ -80,6 +83,7 @@ class ApiProfiles {
   }
 
   static Future getUserInfo({String? idList, Map? config}) async {
+    if (!ApiService.prepared) return "服务未就绪";
     try {
       idList ??= "all";
       config ??= {
@@ -100,5 +104,4 @@ class ApiProfiles {
       return "获取账户信息失败";
     }
   }
-
 }

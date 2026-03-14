@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:shine/services/api.dart';
 import 'package:shine/services/dio.dart';
 
 class ApiSemesters {
@@ -26,6 +27,7 @@ class ApiSemesters {
   }
 
   static Future<ApiSemesterResult> getCurrentSemester() async {
+    if (!ApiService.prepared) return ApiSemesterResult("服务未就绪");
     try {
       final response = await dio.get("/semesters/current");
       final data = response.data;

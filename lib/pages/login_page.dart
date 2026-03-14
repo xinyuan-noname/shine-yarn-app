@@ -9,7 +9,6 @@ import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/routes.dart';
 import 'package:shine/utils/server.dart';
-import 'package:shine/worker/worker.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -164,6 +163,7 @@ class _LoginPageState extends State<LoginPage> {
       successMessageDuration: Duration(milliseconds: 300),
       failMessageDuration: Duration(milliseconds: 800),
     );
+    print(success);
     if (success) {
       final username = _controllers.asTextMap["username"];
       final id = _controllers.asTextMap["id"];
@@ -173,8 +173,6 @@ class _LoginPageState extends State<LoginPage> {
       }
       if (id != null) {
         await ProfileStorage.saveId(id);
-        Worker.syncMyData();
-        Worker.syncAllUser();
       }
       if (context.mounted) {
         Navigator.of(context).pop();

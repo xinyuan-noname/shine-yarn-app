@@ -8,7 +8,6 @@ import 'package:shine/database/database.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/api_schedule.dart';
-import 'package:shine/services/api_subjects.dart';
 import 'package:shine/services/event.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/message_storage.dart';
@@ -72,12 +71,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _init() async {
-    _loadMine();
-    await DatabaseProvider.init();
-    _updateAllData();
-    _prepareData();
-    _startWs();
-    Worker.startSystemNotification();
     HomePageRefreshNotifier._refreshTask = () {
       if (!mounted) return;
       _updateTaskData();
@@ -89,6 +82,12 @@ class _HomePageState extends State<HomePage> {
     _subscription = EventBus.stream.listen((event) {
       _updateMessageData();
     });
+    await _loadMine();
+    await DatabaseProvider.init();
+    await _updateAllData();
+    await _startWs();
+    await _prepareData();
+    Worker.startSystemNotification();
   }
 
   Future<void> _prepareData() async {
@@ -106,6 +105,7 @@ class _HomePageState extends State<HomePage> {
     if (result != null) {
       _userInfoList.clear();
       _userInfoList.addAll(result);
+      if (!mounted) return;
       setState(() {});
     }
   }
@@ -115,6 +115,7 @@ class _HomePageState extends State<HomePage> {
     _username = await ProfileStorage.getName();
     _id = await ProfileStorage.getId();
     _ts = await ProfileStorage.getAvatarTs();
+    if (!mounted) return;
     setState(() {});
   }
 
@@ -127,6 +128,7 @@ class _HomePageState extends State<HomePage> {
     if (!mounted) return;
     _taskList.clear();
     _taskList.addAll((await TaskStorage.getAllTask()).reversed.toList());
+    if (!mounted) return;
     setState(() {});
   }
 
@@ -136,6 +138,7 @@ class _HomePageState extends State<HomePage> {
     _messageList.addAll(
       (await MessageStorage.getAllMessage()).reversed.toList(),
     );
+    if (!mounted) return;
     setState(() {});
   }
 
@@ -149,18 +152,16 @@ class _HomePageState extends State<HomePage> {
       _semesterPhaseList.clear();
       _semesterPhaseList.addAll(r);
     }
+    if (!mounted) return;
     setState(() {});
   }
 
   Future<void> _updateScheduleData() async {
-    final subjectInfoResult = await ApiSubjects.getCurrentSubjects();
-    if (subjectInfoResult is List) {
+    if (!mounted) return;
+    final subjectInfoResult = await Worker.syncSubjects();
+    if (subjectInfoResult is List<CourseData>) {
       _subjectInfo.clear();
-      _subjectInfo.addAll(
-        subjectInfoResult.whereType<Map<String, dynamic>>().map((e) {
-          return CourseData.fromJson(e);
-        }).toList(),
-      );
+      _subjectInfo.addAll(subjectInfoResult);
     }
     final scheduleResult = await ApiSchedule.getCurrentSchedule();
     if (scheduleResult is List) {
@@ -171,16 +172,17 @@ class _HomePageState extends State<HomePage> {
         }).toList(),
       );
     }
+    if (!mounted) return;
     setState(() {});
   }
 
   Future<void> _updateAllData() async {
-    _updateUserInfo();
     _updateTaskData();
     _updateMessageData();
-    _updateMine();
-    _updateSemesterData();
-    _updateScheduleData();
+    await _updateMine();
+    await _updateUserInfo();
+    await _updateSemesterData();
+    await _updateScheduleData();
   }
 
   @override

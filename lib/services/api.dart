@@ -21,6 +21,11 @@ class ApiService {
           if (resBody["code"] != null) {
             switch (resBody["code"]) {
               case "INVALID_ACCESS_TOKEN":
+                err = DioException(
+                  requestOptions: err.requestOptions,
+                  message: '访问令牌出错',
+                  type: DioExceptionType.badCertificate,
+                );
                 Worker.scheduleRefreshNow();
                 break;
               case "INVALID_PASSWORD":
@@ -36,10 +41,11 @@ class ApiService {
                   message: "登陆身份出错",
                   type: DioExceptionType.badCertificate,
                 );
-                if (isOnLoginPageGlobally()) {
-                  showToast(msg: "身份认证过期, 请重新登录");
-                  goToLoginGlobally();
-                }
+                delAccessToken();
+                Worker.dispose();
+                showToast(msg: "身份认证过期, 请重新登录").then((_) async {
+                  await goToLoginGlobally();
+                });
             }
           }
         } else {
@@ -96,6 +102,10 @@ class ApiService {
     return dio.options.baseUrl.isNotEmpty;
   }
 
+  static bool get prepared {
+    return _accessToken.isNotEmpty && isOk;
+  }
+
   static String get url {
     return dio.options.baseUrl;
   }
@@ -103,7 +113,8 @@ class ApiService {
   static Map get headers {
     return dio.options.headers;
   }
-  static String get userType{
+
+  static String get userType {
     if (_accessToken.isEmpty) return "guest";
     final payload = JwtDecoder.decode(_accessToken);
     return payload["userType"] ?? "guest";
@@ -118,6 +129,11 @@ class ApiService {
     _accessToken = accessToken;
     dio.options.headers['Authorization'] = 'Bearer $accessToken';
     uploadDio.options.headers['Authorization'] = 'Bearer $accessToken';
+  }
+  static void delAccessToken() {
+    _accessToken = "";
+    dio.options.headers['Authorization'] = '';
+    uploadDio.options.headers['Authorization'] = '';
   }
 
   static setDeviceInfo() async {

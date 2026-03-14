@@ -19,7 +19,6 @@ class ApiAuth {
       }
       return "登陆失败";
     } on DioException catch (e) {
-      Worker.scheduleRefreshNow();
       return e.message ?? "登陆失败";
     } catch (e) {
       return "登陆失败";

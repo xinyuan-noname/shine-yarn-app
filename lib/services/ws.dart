@@ -6,6 +6,7 @@ import 'package:shine/services/ws_task.dart';
 class WebSocketServer {
   static String _token = '';
   static Future<String?> syncWsToken() async {
+    if (!ApiService.prepared) return "服务未就绪";
     try {
       final response = await dio.get("/ws/token");
       if (response.data is! Map) {

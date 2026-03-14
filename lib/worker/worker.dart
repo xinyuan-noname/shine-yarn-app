@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/services/api_admin.dart';
 import 'package:shine/services/api_semesters.dart';
+import 'package:shine/services/api_subjects.dart';
 import 'package:shine/services/notification.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/api_auth.dart';
@@ -14,6 +15,8 @@ import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/semester_storage.dart';
+import 'package:shine/storage/subject_storage.dart';
+import 'package:shine/utils/course.dart';
 import 'package:shine/utils/message.dart';
 
 class Worker {
@@ -157,8 +160,26 @@ class Worker {
     ]);
   }
 
+  static Future<List<CourseData>?> syncSubjects() async {
+    final subjectInfoResult = await ApiSubjects.getCurrentSubjects();
+    if (subjectInfoResult is List) {
+      final list = subjectInfoResult.whereType<Map<String, dynamic>>().map((e) {
+        return CourseData.fromJson(e);
+      }).toList();
+      await SubjectStorage.setCurrentSemesterName(
+        list.map((e) => e.subjectName).toList(),
+      );
+      return list;
+    }
+    return null;
+  }
+
   static startTaskWebSocket() {
     WsTask.start();
+  }
+
+  static closeTaskWebSocket() {
+    WsTask.close();
   }
 
   static startSystemNotification() {
@@ -182,5 +203,6 @@ class Worker {
     _refreshTimer?.cancel();
     _urlTimer?.cancel();
     _badgeSubscription?.cancel();
+    Worker.closeTaskWebSocket();
   }
 }
