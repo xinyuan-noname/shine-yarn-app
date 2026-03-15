@@ -23,7 +23,7 @@ Widget _buildBottomSheetItem({
     child: Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(width: 1, color: mainColorGreenBule60),
+        border: Border.all(width: 1, color: mainColorGreenBlue60),
         gradient: purpleLinearGradient,
       ),
       child: Column(
@@ -79,7 +79,7 @@ Future<DateTime?> showWeekBottomSheet(
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(width: 1, color: mainColorGreenBule60),
+                  border: Border.all(width: 1, color: mainColorGreenBlue60),
                   gradient: selectedDate.inSameWeek(date)
                       ? purpleLinearGradient
                       : null,

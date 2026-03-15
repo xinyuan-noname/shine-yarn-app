@@ -101,7 +101,7 @@ class ScheduleView extends StatelessWidget {
                         margin: EdgeInsets.symmetric(vertical: 3),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
-                          color: mainColorGreenBule,
+                          color: mainColorGreenBlue,
                           boxShadow: [
                             BoxShadow(
                               blurRadius: 10,
@@ -183,7 +183,7 @@ class ScheduleView extends StatelessWidget {
         .map(
           (d) => Container(
             width: _cellWidth,
-            color: isToday(d) ? mainColorGreenBule : Colors.transparent,
+            color: isToday(d) ? mainColorGreenBlue : Colors.transparent,
             child: Column(
               children: [
                 Text(getCnWeekDayName(d), style: _titleTextStyle),

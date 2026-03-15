@@ -13,7 +13,7 @@ final List<Color> _levelColor = [
   Colors.grey,
   mainColorPurple,
   darkColorPurple,
-  mainColorGreenBule,
+  mainColorGreenBlue,
   deepColorBlue,
   mainColorRed,
   deepColorRed,

@@ -23,7 +23,7 @@ const contentStrongTextStyle = TextStyle(
   fontFamily: 'SmileySans',
   fontWeight: FontWeight.w600,
   fontStyle: FontStyle.italic,
-  color: Colors.redAccent,
+  color: mainColorRed,
 );
 
 const double inputGap = 10;

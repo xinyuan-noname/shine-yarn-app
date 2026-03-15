@@ -59,7 +59,7 @@ class TaskCard extends StatelessWidget {
         color: mainColorPurple,
         margin: const EdgeInsets.symmetric(vertical: 6),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        shadowColor: mainColorGreenBule60,
+        shadowColor: mainColorGreenBlue60,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: onPress ?? onPressMap[taskData.runtimeType],
@@ -105,7 +105,7 @@ class TaskCard extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               if (taskData.personal)
-                                Icon(Icons.lock, size: 20, color: bgColorLight,),
+                                Icon(Icons.lock, size: 20, color: bgColorLight),
                               Expanded(
                                 child: Text(
                                   taskData.title,

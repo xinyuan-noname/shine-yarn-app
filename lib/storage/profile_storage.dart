@@ -168,4 +168,16 @@ class ProfileStorage {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_userListKey);
   }
+
+  static Future<List<String>> getUserIdList() async {
+    final userListResult = await getUserList();
+    if (userListResult is List) {
+      return userListResult
+          .whereType<Map<String, dynamic>>()
+          .map((user) => user["id"])
+          .whereType<String>()
+          .toList();
+    }
+    return [];
+  }
 }

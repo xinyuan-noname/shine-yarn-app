@@ -184,7 +184,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ListTile(
                       leading: Icon(
                         Icons.check_circle_rounded,
-                        color: mainColorGreenBule,
+                        color: mainColorGreenBlue,
                       ),
                       title: Text('强制密码登录'),
                       onTap: () async {
@@ -210,7 +210,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       },
                     ),
                     ListTile(
-                      leading: Icon(Icons.error, color: Colors.redAccent),
+                      leading: Icon(Icons.error, color: mainColorRed),
                       title: Text('可无密码登录'),
                       onTap: () async {
                         await ApiAuth.changePasswordRequired({
@@ -376,7 +376,7 @@ class _ProfilePageState extends State<ProfilePage> {
         color: bgColorLight60,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            side: BorderSide(color: Colors.red, width: 2.0),
+            side: BorderSide(color: mainColorRed, width: 2.0),
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
           ),
@@ -387,12 +387,12 @@ class _ProfilePageState extends State<ProfilePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(Icons.logout, size: 24, color: Colors.redAccent),
+              Icon(Icons.logout, size: 24, color: mainColorRed),
               SizedBox(width: 10),
               Text(
                 '退出登录',
                 style: TextStyle(
-                  color: Colors.redAccent,
+                  color: mainColorRed,
                   fontSize: 24,
                   fontWeight: FontWeight.w300,
                 ),

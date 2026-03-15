@@ -23,7 +23,7 @@ const dialogActionStyle = TextStyle(
   fontSize: 15,
 );
 final dialogButtonStyle = TextButton.styleFrom(
-  backgroundColor: mainColorGreenBule60,
+  backgroundColor: mainColorGreenBlue60,
   foregroundColor: bgColorLight80,
   textStyle: dialogActionStyle,
 );
@@ -295,6 +295,7 @@ Future gotoAdminDialog(BuildContext context) async {
   if (!result) return null;
   return await globalNavigatorKey.currentState?.pushNamed('/admin');
 }
+
 Future<String?> showUnfinishedTaskSaveDialog({
   required BuildContext context,
   int min = 2,

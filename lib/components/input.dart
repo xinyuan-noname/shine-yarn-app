@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shine/theme.dart';
 
 class InputProps {
   static final TextInputFormatter _textInputFormatterNoEmptyCharacter =
@@ -278,7 +279,7 @@ class _InputState extends State<Input> {
                 children: [
                   const TextSpan(
                     text: "*",
-                    style: TextStyle(color: Colors.red),
+                    style: TextStyle(color: mainColorRed),
                   ),
                   TextSpan(
                     text: widget.props.label,

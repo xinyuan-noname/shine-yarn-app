@@ -1,5 +1,6 @@
 // lib/components/radio_form_field.dart
 import 'package:flutter/material.dart';
+import 'package:shine/theme.dart';
 
 class Radios<T> extends FormField<T> {
   Radios({
@@ -39,7 +40,7 @@ class Radios<T> extends FormField<T> {
                          children: [
                            const TextSpan(
                              text: "*",
-                             style: TextStyle(color: Colors.red),
+                             style: TextStyle(color: mainColorRed),
                            ),
                            TextSpan(text: label, style: labelStyle),
                          ],
@@ -79,7 +80,7 @@ class Radios<T> extends FormField<T> {
                    padding: const EdgeInsets.only(left: 16, top: 4),
                    child: Text(
                      state.errorText!,
-                     style: const TextStyle(color: Colors.red, fontSize: 12),
+                     style: const TextStyle(color: mainColorRed, fontSize: 12),
                    ),
                  ),
                if (gap is double && gap > 0) SizedBox(height: gap),
@@ -101,7 +102,7 @@ class Radios<T> extends FormField<T> {
     Color? color,
     double? gap,
     Map<String, dynamic>? onSavedMap,
-    String? initialValue
+    String? initialValue,
   }) {
     return Radios<String?>(
       label: '性别',
@@ -130,7 +131,7 @@ class Radios<T> extends FormField<T> {
     Color? color,
     double? gap,
     Map<String, dynamic>? onSavedMap,
-    bool? initialValue
+    bool? initialValue,
   }) {
     return Radios<bool>(
       label: label,

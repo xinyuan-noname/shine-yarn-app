@@ -6,11 +6,11 @@ const bgColorLight60 = Color.fromRGBO(230, 240, 255, 0.60);
 
 const deepColorBlue = Color.fromARGB(255, 0, 187, 255);
 
-const mainColorGreenBule = Color.fromARGB(255, 7, 247, 255);
-const mainColorGreenBule60 = Color.fromRGBO(7, 247, 255, 0.60);
-const mainColorGreenBule50 = Color.fromRGBO(7, 247, 255, 0.50);
-const mainColorGreenBule40 = Color.fromRGBO(7, 247, 255, 0.40);
-const mainColorGreenBule30 = Color.fromRGBO(7, 247, 255, 0.30);
+const mainColorGreenBlue = Color.fromARGB(255, 7, 247, 255);
+const mainColorGreenBlue60 = Color.fromRGBO(7, 247, 255, 0.60);
+const mainColorGreenBlue50 = Color.fromRGBO(7, 247, 255, 0.50);
+const mainColorGreenBlue40 = Color.fromRGBO(7, 247, 255, 0.40);
+const mainColorGreenBlue30 = Color.fromRGBO(7, 247, 255, 0.30);
 
 const deepColorPurple = Color.fromARGB(255, 107, 99, 187);
 const deepColorPurple90 = Color.fromRGBO(107, 99, 187, 0.9);
@@ -45,7 +45,7 @@ const mainColorOrange50 = Color.fromRGBO(255, 204, 128, 0.5);
 final inputDecorationLight = InputDecoration(
   contentPadding: EdgeInsets.only(left: 10),
   filled: true,
-  fillColor: mainColorGreenBule30,
+  fillColor: mainColorGreenBlue30,
   border: OutlineInputBorder(
     borderSide: BorderSide.none,
     borderRadius: BorderRadius.circular(15),
@@ -68,7 +68,7 @@ const TextStyle bottomListTitleTextStyle = TextStyle(
 const TextStyle bottomSheetGridTitleTextStyle = TextStyle(
   fontFamily: "SmileySans",
   fontSize: 12,
-  color: mainColorGreenBule,
+  color: mainColorGreenBlue,
 );
 const TextStyle bottomTitleTextStyle = TextStyle(
   fontFamily: "SmileySans",
@@ -86,7 +86,7 @@ const labelStyle = TextStyle(
 
 const listTitleStyle = TextStyle(
   fontFamily: "SmileySans",
-  color: mainColorGreenBule,
+  color: mainColorGreenBlue,
   fontSize: 20,
 );
 const expansionListTitleStyle = TextStyle(
@@ -159,12 +159,12 @@ const purpleLinearGradientStrong = LinearGradient(
 const blueLinearGradient = LinearGradient(
   begin: Alignment.topLeft,
   end: Alignment.bottomRight,
-  colors: [deepColorBlue, mainColorGreenBule],
+  colors: [deepColorBlue, mainColorGreenBlue],
 );
 const blueLinearGradientReversed = LinearGradient(
   begin: Alignment.topLeft,
   end: Alignment.bottomRight,
-  colors: [mainColorGreenBule, deepColorBlue],
+  colors: [mainColorGreenBlue, deepColorBlue],
 );
 const whiteLinearGradient = LinearGradient(
   begin: Alignment.topLeft,

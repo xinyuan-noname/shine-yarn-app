@@ -18,9 +18,7 @@ class NetworkAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CachedNetworkImage(
-      imageUrl: ts is int
-          ? "$_imageUrl?ts=$ts"
-          : _imageUrl,
+      imageUrl: ts is int ? "$_imageUrl?ts=$ts" : _imageUrl,
       httpHeaders: _httpHeaders,
       placeholder: (context, url) {
         return _buildDefualtAvatar();
@@ -42,18 +40,18 @@ class NetworkAvatar extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(color: deepColorBlue, width: 0.5),
-        color: mainColorGreenBule40,
+        color: mainColorGreenBlue40,
         boxShadow: [
           const BoxShadow(
             color: Color.fromRGBO(255, 255, 255, 0.2),
             spreadRadius: 1,
             blurRadius: 2,
-            offset: Offset(0, 3), 
+            offset: Offset(0, 3),
           ),
         ],
       ),
       child: CircleAvatar(
-        backgroundColor: mainColorGreenBule40,
+        backgroundColor: mainColorGreenBlue40,
         radius: radius,
         child: Text(
           "闪",
@@ -78,7 +76,7 @@ final defaultAvatar25 = Container(
   decoration: BoxDecoration(
     shape: BoxShape.circle,
     border: Border.all(color: deepColorBlue, width: 0.5),
-    color: mainColorGreenBule40,
+    color: mainColorGreenBlue40,
     boxShadow: [
       const BoxShadow(
         color: Color.fromRGBO(255, 255, 255, 0.2),
@@ -89,7 +87,7 @@ final defaultAvatar25 = Container(
     ],
   ),
   child: const CircleAvatar(
-    backgroundColor: mainColorGreenBule40,
+    backgroundColor: mainColorGreenBlue40,
     radius: 25,
     child: Text(
       "闪",
@@ -111,7 +109,7 @@ final defaultAvatar50 = Container(
   decoration: BoxDecoration(
     shape: BoxShape.circle,
     border: Border.all(color: deepColorBlue, width: 0.5),
-    color: mainColorGreenBule40,
+    color: mainColorGreenBlue40,
     boxShadow: [
       const BoxShadow(
         color: Color.fromRGBO(255, 255, 255, 0.2),
@@ -122,7 +120,7 @@ final defaultAvatar50 = Container(
     ],
   ),
   child: const CircleAvatar(
-    backgroundColor: mainColorGreenBule40,
+    backgroundColor: mainColorGreenBlue40,
     radius: 50,
     child: Text(
       "闪",

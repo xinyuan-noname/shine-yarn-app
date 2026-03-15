@@ -7,12 +7,15 @@ import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/task.dart';
 import 'package:shine/components/toast.dart';
+import 'package:shine/services/api_task.dart';
+import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/debouncer.dart';
 import 'package:shine/utils/image.dart';
+import 'package:shine/utils/server.dart';
 import 'package:shine/utils/share.dart';
 import 'package:shine/utils/time.dart';
 import 'package:week_of_year/date_week_extensions.dart';
@@ -73,7 +76,8 @@ class _NameNode {
 class _TaskUploadPageState extends State<TaskUploadPage> {
   final GlobalKey _key = GlobalKey();
   int? _taskId;
-  String _title = "作业提交";
+
+  final ValueNotifier<String> _message = ValueNotifier("");
 
   String _selectedMimeType = "";
   String _taskName = "";
@@ -110,9 +114,45 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
     setState(() {});
   }
 
+  Future _createTask() async {
+    return await ApiTask.createTask(
+      title: _taskName.isNotEmpty
+          ? _taskName
+          : "${_startedAt.year}-${_startedAt.month}-${_startedAt.day}-${_startedAt.hour}-${_startedAt.minute}任务",
+      startedAt: _startedAt,
+      endedAt: _finisheddAt,
+      subjectName: _subjectController.text,
+      mimetype: _selectedMimeType,
+      taskType: "upload",
+    );
+  }
+
+  Future _updateTask() async {
+    if (_taskId == null) return;
+    return await ApiTask.updateTask(
+      title: _taskName.isNotEmpty
+          ? _taskName
+          : "${_startedAt.year}-${_startedAt.month}-${_startedAt.day}-${_startedAt.hour}-${_startedAt.minute}任务",
+      startedAt: _startedAt,
+      endedAt: _finisheddAt,
+      subjectName: _subjectController.text,
+      mimetype: _selectedMimeType,
+      taskType: "upload",
+      taskId: _taskId!,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return CustomBackHandler(
+      onWillPop: () async {
+        if (_taskId == null) {
+          await _createTask();
+        } else {
+          await _updateTask();
+        }
+        return true;
+      },
       child: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
@@ -150,28 +190,9 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      title: Text(_title, style: titleTextStyle),
+      title: Text("任务提交", style: titleTextStyle),
       centerTitle: true,
       bottom: bottomLine,
-      actions: [
-        if (_taskId is int)
-          IconButton(
-            onPressed: () async {
-              final result = await showPromptDialog(
-                context: context,
-                title: "请输入更改任务名",
-                label: "更改后的任务名",
-                initValue: _title,
-              );
-              if (result is String) {
-                // await TaskStorage.updateCheckTask(id: _taskId!, title: result);
-                _title = result;
-                setState(() {});
-              }
-            },
-            icon: Icon(Icons.edit, size: 28),
-          ),
-      ],
     );
   }
 
@@ -210,9 +231,9 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                 _taskName = value;
               },
             ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 4),
             bottomLine,
-            const SizedBox(height: 5),
+            const SizedBox(height: 4),
             Text(
               "科目:",
               style: const TextStyle(fontFamily: "SmileySans", fontSize: 16),
@@ -261,7 +282,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
               },
             ),
             bottomLineSmall,
-            const SizedBox(height: 5),
+            const SizedBox(height: 4),
             const Text("格式:", style: labelStyle),
             DropdownButton<String>(
               style: const TextStyle(
@@ -303,7 +324,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
               },
             ),
             bottomLineSmall,
-            const SizedBox(height: 5),
+            const SizedBox(height: 4),
             const Text(
               "文件名:",
               style: TextStyle(fontFamily: "SmileySans", fontSize: 16),
@@ -311,18 +332,21 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
             _buildFileNameWidget(),
             _buildFormationWidget(),
             const SizedBox(height: 2),
-            Text(
-              "示例：${_joinNameNode()}",
-              style: const TextStyle(
-                fontFamily: "SmileySans",
-                color: Colors.grey,
-                fontSize: 14,
-                overflow: TextOverflow.ellipsis,
+            SizedBox(
+              height: 40,
+              child: Text(
+                "示例：${_joinNameNode()}",
+                style: const TextStyle(
+                  fontFamily: "SmileySans",
+                  color: Colors.grey,
+                  fontSize: 12,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                maxLines: 2,
               ),
-              maxLines: 2,
             ),
             bottomLineSmall,
-            const SizedBox(height: 5),
+            const SizedBox(height: 4),
             Text(
               "开始时间:${_getDateInfoStr(_startedAt)}",
               style: TextStyle(fontFamily: "SmileySans", fontSize: 16),
@@ -361,6 +385,8 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                 },
               ),
             ),
+            const SizedBox(height: 15),
+            _taskId == null ? _buildUploadButton() : _buildUpdateButton(),
           ],
         ),
       ),
@@ -368,7 +394,11 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
   }
 
   String _getDateInfoStr(DateTime d) {
-    final dayDistance = d.difference(DateTime.now()).inDays;
+    final dayDistance = DateTime(
+      d.year,
+      d.month,
+      d.day,
+    ).difference(getTodayStartMoment()).inDays;
     String result = "";
     if (dayDistance > 0) {
       result += "$dayDistance天后";
@@ -385,6 +415,103 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
     final s = _semesterStartedAt.weekOfYear;
     final e = d.weekOfYear;
     return e - s + 1;
+  }
+
+  Widget _buildUpdateButton() {
+    return Container(
+      alignment: Alignment(0, 0),
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          side: BorderSide(color: mainColorGreenBlue, width: 2.0),
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+        ),
+        onPressed: () async {
+          _message.value = "正在更改任务中";
+          showMessageDialog(context, _message);
+          await sendRequestAndChangeMessage(
+            _message,
+            request: Future(() async {
+              await _updateTask();
+              return null;
+            }),
+            initMessageList: [],
+            messageList: ["正在更改中.", "正在更改中..", "正在更改中..."],
+            successMessage: "更改成功",
+            successMessageDuration: Duration(milliseconds: 300),
+            failMessageDuration: Duration(milliseconds: 800),
+          );
+          Navigator.of(context).pop();
+          setState(() {});
+        },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(Icons.upload, size: 24, color: mainColorGreenBlue),
+            SizedBox(width: 10),
+            Text(
+              '更改作业',
+              style: TextStyle(
+                color: mainColorGreenBlue,
+                fontSize: 20,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUploadButton() {
+    return Container(
+      alignment: Alignment(0, 0),
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          side: BorderSide(color: mainColorPurple, width: 2.0),
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+        ),
+        onPressed: () async {
+          _message.value = "正在上传任务中";
+          showMessageDialog(context, _message);
+          await sendRequestAndChangeMessage(
+            _message,
+            request: Future(() async {
+              final result = await _createTask();
+              if (result is String) return result;
+              if (result is int) {
+                _taskId = result;
+              }
+              return null;
+            }),
+            initMessageList: [],
+            messageList: ["正在上传中.", "正在上传中..", "正在上传中..."],
+            successMessage: "上传成功",
+            successMessageDuration: Duration(milliseconds: 300),
+            failMessageDuration: Duration(milliseconds: 800),
+          );
+          Navigator.of(context).pop();
+        },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(Icons.upload, size: 24, color: mainColorPurple),
+            SizedBox(width: 10),
+            Text(
+              '发布作业',
+              style: TextStyle(
+                color: mainColorPurple,
+                fontSize: 20,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildFileNameWidget() {
@@ -553,19 +680,19 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                   context: context,
                   title: "请设置提醒消息, 点击确定以发送",
                   label: "提醒消息",
-                  initValue: "恭喜你被抽中了",
+                  initValue: "请尽快完成作业",
                 );
-                // if (result == null) return;
-                // try {
-                //   await WsTask.sendRemind(
-                //     msg: result,
-                //     targetList: _selectedIdList,
-                //     level: 0,
-                //   );
-                //   showToast(msg: "发送成功");
-                // } catch (err) {
-                //   showToast(msg: "发送失败, ${err.toString()}");
-                // }
+                if (result == null) return;
+                try {
+                  await WsTask.sendRemind(
+                    msg: result,
+                    targetList: await ProfileStorage.getUserIdList(),
+                    level: 0,
+                  );
+                  showToast(msg: "发送成功");
+                } catch (err) {
+                  showToast(msg: "发送失败, ${err.toString()}");
+                }
               },
               icon: Icons.notifications_outlined,
               title: '一键提醒',
@@ -580,7 +707,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                 await shareImage(
                   image: image,
                   name: "draw_task.png",
-                  title: _title,
+                  title: _taskName,
                 );
               },
               icon: Icons.share_outlined,

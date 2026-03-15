@@ -1,5 +1,10 @@
 import 'package:week_of_year/date_week_extensions.dart';
 
+DateTime getTodayStartMoment() {
+  final now = DateTime.now();
+  return DateTime(now.year, now.month, now.day);
+}
+
 String getLocalTimeString(DateTime time) {
   try {
     return time.toLocal().toString();

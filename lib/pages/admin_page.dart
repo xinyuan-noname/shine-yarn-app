@@ -156,7 +156,10 @@ class _AdminPageState extends State<AdminPage> {
                         ),
                         ListTile(
                           leading: Icon(Icons.date_range),
-                          title: Text('删除当前学期信息', style: bottomListTitleTextStyle),
+                          title: Text(
+                            '删除当前学期信息',
+                            style: bottomListTitleTextStyle,
+                          ),
                           onTap: () async {
                             if (!context.mounted) return;
                             Navigator.of(context).pop();
@@ -215,7 +218,7 @@ class _AdminPageState extends State<AdminPage> {
                               setState(() {});
                             },
                             unselectedColor: Colors.grey,
-                            selectedColor: mainColorGreenBule,
+                            selectedColor: mainColorGreenBlue,
                           ),
                           IconButton(
                             onPressed: () {
@@ -382,7 +385,7 @@ class _AdminPageState extends State<AdminPage> {
                   if (_selectedIndexList.contains(index))
                     Icon(
                       Icons.check_circle_outline_rounded,
-                      color: mainColorGreenBule,
+                      color: mainColorGreenBlue,
                       size: 50,
                       weight: 10,
                     ),

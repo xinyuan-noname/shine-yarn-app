@@ -9,7 +9,7 @@ const double adminFontSize = 24;
 const TextStyle adminUsernameTextStyle = TextStyle(
   fontFamily: 'SmileySans',
   fontSize: adminFontSize,
-  color: mainColorGreenBule,
+  color: mainColorGreenBlue,
 );
 
 class UserInfoCard extends StatelessWidget {
@@ -43,7 +43,7 @@ class UserInfoCard extends StatelessWidget {
         color: mainColorPurple,
         margin: const EdgeInsets.only(bottom: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        shadowColor: mainColorGreenBule60,
+        shadowColor: mainColorGreenBlue60,
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
@@ -95,7 +95,7 @@ class UserInfoCard extends StatelessWidget {
                   alignment: Alignment.center,
                   height: adminFontSize * 1.1,
                   decoration: BoxDecoration(
-                    color: mainColorGreenBule60,
+                    color: mainColorGreenBlue60,
                     borderRadius: BorderRadius.all(Radius.circular(10)),
                   ),
                   padding: const EdgeInsets.symmetric(
