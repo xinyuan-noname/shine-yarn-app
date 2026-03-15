@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
@@ -6,10 +7,15 @@ import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/task.dart';
 import 'package:shine/components/toast.dart';
+import 'package:shine/storage/profile_storage.dart';
+import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/debouncer.dart';
 import 'package:shine/utils/image.dart';
 import 'package:shine/utils/share.dart';
+import 'package:shine/utils/time.dart';
+import 'package:week_of_year/date_week_extensions.dart';
 
 class TaskUploadPage extends StatefulWidget {
   const TaskUploadPage({super.key});
@@ -21,11 +27,12 @@ class TaskUploadPage extends StatefulWidget {
 class _NameNode {
   int _deleteEmptyTimes = 0;
   final bool isText;
-  final String value;
+  String value;
   String? content;
   TextEditingController? controller;
   FocusNode? focusNode;
   Function(int, _NameNode)? onDelete;
+  Debouncer? debouncer;
   _NameNode({
     required this.value,
     this.content,
@@ -34,6 +41,7 @@ class _NameNode {
   }) {
     if (isText) {
       controller = TextEditingController(text: content);
+      debouncer = Debouncer();
       focusNode = FocusNode(
         onKeyEvent: (node, event) {
           if (event is KeyDownEvent) {
@@ -58,6 +66,7 @@ class _NameNode {
   dispose() {
     controller?.dispose();
     focusNode?.dispose();
+    debouncer?.dispose();
   }
 }
 
@@ -68,10 +77,19 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
 
   String _selectedMimeType = "";
   String _taskName = "";
+  String _username = "";
+  String _major = "";
+  String _class = "";
+  String _academy = "";
+  String _id = "";
+  DateTime _semesterStartedAt = DateTime.now();
+  DateTime _startedAt = DateTime.now();
+  DateTime _finisheddAt = DateTime.now().add(Duration(days: 1));
   final List<_NameNode> _nameNodeList = [_NameNode(value: "")];
   final List<String> _subjectNameList = [];
   final TextEditingController _subjectController = TextEditingController();
-
+  final Debouncer _debouncerS = Debouncer();
+  final Debouncer _debouncerE = Debouncer();
   @override
   void initState() {
     super.initState();
@@ -82,6 +100,13 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
     _subjectNameList.addAll(
       await SubjectStorage.getCurrentSemesterName() ?? [],
     );
+    _username = await ProfileStorage.getName();
+    _major = await ProfileStorage.getMajor();
+    _class = await ProfileStorage.getClass();
+    _academy = await ProfileStorage.getAcademy();
+    _id = await ProfileStorage.getId();
+    _semesterStartedAt =
+        await SemesterStorage.getCurrentSemesterStartedAt() ?? DateTime.now();
     setState(() {});
   }
 
@@ -266,6 +291,10 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                 DropdownMenuItem(value: "image/jpeg", child: Text("jpg图片")),
                 DropdownMenuItem(value: "image/png", child: Text("png图片")),
                 DropdownMenuItem(value: "video/mp4", child: Text("mp4视频")),
+                DropdownMenuItem(
+                  value: "application/zip",
+                  child: Text("zip压缩包"),
+                ),
               ],
               onChanged: (String? value) {
                 if (value == null) return;
@@ -275,25 +304,87 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
             ),
             bottomLineSmall,
             const SizedBox(height: 5),
-            Text(
+            const Text(
               "文件名:",
-              style: const TextStyle(fontFamily: "SmileySans", fontSize: 16),
+              style: TextStyle(fontFamily: "SmileySans", fontSize: 16),
             ),
             _buildFileNameWidget(),
             _buildFormationWidget(),
-             const SizedBox(height: 2),
+            const SizedBox(height: 2),
             Text(
-              "示例：",
+              "示例：${_joinNameNode()}",
               style: const TextStyle(
                 fontFamily: "SmileySans",
                 color: Colors.grey,
                 fontSize: 14,
+                overflow: TextOverflow.ellipsis,
+              ),
+              maxLines: 2,
+            ),
+            bottomLineSmall,
+            const SizedBox(height: 5),
+            Text(
+              "开始时间:${_getDateInfoStr(_startedAt)}",
+              style: TextStyle(fontFamily: "SmileySans", fontSize: 16),
+            ),
+            SizedBox(
+              height: 30,
+              child: CupertinoDatePicker(
+                mode: CupertinoDatePickerMode.dateAndTime,
+                initialDateTime: _startedAt,
+                use24hFormat: true,
+                onDateTimeChanged: (DateTime d) {
+                  _debouncerS.run(() {
+                    _startedAt = d;
+                    setState(() {});
+                  });
+                },
+              ),
+            ),
+            bottomLineSmall,
+            const SizedBox(height: 5),
+            Text(
+              "截止时间:${_getDateInfoStr(_finisheddAt)}",
+              style: TextStyle(fontFamily: "SmileySans", fontSize: 16),
+            ),
+            SizedBox(
+              height: 30,
+              child: CupertinoDatePicker(
+                mode: CupertinoDatePickerMode.dateAndTime,
+                initialDateTime: _finisheddAt,
+                use24hFormat: true,
+                onDateTimeChanged: (DateTime d) {
+                  _debouncerE.run(() {
+                    _finisheddAt = d;
+                    setState(() {});
+                  });
+                },
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  String _getDateInfoStr(DateTime d) {
+    final dayDistance = d.difference(DateTime.now()).inDays;
+    String result = "";
+    if (dayDistance > 0) {
+      result += "$dayDistance天后";
+    } else if (dayDistance < 0) {
+      result += "${-dayDistance}天前";
+    } else {
+      result += "今天";
+    }
+    result += "(第${_getSemesterWeek(d)}周-星期${getCnWeekDayName(d)})";
+    return result;
+  }
+
+  int _getSemesterWeek(DateTime d) {
+    final s = _semesterStartedAt.weekOfYear;
+    final e = d.weekOfYear;
+    return e - s + 1;
   }
 
   Widget _buildFileNameWidget() {
@@ -322,6 +413,11 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
             ],
             controller: node.controller,
             focusNode: node.focusNode,
+            onChanged: (_) {
+              node.debouncer?.run(() {
+                setState(() {});
+              });
+            },
           ),
         );
       }
@@ -329,7 +425,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
         child: Container(
           padding: EdgeInsets.all(3),
           decoration: BoxDecoration(
-            gradient: blueLinearGradient,
+            gradient: _formationGradientMap[node.value],
             borderRadius: BorderRadius.circular(5),
           ),
           child: Text(
@@ -360,18 +456,30 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
         padding: EdgeInsets.all(1),
         alignment: Alignment.centerLeft,
         decoration: BoxDecoration(gradient: whiteLinearGradient),
-        child: Row(children: children),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(children: children),
+        ),
       ),
     );
   }
 
   final List<List<String>> _formationInfo = [
+    ["academy", "学院"],
     ["major", "专业"],
     ["class", "班级"],
     ["username", "姓名"],
     ["id", "学号"],
     ["free", "自由输入"],
   ];
+  final Map<String, Gradient> _formationGradientMap = {
+    "academy": purpleLinearGradient,
+    "major": purpleLinearGradientReversed,
+    "class": purpleLinearGradientStrong,
+    "username": blueLinearGradientReversed,
+    "id": blueLinearGradient,
+    "free": redLinearGradientReversed,
+  };
   Widget _buildFormationWidget() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -380,7 +488,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
           child: Container(
             padding: EdgeInsets.all(3),
             decoration: BoxDecoration(
-              gradient: blueLinearGradient,
+              gradient: _formationGradientMap[e[0]],
               borderRadius: BorderRadius.circular(5),
             ),
             child: Text(
@@ -401,7 +509,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
             final textNode = _NameNode(
               value: "",
               onDelete: (t, n) {
-                if (t >= 2) {
+                if (t >= 1) {
                   _nameNodeList.remove(buttonNode);
                   _nameNodeList.remove(n);
                   setState(() {});
@@ -482,6 +590,63 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
         ),
       ),
     );
+  }
+
+  String _joinNameNode() {
+    String result = "";
+    for (final node in _nameNodeList) {
+      if (node.isText) {
+        result += node.controller!.text;
+      } else {
+        switch (node.value) {
+          case "academy":
+            result += _academy;
+            break;
+          case "username":
+            result += _username;
+            break;
+          case "major":
+            result += _major;
+            break;
+          case "class":
+            result += _class;
+            break;
+          case "id":
+            result += _id;
+            break;
+          case "free":
+            result += 'xxx';
+            break;
+        }
+      }
+    }
+    switch (_selectedMimeType) {
+      case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        result += ".docx";
+        break;
+      case "application/pdf":
+        result += ".pdf";
+        break;
+      case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+        result += ".xlsx";
+        break;
+      case "image/jpeg":
+        result += ".jpg";
+        break;
+      case "image/png":
+        result += ".png";
+        break;
+      case "video/mp4":
+        result += ".mp4";
+        break;
+      case "application/zip":
+        result += ".zip";
+        break;
+      default:
+        result += ".*";
+        break;
+    }
+    return result;
   }
 
   @override

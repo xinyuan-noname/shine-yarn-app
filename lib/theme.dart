@@ -123,8 +123,10 @@ const TextStyle textFieldHintStyle = TextStyle(
   color: Colors.grey,
 );
 
-
-const TextStyle viewEmptyTextStyle = TextStyle(fontSize: 20, color: Colors.grey);
+const TextStyle viewEmptyTextStyle = TextStyle(
+  fontSize: 20,
+  color: Colors.grey,
+);
 
 const bodyPadding = EdgeInsets.symmetric(vertical: 10, horizontal: 20);
 const viewPadding = EdgeInsets.all(16);
@@ -144,10 +146,15 @@ const purpleLinearGradient = LinearGradient(
   end: Alignment.bottomRight,
   colors: [deepColorPurple, mainColorPurple],
 );
-const purpleLinearGradientLight = LinearGradient(
+const purpleLinearGradientReversed = LinearGradient(
   begin: Alignment.topLeft,
   end: Alignment.bottomRight,
-  colors: [deepColorPurple40, mainColorPurple40],
+  colors: [mainColorPurple, deepColorPurple],
+);
+const purpleLinearGradientStrong = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [darkColorPurple, deepColorPurple, mainColorPurple],
 );
 const blueLinearGradient = LinearGradient(
   begin: Alignment.topLeft,

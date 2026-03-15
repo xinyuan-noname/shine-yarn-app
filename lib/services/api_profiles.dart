@@ -69,6 +69,8 @@ class ApiProfiles {
         "userType": true,
         "username": true,
         "passwordRequired": true,
+        "academy":true,
+        
       };
       final response = await dio.post(
         '/profiles/search/user',
@@ -86,13 +88,6 @@ class ApiProfiles {
     if (!ApiService.prepared) return "服务未就绪";
     try {
       idList ??= "all";
-      config ??= {
-        "gender": true,
-        "userType": true,
-        "username": true,
-        "passwordRequired": true,
-        "position": true,
-      };
       final response = await dio.post(
         '/profiles/search/user',
         data: {"idList": idList, "config": config},
