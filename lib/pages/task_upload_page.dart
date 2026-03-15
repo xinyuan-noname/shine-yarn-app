@@ -124,6 +124,14 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
       subjectName: _subjectController.text,
       mimetype: _selectedMimeType,
       taskType: "upload",
+      format: _nameNodeList
+          .map((node) {
+            if (node.isText) {
+              return node.controller!.text;
+            }
+            return "%tag[${node.value}]%";
+          })
+          .join(""),
     );
   }
 
@@ -139,6 +147,14 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
       mimetype: _selectedMimeType,
       taskType: "upload",
       taskId: _taskId!,
+      format: _nameNodeList
+          .map((node) {
+            if (node.isText) {
+              return node.controller!.text;
+            }
+            return "%tag[${node.value}]%";
+          })
+          .join(""),
     );
   }
 

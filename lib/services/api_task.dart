@@ -9,6 +9,7 @@ class ApiTask {
     required String subjectName,
     required String mimetype,
     required String taskType,
+    required String format,
   }) async {
     try {
       final response = await dio.post(
@@ -20,6 +21,7 @@ class ApiTask {
           "subjectName": subjectName,
           "mimetype": mimetype,
           "taskType": taskType,
+          "format": format,
         },
       );
       return response.data;
@@ -50,6 +52,7 @@ class ApiTask {
     String? subjectName,
     String? mimetype,
     String? taskType,
+    String? format,
   }) async {
     try {
       final Map<String, dynamic> data = {};
@@ -64,7 +67,7 @@ class ApiTask {
       if (subjectName != null) data["subjectName"] = subjectName;
       if (mimetype != null) data["mimetype"] = mimetype;
       if (taskType != null) data["taskType"] = taskType;
-
+      if (format != null) data["format"] = format;
       await dio.patch(
         "/task/update",
         data: {"taskId": taskId, "taskData": data},
