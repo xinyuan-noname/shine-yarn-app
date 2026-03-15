@@ -15,13 +15,48 @@ class TaskStorageData {
   });
 }
 
+class UploadTaskStorageData extends TaskStorageData {
+  final DateTime endedAt;
+  final String subjectName;
+  final String mimetype;
+  final String taskType;
+  final String format;
+
+  const UploadTaskStorageData({
+    required super.id,
+    required super.title,
+    super.personal = false,
+    required super.createdAt,
+    required this.endedAt,
+    required this.subjectName,
+    required this.mimetype,
+    required this.taskType,
+    required this.format,
+  });
+
+  factory UploadTaskStorageData.fromMap(Map<String, dynamic> map) {
+    return UploadTaskStorageData(
+      id: map['id'] ?? map['taskId'] as int,
+      title: map['title'] as String,
+      endedAt: DateTime.fromMillisecondsSinceEpoch(map['endedAt']),
+      subjectName: map['subjectName'] ?? "",
+      mimetype: map['mimetype'] ?? "",
+      taskType: map['taskType'] ?? "",
+      format: map['format'] ?? "",
+      createdAt: DateTime.fromMillisecondsSinceEpoch(
+        map["createdAt"] ?? map["startedAt"],
+      ),
+    );
+  }
+}
+
 class CheckTaskStorageData extends TaskStorageData {
   final List finished;
   final List unfinished;
   const CheckTaskStorageData({
     required super.id,
     required super.title,
-    super.personal = false,
+    super.personal = true,
     super.createdAt,
     required this.finished,
     required this.unfinished,

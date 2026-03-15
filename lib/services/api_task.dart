@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:shine/services/api.dart';
 import 'package:shine/services/dio.dart';
 
 class ApiTask {
@@ -32,10 +33,10 @@ class ApiTask {
     }
   }
 
-  static Future getTaskList() async {
+  static Future getAllTasks() async {
     try {
-      final response = await dio.get("/task/config/list");
-      final Map<String, dynamic> data = response.data;
+      final response = await dio.get("/task/config/all");
+      final data = response.data;
       return data;
     } on DioException catch (e) {
       return e.message ?? "获取任务列表失败";
@@ -56,7 +57,6 @@ class ApiTask {
   }) async {
     try {
       final Map<String, dynamic> data = {};
-
       if (title != null) data["title"] = title;
       if (startedAt != null) {
         data["startedAt"] = startedAt.millisecondsSinceEpoch;
@@ -69,7 +69,7 @@ class ApiTask {
       if (taskType != null) data["taskType"] = taskType;
       if (format != null) data["format"] = format;
       await dio.patch(
-        "/task/update",
+        "/task/config/update",
         data: {"taskId": taskId, "taskData": data},
       );
       return null;
@@ -77,6 +77,21 @@ class ApiTask {
       return e.message ?? "更新任务失败";
     } catch (e) {
       return "更新任务失败";
+    }
+  }
+
+  static Future<String> deleteTask({required int taskId}) async {
+    if (!ApiService.prepared) return "服务未就绪";
+    try {
+      final response = await dio.delete(
+        '/task/config/delete',
+        data: {"taskId": taskId},
+      );
+      return response.data;
+    } on DioException catch (e) {
+      return e.message ?? "删除账户信息失败";
+    } catch (e) {
+      return "删除账户信息失败";
     }
   }
 }

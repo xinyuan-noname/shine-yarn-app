@@ -128,6 +128,13 @@ class _HomePageState extends State<HomePage> {
     if (!mounted) return;
     _taskList.clear();
     _taskList.addAll((await TaskStorage.getAllTask()).reversed.toList());
+    if (ApiService.userType != "guest") {
+      print(ApiService.userType);
+      final remoteTask = await Worker.syncTask();
+      if (remoteTask != null) {
+        _taskList.addAll(remoteTask);
+      }
+    }
     if (!mounted) return;
     setState(() {});
   }

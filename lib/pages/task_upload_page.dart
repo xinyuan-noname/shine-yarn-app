@@ -12,6 +12,7 @@ import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/storage/subject_storage.dart';
+import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/debouncer.dart';
 import 'package:shine/utils/image.dart';
@@ -80,18 +81,20 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
   final ValueNotifier<String> _message = ValueNotifier("");
 
   String _selectedMimeType = "";
-  String _taskName = "";
   String _username = "";
   String _major = "";
   String _class = "";
   String _academy = "";
   String _id = "";
   DateTime _semesterStartedAt = DateTime.now();
+  UniqueKey _startedKey = UniqueKey();
+  UniqueKey _endedKey = UniqueKey();
   DateTime _startedAt = DateTime.now();
   DateTime _finisheddAt = DateTime.now().add(Duration(days: 1));
   final List<_NameNode> _nameNodeList = [_NameNode(value: "")];
   final List<String> _subjectNameList = [];
   final TextEditingController _subjectController = TextEditingController();
+  final TextEditingController _taskNameController = TextEditingController();
   final Debouncer _debouncerS = Debouncer();
   final Debouncer _debouncerE = Debouncer();
   @override
@@ -111,14 +114,37 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
     _id = await ProfileStorage.getId();
     _semesterStartedAt =
         await SemesterStorage.getCurrentSemesterStartedAt() ?? DateTime.now();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _handleArgs();
+    });
     setState(() {});
   }
 
+  Future<void> _handleArgs() async {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is TaskUploadPageArgs) {
+      _taskId = args.data.id;
+      _startedAt = args.data.createdAt!;
+      _finisheddAt = args.data.endedAt;
+      _taskNameController.text = args.data.title;
+      _subjectController.text = args.data.subjectName;
+      _selectedMimeType = args.data.mimetype;
+      _parseNameNodeList(args.data.format);
+      _startedKey = UniqueKey();
+      _endedKey = UniqueKey();
+      setState(() {});
+    }
+  }
+
   Future _createTask() async {
+    if (_taskId != null) return;
+    if (_taskNameController.text.isEmpty) {
+      _taskNameController.text =
+          "${_startedAt.year}-${_startedAt.month}-${_startedAt.day}-${_startedAt.hour}-${_startedAt.minute}任务";
+    }
     return await ApiTask.createTask(
-      title: _taskName.isNotEmpty
-          ? _taskName
-          : "${_startedAt.year}-${_startedAt.month}-${_startedAt.day}-${_startedAt.hour}-${_startedAt.minute}任务",
+      title: _taskNameController.text,
       startedAt: _startedAt,
       endedAt: _finisheddAt,
       subjectName: _subjectController.text,
@@ -137,10 +163,12 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
 
   Future _updateTask() async {
     if (_taskId == null) return;
+    if (_taskNameController.text.isEmpty) {
+      _taskNameController.text =
+          "${_startedAt.year}-${_startedAt.month}-${_startedAt.day}-${_startedAt.hour}-${_startedAt.minute}任务";
+    }
     return await ApiTask.updateTask(
-      title: _taskName.isNotEmpty
-          ? _taskName
-          : "${_startedAt.year}-${_startedAt.month}-${_startedAt.day}-${_startedAt.hour}-${_startedAt.minute}任务",
+      title: _taskNameController.text,
       startedAt: _startedAt,
       endedAt: _finisheddAt,
       subjectName: _subjectController.text,
@@ -243,9 +271,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
               inputFormatters: [
                 FilteringTextInputFormatter.deny(RegExp(r'\s')),
               ],
-              onChanged: (value) {
-                _taskName = value;
-              },
+              controller: _taskNameController,
             ),
             const SizedBox(height: 4),
             bottomLine,
@@ -370,6 +396,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
             SizedBox(
               height: 30,
               child: CupertinoDatePicker(
+                key: _startedKey,
                 mode: CupertinoDatePickerMode.dateAndTime,
                 initialDateTime: _startedAt,
                 use24hFormat: true,
@@ -390,6 +417,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
             SizedBox(
               height: 30,
               child: CupertinoDatePicker(
+                key: _endedKey,
                 mode: CupertinoDatePickerMode.dateAndTime,
                 initialDateTime: _finisheddAt,
                 use24hFormat: true,
@@ -723,7 +751,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                 await shareImage(
                   image: image,
                   name: "draw_task.png",
-                  title: _taskName,
+                  title: _taskNameController.text,
                 );
               },
               icon: Icons.share_outlined,
@@ -733,6 +761,67 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
         ),
       ),
     );
+  }
+
+  /// 从字符串反推 _nameNodeList
+  /// [fileName] 文件名，格式如 "%tag[academy]%张三%tag[major]%作业"
+  void _parseNameNodeList(String fileName) {
+    // 清空现有列表
+    for (final node in _nameNodeList) {
+      node.dispose();
+    }
+    _nameNodeList.clear();
+    _nameNodeList.add(_NameNode(value: ""));
+
+    final pattern = RegExp(r'%tag\[([a-z]+)\]%|([^%]+)');
+    final matches = pattern.allMatches(fileName);
+    for (final match in matches) {
+      final tagKey = match.group(1);
+      final textContent = match.group(2);
+      print('$tagKey');
+      print('$textContent');
+
+      if (tagKey != null) {
+        final formationEntry = _formationInfo.firstWhere(
+          (e) => e[0] == tagKey,
+          orElse: () => ['free', '自由输入'],
+        );
+
+        final buttonNode = _NameNode(
+          value: tagKey,
+          content: formationEntry[1],
+          isText: false,
+        );
+        _nameNodeList.add(buttonNode);
+
+        final textNode = _NameNode(
+          value: "",
+          onDelete: (t, n) {
+            if (t >= 1) {
+              _nameNodeList.remove(buttonNode);
+              _nameNodeList.remove(n);
+              setState(() {});
+            }
+          },
+        );
+        _nameNodeList.add(textNode);
+      } else if (textContent != null && textContent.isNotEmpty) {
+        final textNode = _NameNode(
+          value: "",
+          content: textContent,
+          isText: true,
+          onDelete: (t, n) {
+            if (t >= 1) {
+              _nameNodeList.remove(n);
+              setState(() {});
+            }
+          },
+        );
+        _nameNodeList.add(textNode);
+      }
+    }
+    print(_nameNodeList);
+    setState(() {});
   }
 
   String _joinNameNode() {
@@ -800,4 +889,9 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
       node.dispose();
     }
   }
+}
+
+class TaskUploadPageArgs {
+  final UploadTaskStorageData data;
+  const TaskUploadPageArgs({required this.data});
 }

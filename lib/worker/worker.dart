@@ -5,6 +5,7 @@ import 'package:shine/components/toast.dart';
 import 'package:shine/services/api_admin.dart';
 import 'package:shine/services/api_semesters.dart';
 import 'package:shine/services/api_subjects.dart';
+import 'package:shine/services/api_task.dart';
 import 'package:shine/services/notification.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/api_auth.dart';
@@ -16,6 +17,7 @@ import 'package:shine/storage/group_storage.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/storage/subject_storage.dart';
+import 'package:shine/storage/task_storage.dart';
 import 'package:shine/utils/course.dart';
 import 'package:shine/utils/message.dart';
 
@@ -182,6 +184,24 @@ class Worker {
         list.map((e) => e.subjectName).toList(),
       );
       return list;
+    }
+    return null;
+  }
+
+  static Future<List<TaskStorageData>?> syncTask() async {
+    final uploadTaskResult = await ApiTask.getAllTasks();
+    if (uploadTaskResult is List) {
+      final List<TaskStorageData> result = [];
+      final uploadTasks = uploadTaskResult.whereType<Map<String, dynamic>>();
+      for (final taskInfo in uploadTasks) {
+        switch (taskInfo["taskType"]) {
+          case "upload":
+            if (ApiService.userType == "admin") {
+              result.add(UploadTaskStorageData.fromMap(taskInfo));
+            }
+        }
+      }
+      return result;
     }
     return null;
   }

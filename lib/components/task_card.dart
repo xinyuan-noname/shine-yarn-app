@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:shine/components/icon_button.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/components/toast.dart';
 import 'package:shine/pages/home_page.dart';
 import 'package:shine/pages/task_check_page.dart';
+import 'package:shine/pages/task_upload_page.dart';
 import 'package:shine/routes.dart';
+import 'package:shine/services/api.dart';
+import 'package:shine/services/api_task.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/time.dart';
@@ -30,10 +34,22 @@ class TaskCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final onPressMap = <Type, GestureTapCallback>{
       CheckTaskStorageData: () async {
-        final CheckTaskStorageData data = taskData as CheckTaskStorageData;
+        final data = taskData as CheckTaskStorageData;
         await globalNavigatorKey.currentState?.pushNamed(
           '/task/check',
           arguments: TaskCheckPageArgs(data: data),
+        );
+        HomePageRefreshNotifier.refreshTask();
+      },
+      UploadTaskStorageData: () async {
+        final data = taskData as UploadTaskStorageData;
+        if (ApiService.userType != "admin") {
+          showToast(msg: "只有管理员能查看此任务");
+          return;
+        }
+        await globalNavigatorKey.currentState?.pushNamed(
+          '/task/upload',
+          arguments: TaskUploadPageArgs(data: data),
         );
         HomePageRefreshNotifier.refreshTask();
       },
@@ -41,6 +57,10 @@ class TaskCard extends StatelessWidget {
     final onDeleteMap = <Type, VoidCallback>{
       CheckTaskStorageData: () async {
         await TaskStorage.delCheckTask(id: taskData.id);
+        HomePageRefreshNotifier.refreshTask();
+      },
+      UploadTaskStorageData: () async {
+        await ApiTask.deleteTask(taskId: taskData.id);
         HomePageRefreshNotifier.refreshTask();
       },
     };
@@ -160,6 +180,9 @@ class TaskCard extends StatelessWidget {
     late final String type;
     if (taskData is CheckTaskStorageData) {
       type = "任务清查";
+    }
+    if (taskData is UploadTaskStorageData) {
+      type = "作业收集";
     } else {
       type = "未知任务";
     }
