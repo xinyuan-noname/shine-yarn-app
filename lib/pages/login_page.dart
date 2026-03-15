@@ -163,7 +163,6 @@ class _LoginPageState extends State<LoginPage> {
       successMessageDuration: Duration(milliseconds: 300),
       failMessageDuration: Duration(milliseconds: 800),
     );
-    print(success);
     if (success) {
       final username = _controllers.asTextMap["username"];
       final id = _controllers.asTextMap["id"];

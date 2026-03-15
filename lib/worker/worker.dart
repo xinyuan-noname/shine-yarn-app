@@ -99,6 +99,9 @@ class Worker {
       final String? gender = result["gender"];
       final String? username = result["username"];
       final bool? passwordRequired = result["passwordRequired"];
+      final String? major = result["major"];
+      final String? $class = result["class"];
+      final String? academy = result["academy"];
       if (id is String) {
         await ProfileStorage.saveId(id);
       }
@@ -113,6 +116,15 @@ class Worker {
       }
       if (passwordRequired is bool) {
         await ProfileStorage.savePasswordRequired(passwordRequired);
+      }
+      if (major is String) {
+        await ProfileStorage.saveMajor(major);
+      }
+      if ($class is String) {
+        await ProfileStorage.saveClass($class);
+      }
+      if (academy is String) {
+        await ProfileStorage.saveAcademy(academy);
       }
     }
     if (result is String) showToast(msg: result);

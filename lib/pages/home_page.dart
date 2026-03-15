@@ -179,10 +179,10 @@ class _HomePageState extends State<HomePage> {
   Future<void> _updateAllData() async {
     _updateTaskData();
     _updateMessageData();
+    await _updateScheduleData();
     await _updateMine();
     await _updateUserInfo();
     await _updateSemesterData();
-    await _updateScheduleData();
   }
 
   @override

@@ -25,8 +25,7 @@ class _NameNode {
   String? content;
   TextEditingController? controller;
   FocusNode? focusNode;
-  Function(bool)? onDelete;
-  bool get deleteLastNode => _deleteEmptyTimes > 0;
+  Function(int, _NameNode)? onDelete;
   _NameNode({
     required this.value,
     this.content,
@@ -45,8 +44,9 @@ class _NameNode {
               } else {
                 _deleteEmptyTimes = 0;
               }
-              if (onDelete is VoidCallback) onDelete!(deleteLastNode);
-              return KeyEventResult.handled;
+              if (onDelete != null) {
+                onDelete!(_deleteEmptyTimes, this);
+              }
             }
           }
           return KeyEventResult.ignored;
@@ -281,6 +281,15 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
             ),
             _buildFileNameWidget(),
             _buildFormationWidget(),
+             const SizedBox(height: 2),
+            Text(
+              "示例：",
+              style: const TextStyle(
+                fontFamily: "SmileySans",
+                color: Colors.grey,
+                fontSize: 14,
+              ),
+            ),
           ],
         ),
       ),
@@ -391,9 +400,11 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
             );
             final textNode = _NameNode(
               value: "",
-              onDelete: (f) {
-                if (f) {
+              onDelete: (t, n) {
+                if (t >= 2) {
                   _nameNodeList.remove(buttonNode);
+                  _nameNodeList.remove(n);
+                  setState(() {});
                 }
               },
             );

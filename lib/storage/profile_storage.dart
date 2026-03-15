@@ -9,6 +9,55 @@ class ProfileStorage {
   static final String _avatarTsKey = 'avatar_ts_key';
   static final String _adminListKey = 'admin_list_key';
   static final String _userListKey = 'user_list_key';
+  static final String _majorKey = 'major_key';
+  static final String _classKey = "class_key";
+  static final String _academyKey = "academy_key";
+
+  static Future<void> saveMajor(String major) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_majorKey, major);
+  }
+
+  static Future<String> getMajor() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_majorKey) ?? "";
+  }
+
+  static Future delMajor() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_majorKey);
+  }
+
+  static Future<void> saveClass(String className) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_classKey, className);
+  }
+
+  static Future<String> getClass() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_classKey) ?? "";
+  }
+
+  static Future delClass() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_classKey);
+  }
+
+  static Future<void> saveAcademy(String academy) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_academyKey, academy);
+  }
+
+  static Future<String> getAcademy() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_academyKey) ?? "";
+  }
+
+  static Future delAcademy() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_academyKey);
+  }
+
   static Future<void> saveName(String name) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_nameKey, name);
