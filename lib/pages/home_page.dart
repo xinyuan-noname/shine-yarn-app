@@ -39,6 +39,7 @@ class _HomePageState extends State<HomePage> {
       _localTaskList.toList()..addAll(_remoteTaskList);
   final List<TaskStorageData> _localTaskList = [];
   final List<TaskStorageData> _remoteTaskList = [];
+  final List<TaskStorageData> _taskNoticeList = [];
   final List<MessageStorageData> _messageList = [];
   final List _userInfoList = [];
   StreamSubscription<MessageEvent>? _subscription;
@@ -130,7 +131,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _updateTaskData() async {
-    if (!mounted) return;
     _localTaskList.clear();
     _localTaskList.addAll((await TaskStorage.getAllTask()).reversed.toList());
     setState(() {});
@@ -146,13 +146,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _updateMessageData() async {
-    if (!mounted) return;
     _messageList.clear();
     _messageList.addAll(
       (await MessageStorage.getAllMessage()).reversed.toList(),
     );
     if (!mounted) return;
     setState(() {});
+    final taskNoticeResult = await Worker.syncTaskNotice();
+    if (taskNoticeResult is List<TaskStorageData>) {
+      _taskNoticeList.clear();
+      _taskNoticeList.addAll(taskNoticeResult);
+    }
   }
 
   Future<void> _loadSemesterData() async {
@@ -214,6 +218,7 @@ class _HomePageState extends State<HomePage> {
           index: _currentIndex,
           children: [
             MessageView(
+              taskNoticeList: _taskNoticeList,
               messageList: _messageList,
               onRefresh: () async {
                 await _updateMessageData();

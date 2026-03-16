@@ -2,8 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/dio.dart';
 
-class ApiSubjects {
-  static Future getCurrentSubjects() async {
+class ApiMessage {
+  static Future getAllNotice() async {
     if (!ApiService.prepared) return "服务未就绪";
     try {
       final response = await dio.get("/message/notice");

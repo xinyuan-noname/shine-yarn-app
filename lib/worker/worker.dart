@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/services/api_admin.dart';
+import 'package:shine/services/api_message.dart';
 import 'package:shine/services/api_schedule.dart';
 import 'package:shine/services/api_semesters.dart';
 import 'package:shine/services/api_subjects.dart';
@@ -210,6 +211,23 @@ class Worker {
         switch (taskInfo["taskType"]) {
           case "upload":
             result.add(UploadTaskStorageData.fromMap(taskInfo));
+        }
+      }
+      return result;
+    }
+    return null;
+  }
+
+  static Future<List<TaskStorageData>?> syncTaskNotice() async {
+    final taskNoticeResult = await ApiMessage.getAllNotice();
+    if (taskNoticeResult is List) {
+      final List<TaskStorageData> result = [];
+      final taskNoticeList = taskNoticeResult.reversed
+          .whereType<Map<String, dynamic>>();
+      for (final noticeInfo in taskNoticeList) {
+        switch (noticeInfo["taskType"]) {
+          case "upload":
+            result.add(UploadTaskStorageData.fromMap(noticeInfo));
         }
       }
       return result;
