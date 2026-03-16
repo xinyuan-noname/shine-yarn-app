@@ -47,7 +47,7 @@ class ApiTask {
           "mimetype": mimetype,
           "taskType": taskType,
           "format": format,
-          "notice": notice,
+          "isNotice": notice,
           "source": source,
         },
       );
