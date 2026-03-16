@@ -20,9 +20,12 @@ const deepColorPurple60 = Color.fromRGBO(107, 99, 187, 0.6);
 const deepColorPurple50 = Color.fromRGBO(107, 99, 187, 0.5);
 const deepColorPurple40 = Color.fromRGBO(107, 99, 187, 0.4);
 const deepColorPurple30 = Color.fromRGBO(107, 99, 187, 0.3);
-const darkColorPurple = Color.fromRGBO(52, 49, 84, 1);
+
+const darkColorPurple = Color.fromARGB(255, 52, 49, 84);
+const darkColorPurple90 = Color.fromARGB(230, 52, 49, 84);
 
 const mainColorPurple = Color.fromARGB(255, 167, 157, 255);
+const mainColorPurple95 = Color.fromARGB(241, 167, 157, 255);
 const mainColorPurple90 = Color.fromARGB(230, 167, 157, 255);
 const mainColorPurple80 = Color.fromARGB(204, 167, 157, 255);
 const mainColorPurple70 = Color.fromARGB(179, 167, 157, 255);

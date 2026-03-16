@@ -21,8 +21,8 @@ const List<Color> _courseColorList = [
   mainColorPurple70,
   mainColorPurple80,
   mainColorPurple90,
-  mainColorPurple,
-  deepColorPurple,
+  mainColorPurple95,
+  deepColorPurple90,
   darkColorPurple,
 ];
 
@@ -235,7 +235,14 @@ class ScheduleView extends StatelessWidget {
     final courseList = _getshowSubjectInfoList();
     final scheduleDataList = _getShowScheduleDataList();
     return getWeekDates(showDate).map((d) {
-      return SizedBox(
+      return Container(
+        decoration: isToday(d)
+            ? BoxDecoration(
+                boxShadow: [
+                  BoxShadow(color: mainColorGreenBlue)
+                ]
+              )
+            : null,
         width: _cellWidth,
         child: Column(
           children: _genCourseRow(

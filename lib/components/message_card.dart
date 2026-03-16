@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:shine/components/avatar.dart';
-import 'package:shine/components/icon_button.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/extensions/list.dart';
 import 'package:shine/pages/home_page.dart';
@@ -51,8 +50,16 @@ class MessageCard extends StatelessWidget {
         extentRatio: 0.25,
         motion: ScrollMotion(),
         children: [
-          CardDeleteButton(
-            onDelete: deleteCallback ?? onDeleteMap[messageData.runtimeType],
+          SlidableAction(
+            onPressed: (BuildContext context) {
+              final deleteAction =
+                  deleteCallback ?? onDeleteMap[messageData.runtimeType];
+              if (deleteAction != null) deleteAction();
+            },
+            icon: Icons.delete,
+            backgroundColor: mainColorRed,
+            spacing: 0,
+            borderRadius: BorderRadius.circular(20),
           ),
         ],
       ),
@@ -89,7 +96,6 @@ class MessageCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 1),
                   bottomLine,
                   if (messageData.sentAt is DateTime) _buildTime(),
                 ],

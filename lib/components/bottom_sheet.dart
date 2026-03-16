@@ -138,6 +138,7 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
                 await globalNavigatorKey.currentState?.pushNamed(
                   '/task/upload',
                 );
+                HomePageRefreshNotifier.refreshTask();
               },
             ),
             //task-check
@@ -200,6 +201,7 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
                   await globalNavigatorKey.currentState?.pushNamed(
                     '/task/vote',
                   );
+                  HomePageRefreshNotifier.refreshTask();
                 },
               ),
           ],

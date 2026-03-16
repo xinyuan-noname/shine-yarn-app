@@ -820,7 +820,6 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
         _nameNodeList.add(textNode);
       }
     }
-    print(_nameNodeList);
     setState(() {});
   }
 

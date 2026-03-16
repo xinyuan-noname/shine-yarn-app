@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:shine/components/icon_button.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/pages/home_page.dart';
@@ -56,12 +55,22 @@ class TaskCard extends StatelessWidget {
     };
     final onDeleteMap = <Type, VoidCallback>{
       CheckTaskStorageData: () async {
-        await TaskStorage.delCheckTask(id: taskData.id);
-        HomePageRefreshNotifier.refreshTask();
+        TaskStorage.delCheckTask(id: taskData.id).then((_) async {
+          await showToast(
+            msg: "删除任务${taskData.title}成功",
+            duration: Duration(milliseconds: 500),
+          );
+          HomePageRefreshNotifier.refreshTask();
+        });
       },
       UploadTaskStorageData: () async {
-        await ApiTask.deleteTask(taskId: taskData.id);
-        HomePageRefreshNotifier.refreshTask();
+        ApiTask.deleteTask(taskId: taskData.id).then((_) async {
+          await showToast(
+            msg: "删除任务${taskData.title}成功",
+            duration: Duration(milliseconds: 500),
+          );
+          HomePageRefreshNotifier.refreshTask();
+        });
       },
     };
     return Slidable(
@@ -69,8 +78,16 @@ class TaskCard extends StatelessWidget {
         extentRatio: 0.25,
         motion: ScrollMotion(),
         children: [
-          CardDeleteButton(
-            onDelete: onDelete ?? onDeleteMap[taskData.runtimeType],
+          SlidableAction(
+            icon: Icons.delete,
+            backgroundColor: mainColorRed,
+            spacing: 20,
+            borderRadius: BorderRadius.circular(20),
+            onPressed: (context) {
+              final deleteAction =
+                  onDelete ?? onDeleteMap[taskData.runtimeType];
+              if (deleteAction != null) deleteAction();
+            },
           ),
         ],
       ),
@@ -180,8 +197,7 @@ class TaskCard extends StatelessWidget {
     late final String type;
     if (taskData is CheckTaskStorageData) {
       type = "任务清查";
-    }
-    if (taskData is UploadTaskStorageData) {
+    } else if (taskData is UploadTaskStorageData) {
       type = "作业收集";
     } else {
       type = "未知任务";

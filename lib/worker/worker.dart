@@ -192,7 +192,7 @@ class Worker {
     final uploadTaskResult = await ApiTask.getAllTasks();
     if (uploadTaskResult is List) {
       final List<TaskStorageData> result = [];
-      final uploadTasks = uploadTaskResult.whereType<Map<String, dynamic>>();
+      final uploadTasks = uploadTaskResult.reversed.whereType<Map<String, dynamic>>();
       for (final taskInfo in uploadTasks) {
         switch (taskInfo["taskType"]) {
           case "upload":

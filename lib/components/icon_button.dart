@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shine/theme.dart';
 
 class SelectAllButton extends StatelessWidget {
   final List<int> selectedIndexList;
@@ -36,36 +35,5 @@ class SelectAllButton extends StatelessWidget {
             },
             icon: Icon(Icons.check_box_outlined, color: selectedColor),
           );
-  }
-}
-
-class CardDeleteButton extends StatelessWidget {
-  final VoidCallback? onDelete;
-  final Color color;
-  final double size;
-  final EdgeInsetsGeometry margin;
-
-  const CardDeleteButton({
-    super.key,
-    this.onDelete,
-    this.color = bgColorLight,
-    this.size = 50,
-    this.margin = const EdgeInsets.symmetric(horizontal: 10),
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: size,
-      width: size,
-      decoration: BoxDecoration(color: mainColorRed, shape: BoxShape.circle),
-      margin: margin,
-      child: IconButton(
-        padding: const EdgeInsets.all(0),
-        onPressed: onDelete,
-        icon: Icon(Icons.delete, color: color),
-        iconSize: size * 0.9,
-      ),
-    );
   }
 }

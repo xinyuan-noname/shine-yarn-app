@@ -35,7 +35,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final List<TaskStorageData> _taskList = [];
+  List<TaskStorageData> get _taskList =>
+      _localTaskList.toList()..addAll(_remoteTaskList);
+  final List<TaskStorageData> _localTaskList = [];
+  final List<TaskStorageData> _remoteTaskList = [];
   final List<MessageStorageData> _messageList = [];
   final List _userInfoList = [];
   StreamSubscription<MessageEvent>? _subscription;
@@ -126,13 +129,14 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _updateTaskData() async {
     if (!mounted) return;
-    _taskList.clear();
-    _taskList.addAll((await TaskStorage.getAllTask()).reversed.toList());
+    _localTaskList.clear();
+    _localTaskList.addAll((await TaskStorage.getAllTask()).reversed.toList());
+    setState(() {});
     if (ApiService.userType != "guest") {
-      print(ApiService.userType);
       final remoteTask = await Worker.syncTask();
       if (remoteTask != null) {
-        _taskList.addAll(remoteTask);
+        _remoteTaskList.clear();
+        _remoteTaskList.addAll(remoteTask);
       }
     }
     if (!mounted) return;
