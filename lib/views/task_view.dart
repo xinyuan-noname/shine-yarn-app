@@ -8,13 +8,7 @@ import 'package:shine/theme.dart';
 class TaskView extends StatelessWidget {
   final RefreshCallback onRefresh;
   final List<TaskStorageData> taskList;
-  final VoidCallback? deleteCallback;
-  const TaskView({
-    super.key,
-    required this.onRefresh,
-    required this.taskList,
-    this.deleteCallback,
-  });
+  const TaskView({super.key, required this.onRefresh, required this.taskList});
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +31,7 @@ class TaskView extends StatelessWidget {
             );
           }
           final data = taskList[index];
-          return TaskCard(taskData: data, deleteCallback: deleteCallback);
+          return TaskCard(taskData: data);
         },
       ),
     );

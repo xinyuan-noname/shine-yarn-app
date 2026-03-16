@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+const double largeIconSize = 48;
+
 const bgColorLight = Color.fromRGBO(230, 240, 255, 1);
 const bgColorLight80 = Color.fromRGBO(230, 240, 255, 0.80);
 const bgColorLight60 = Color.fromRGBO(230, 240, 255, 0.60);

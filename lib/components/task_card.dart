@@ -12,21 +12,17 @@ import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/time.dart';
 
-const double _largeIconSize = 48;
-
 class TaskCard extends StatelessWidget {
   final GestureTapCallback? onPress;
   final GestureLongPressCallback? onLongPress;
   final VoidCallback? onDelete;
   final TaskStorageData taskData;
-  final VoidCallback? deleteCallback;
   const TaskCard({
     super.key,
     this.onPress,
     this.onLongPress,
     required this.taskData,
     this.onDelete,
-    this.deleteCallback,
   });
 
   @override
@@ -186,18 +182,18 @@ class TaskCard extends StatelessWidget {
     if (taskData is CheckTaskStorageData) {
       return Icon(
         Icons.checklist_rounded,
-        size: _largeIconSize,
+        size: largeIconSize,
         color: mainColorPurple,
       );
     }
     if (taskData is UploadTaskStorageData) {
       return Icon(
         Icons.upload_rounded,
-        size: _largeIconSize,
+        size: largeIconSize,
         color: mainColorRed,
       );
     }
-    return Icon(Icons.task, size: _largeIconSize);
+    return Icon(Icons.task, size: largeIconSize);
   }
 
   Widget _buildTaskTag() {
@@ -288,7 +284,7 @@ class TaskCard extends StatelessWidget {
             fontSize: 8,
             color: mainColorRed,
             overflow: TextOverflow.ellipsis,
-            fontWeight: FontWeight.bold
+            fontWeight: FontWeight.bold,
           ),
           maxLines: 2,
         ),

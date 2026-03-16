@@ -21,6 +21,7 @@ class UploadTaskStorageData extends TaskStorageData {
   final String mimetype;
   final String taskType;
   final String format;
+  final String source;
 
   const UploadTaskStorageData({
     required super.id,
@@ -32,6 +33,7 @@ class UploadTaskStorageData extends TaskStorageData {
     required this.mimetype,
     required this.taskType,
     required this.format,
+    required this.source,
   });
 
   factory UploadTaskStorageData.fromMap(Map<String, dynamic> map) {
@@ -46,6 +48,7 @@ class UploadTaskStorageData extends TaskStorageData {
       createdAt: DateTime.fromMillisecondsSinceEpoch(
         map["createdAt"] ?? map["startedAt"],
       ),
+      source: map["source"] ?? "",
     );
   }
 }
