@@ -143,22 +143,41 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
       _taskNameController.text =
           "${_startedAt.year}-${_startedAt.month}-${_startedAt.day}-${_startedAt.hour}-${_startedAt.minute}任务";
     }
-    return await ApiTask.createTask(
-      title: _taskNameController.text,
-      startedAt: _startedAt,
-      endedAt: _finisheddAt,
-      subjectName: _subjectController.text,
-      mimetype: _selectedMimeType,
-      taskType: "upload",
-      format: _nameNodeList
-          .map((node) {
-            if (node.isText) {
-              return node.controller!.text;
-            }
-            return "%tag[${node.value}]%";
-          })
-          .join(""),
+
+    _message.value = "正在上传任务中";
+    showMessageDialog(context, _message);
+    await sendRequestAndChangeMessage(
+      _message,
+      request: Future(() async {
+        final result = await ApiTask.createUploadTask(
+          title: _taskNameController.text,
+          startedAt: _startedAt,
+          endedAt: _finisheddAt,
+          subjectName: _subjectController.text,
+          mimetype: _selectedMimeType,
+          format: _nameNodeList
+              .map((node) {
+                if (node.isText) {
+                  return node.controller!.text;
+                }
+                return "%tag[${node.value}]%";
+              })
+              .join(""),
+          source: "admin",
+        );
+        if (result is String) return result;
+        if (result is int) {
+          _taskId = result;
+        }
+        return null;
+      }),
+      initMessageList: [],
+      messageList: ["正在上传中.", "正在上传中..", "正在上传中..."],
+      successMessage: "上传成功",
+      successMessageDuration: Duration(milliseconds: 300),
+      failMessageDuration: Duration(milliseconds: 800),
     );
+    Navigator.of(context).pop();
   }
 
   Future _updateTask() async {
@@ -167,23 +186,36 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
       _taskNameController.text =
           "${_startedAt.year}-${_startedAt.month}-${_startedAt.day}-${_startedAt.hour}-${_startedAt.minute}任务";
     }
-    return await ApiTask.updateTask(
-      title: _taskNameController.text,
-      startedAt: _startedAt,
-      endedAt: _finisheddAt,
-      subjectName: _subjectController.text,
-      mimetype: _selectedMimeType,
-      taskType: "upload",
-      taskId: _taskId!,
-      format: _nameNodeList
-          .map((node) {
-            if (node.isText) {
-              return node.controller!.text;
-            }
-            return "%tag[${node.value}]%";
-          })
-          .join(""),
+    _message.value = "正在更改任务中";
+    showMessageDialog(context, _message);
+    await sendRequestAndChangeMessage(
+      _message,
+      request: Future(() async {
+        return await ApiTask.updateTask(
+          title: _taskNameController.text,
+          startedAt: _startedAt,
+          endedAt: _finisheddAt,
+          subjectName: _subjectController.text,
+          mimetype: _selectedMimeType,
+          taskType: "upload",
+          taskId: _taskId!,
+          format: _nameNodeList
+              .map((node) {
+                if (node.isText) {
+                  return node.controller!.text;
+                }
+                return "%tag[${node.value}]%";
+              })
+              .join(""),
+        );
+      }),
+      initMessageList: [],
+      messageList: ["正在更改中.", "正在更改中..", "正在更改中..."],
+      successMessage: "更改成功",
+      successMessageDuration: Duration(milliseconds: 300),
+      failMessageDuration: Duration(milliseconds: 800),
     );
+    Navigator.of(context).pop();
   }
 
   @override
@@ -438,19 +470,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
   }
 
   String _getDateInfoStr(DateTime d) {
-    final dayDistance = DateTime(
-      d.year,
-      d.month,
-      d.day,
-    ).difference(getTodayStartMoment()).inDays;
-    String result = "";
-    if (dayDistance > 0) {
-      result += "$dayDistance天后";
-    } else if (dayDistance < 0) {
-      result += "${-dayDistance}天前";
-    } else {
-      result += "今天";
-    }
+    String result = getDayDifferenceString(d);
     result += "(第${_getSemesterWeek(d)}周-星期${getCnWeekDayName(d)})";
     return result;
   }
@@ -471,21 +491,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
           shadowColor: Colors.transparent,
         ),
         onPressed: () async {
-          _message.value = "正在更改任务中";
-          showMessageDialog(context, _message);
-          await sendRequestAndChangeMessage(
-            _message,
-            request: Future(() async {
-              await _updateTask();
-              return null;
-            }),
-            initMessageList: [],
-            messageList: ["正在更改中.", "正在更改中..", "正在更改中..."],
-            successMessage: "更改成功",
-            successMessageDuration: Duration(milliseconds: 300),
-            failMessageDuration: Duration(milliseconds: 800),
-          );
-          Navigator.of(context).pop();
+          await _updateTask();
           setState(() {});
         },
         child: Row(
@@ -518,25 +524,8 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
           shadowColor: Colors.transparent,
         ),
         onPressed: () async {
-          _message.value = "正在上传任务中";
-          showMessageDialog(context, _message);
-          await sendRequestAndChangeMessage(
-            _message,
-            request: Future(() async {
-              final result = await _createTask();
-              if (result is String) return result;
-              if (result is int) {
-                _taskId = result;
-              }
-              return null;
-            }),
-            initMessageList: [],
-            messageList: ["正在上传中.", "正在上传中..", "正在上传中..."],
-            successMessage: "上传成功",
-            successMessageDuration: Duration(milliseconds: 300),
-            failMessageDuration: Duration(milliseconds: 800),
-          );
-          Navigator.of(context).pop();
+          _createTask();
+          setState(() {});
         },
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -5,9 +5,26 @@ DateTime getTodayStartMoment() {
   return DateTime(now.year, now.month, now.day);
 }
 
+String getDayDifferenceString(DateTime d) {
+  final dayDistance = DateTime(
+    d.year,
+    d.month,
+    d.day,
+  ).difference(getTodayStartMoment()).inDays;
+  String result = "";
+  if (dayDistance > 0) {
+    result += "$dayDistance天后";
+  } else if (dayDistance < 0) {
+    result += "${-dayDistance}天前";
+  } else {
+    result += "今天";
+  }
+  return result;
+}
+
 String getLocalTimeString(DateTime time) {
   try {
-    return time.toLocal().toString();
+    return time.toLocal().toString().split(".")[0];
   } catch (e) {
     return time.toString();
   }

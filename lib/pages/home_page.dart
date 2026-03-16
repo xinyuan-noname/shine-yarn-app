@@ -85,11 +85,11 @@ class _HomePageState extends State<HomePage> {
     _subscription = EventBus.stream.listen((event) {
       _updateMessageData();
     });
-    await _loadMine();
     await DatabaseProvider.init();
-    await _updateAllData();
-    await _startWs();
-    await _prepareData();
+    _updateAllData();
+    _loadMine();
+    _startWs();
+    _prepareData();
     Worker.startSystemNotification();
   }
 

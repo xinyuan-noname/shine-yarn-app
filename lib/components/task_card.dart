@@ -190,6 +190,13 @@ class TaskCard extends StatelessWidget {
         color: mainColorPurple,
       );
     }
+    if (taskData is UploadTaskStorageData) {
+      return Icon(
+        Icons.upload_rounded,
+        size: _largeIconSize,
+        color: mainColorRed,
+      );
+    }
     return Icon(Icons.task, size: _largeIconSize);
   }
 
@@ -268,6 +275,32 @@ class TaskCard extends StatelessWidget {
             fontSize: 14,
             color: bgColorLight,
           ),
+        ),
+      ]);
+    }
+    if (taskData is UploadTaskStorageData) {
+      final data = taskData as UploadTaskStorageData;
+      result.addAll([
+        Text(
+          "科目：${data.subjectName}",
+          style: const TextStyle(
+            fontFamily: 'SmileySans',
+            fontSize: 8,
+            color: mainColorRed,
+            overflow: TextOverflow.ellipsis,
+            fontWeight: FontWeight.bold
+          ),
+          maxLines: 2,
+        ),
+        Text(
+          "截止时间：${getLocalTimeString(data.endedAt)}(${getDayDifferenceString(data.endedAt)})",
+          style: const TextStyle(
+            fontFamily: 'SmileySans',
+            fontSize: 8,
+            color: mainColorPurple,
+            overflow: TextOverflow.ellipsis,
+          ),
+          maxLines: 2,
         ),
       ]);
     }

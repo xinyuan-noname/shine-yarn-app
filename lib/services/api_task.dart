@@ -3,6 +3,28 @@ import 'package:shine/services/api.dart';
 import 'package:shine/services/dio.dart';
 
 class ApiTask {
+  static Future createUploadTask({
+    required String title,
+    required DateTime startedAt,
+    required DateTime endedAt,
+    required String subjectName,
+    required String mimetype,
+    required String format,
+    required String source,
+  }) async {
+    return ApiTask.createTask(
+      title: title,
+      startedAt: startedAt,
+      endedAt: endedAt,
+      subjectName: subjectName,
+      mimetype: mimetype,
+      taskType: "upload",
+      format: format,
+      notice: 1,
+      source: source,
+    );
+  }
+
   static Future createTask({
     required String title,
     required DateTime startedAt,
@@ -11,6 +33,8 @@ class ApiTask {
     required String mimetype,
     required String taskType,
     required String format,
+    required int notice,
+    required String source,
   }) async {
     try {
       final response = await dio.post(
@@ -23,6 +47,8 @@ class ApiTask {
           "mimetype": mimetype,
           "taskType": taskType,
           "format": format,
+          "notice": notice,
+          "source": source,
         },
       );
       return response.data;
