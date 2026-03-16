@@ -7,11 +7,11 @@ import 'package:shine/components/line.dart';
 import 'package:shine/database/database.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
-import 'package:shine/services/api_schedule.dart';
 import 'package:shine/services/event.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/message_storage.dart';
 import 'package:shine/storage/semester_storage.dart';
+import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/course.dart';
@@ -86,8 +86,9 @@ class _HomePageState extends State<HomePage> {
       _updateMessageData();
     });
     await DatabaseProvider.init();
-    _updateAllData();
     _loadMine();
+    _loadScheduleData();
+    _updateAllData();
     _startWs();
     _prepareData();
     Worker.startSystemNotification();
@@ -167,6 +168,13 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
+  Future<void> _loadScheduleData() async {
+    _subjectInfo.clear();
+    _subjectInfo.addAll(await SubjectStorage.getCurrentSubjectInfo());
+    _scheduleDataList.clear();
+    _scheduleDataList.addAll(await SubjectStorage.getCurrentScheduleInfo());
+  }
+
   Future<void> _updateScheduleData() async {
     if (!mounted) return;
     final subjectInfoResult = await Worker.syncSubjects();
@@ -174,14 +182,10 @@ class _HomePageState extends State<HomePage> {
       _subjectInfo.clear();
       _subjectInfo.addAll(subjectInfoResult);
     }
-    final scheduleResult = await ApiSchedule.getCurrentSchedule();
-    if (scheduleResult is List) {
+    final scheduleResult = await Worker.syncSchedule();
+    if (scheduleResult is List<ScheduleData>) {
       _scheduleDataList.clear();
-      _scheduleDataList.addAll(
-        scheduleResult.whereType<Map<String, dynamic>>().map((json) {
-          return ScheduleData.fromJson(json);
-        }).toList(),
-      );
+      _scheduleDataList.addAll(scheduleResult);
     }
     if (!mounted) return;
     setState(() {});

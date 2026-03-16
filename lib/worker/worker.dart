@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/services/api_admin.dart';
+import 'package:shine/services/api_schedule.dart';
 import 'package:shine/services/api_semesters.dart';
 import 'package:shine/services/api_subjects.dart';
 import 'package:shine/services/api_task.dart';
@@ -180,9 +182,19 @@ class Worker {
       final list = subjectInfoResult.whereType<Map<String, dynamic>>().map((e) {
         return CourseData.fromJson(e);
       }).toList();
-      await SubjectStorage.setCurrentSemesterName(
-        list.map((e) => e.subjectName).toList(),
-      );
+      SubjectStorage.setCurrentSubjectInfo(jsonEncode(subjectInfoResult));
+      return list;
+    }
+    return null;
+  }
+
+  static Future<List<ScheduleData>?> syncSchedule() async {
+    final scheduleResult = await ApiSchedule.getCurrentSchedule();
+    if (scheduleResult is List) {
+      final list = scheduleResult.whereType<Map<String, dynamic>>().map((e) {
+        return ScheduleData.fromJson(e);
+      }).toList();
+      SubjectStorage.setCurrentScheduleInfo(jsonEncode(scheduleResult));
       return list;
     }
     return null;

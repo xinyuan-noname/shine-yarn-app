@@ -105,7 +105,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
 
   Future _init() async {
     _subjectNameList.addAll(
-      await SubjectStorage.getCurrentSemesterName() ?? [],
+      await SubjectStorage.getCurrentSubjectName(),
     );
     _username = await ProfileStorage.getName();
     _major = await ProfileStorage.getMajor();
