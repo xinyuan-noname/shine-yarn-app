@@ -87,6 +87,7 @@ class _HomePageState extends State<HomePage> {
     });
     await DatabaseProvider.init();
     _loadMine();
+    _loadSemesterData();
     _loadScheduleData();
     _updateAllData();
     _startWs();
@@ -154,9 +155,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
-  Future<void> _updateSemesterData() async {
-    if (!mounted) return;
-    await Worker.syncSemester();
+  Future<void> _loadSemesterData() async {
     _semesterName = await SemesterStorage.getCurrentSemesterName();
     _semesterStartedAt = await SemesterStorage.getCurrentSemesterStartedAt();
     final r = await SemesterStorage.getCurrentSemesterPhaseList();
@@ -164,6 +163,12 @@ class _HomePageState extends State<HomePage> {
       _semesterPhaseList.clear();
       _semesterPhaseList.addAll(r);
     }
+  }
+
+  Future<void> _updateSemesterData() async {
+    if (!mounted) return;
+    await Worker.syncSemester();
+    await _loadSemesterData();
     if (!mounted) return;
     setState(() {});
   }
@@ -194,10 +199,10 @@ class _HomePageState extends State<HomePage> {
   Future<void> _updateAllData() async {
     _updateTaskData();
     _updateMessageData();
+    await _updateSemesterData();
     await _updateScheduleData();
     await _updateMine();
     await _updateUserInfo();
-    await _updateSemesterData();
   }
 
   @override
