@@ -7,6 +7,7 @@ import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/task.dart';
 import 'package:shine/components/toast.dart';
+import 'package:shine/extensions/list.dart';
 import 'package:shine/services/api_task.dart';
 import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/profile_storage.dart';
@@ -15,6 +16,7 @@ import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/debouncer.dart';
+import 'package:shine/utils/file.dart';
 import 'package:shine/utils/image.dart';
 import 'package:shine/utils/server.dart';
 import 'package:shine/utils/share.dart';
@@ -380,9 +382,9 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                   child: Text("excel表格"),
                 ),
-                DropdownMenuItem(value: "image", child: Text("图片")),
-                DropdownMenuItem(value: "image/jpeg", child: Text("jpg图片")),
-                DropdownMenuItem(value: "image/png", child: Text("png图片")),
+                // DropdownMenuItem(value: "image", child: Text("图片")),
+                // DropdownMenuItem(value: "image/jpeg", child: Text("jpg图片")),
+                // DropdownMenuItem(value: "image/png", child: Text("png图片")),
                 DropdownMenuItem(value: "video/mp4", child: Text("mp4视频")),
                 DropdownMenuItem(
                   value: "application/zip",
@@ -836,32 +838,8 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
         }
       }
     }
-    switch (_selectedMimeType) {
-      case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-        result += ".docx";
-        break;
-      case "application/pdf":
-        result += ".pdf";
-        break;
-      case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-        result += ".xlsx";
-        break;
-      case "image/jpeg":
-        result += ".jpg";
-        break;
-      case "image/png":
-        result += ".png";
-        break;
-      case "video/mp4":
-        result += ".mp4";
-        break;
-      case "application/zip":
-        result += ".zip";
-        break;
-      default:
-        result += ".*";
-        break;
-    }
+    result +=
+        getExtensionListFromMimeType(_selectedMimeType)?.safeFirst ?? ".*";
     return result;
   }
 

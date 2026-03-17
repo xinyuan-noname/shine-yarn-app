@@ -1,9 +1,13 @@
+import 'package:file_icon/file_icon.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/extensions/list.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/debouncer.dart';
+import 'package:shine/utils/file.dart';
 import 'package:shine/utils/time.dart';
 
 class NoticeUploadPage extends StatefulWidget {
@@ -20,8 +24,13 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
   String _username = "";
   String _major = "";
   String _academy = "";
+  PlatformFile? _selectedFile;
   final _controller = TextEditingController(text: "");
   final _fileNameDebouncer = Debouncer();
+  final _filePickerDebouncer = Debouncer();
+  RegExp? _fileNamePattern;
+  String? _defaultFileName;
+  bool _fileNameEditable = false;
   @override
   void initState() {
     super.initState();
@@ -35,27 +44,23 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
   }
 
   _init() async {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       _handleArgs();
+      await _parseFormat();
+      if (_defaultFileName is String) {
+        _controller.text = _defaultFileName!;
+      }
     });
-    await _parseFormat();
-    if (_defaultFileName is String) {
-      _controller.text = _defaultFileName!;
-    }
   }
 
-  Future<void> _handleArgs() async {
+  void _handleArgs() {
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is NoticeUploadPageArgs) {
       _data = args.data;
       setState(() {});
     }
-    _parseFormat();
   }
-
-  RegExp? _fileNamePattern;
-  String? _defaultFileName;
 
   Future<void> _parseFormat() async {
     if (_data == null) return;
@@ -72,7 +77,6 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
       final tagKey = match.group(1);
       final textContent = match.group(2);
       if (tagKey is String) {
-        result.add(tagKey);
         switch (tagKey) {
           case "academy":
             result.add(RegExp.escape(_academy));
@@ -96,6 +100,8 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
             break;
           case "free":
             result.add('.*?');
+            rawResult.add("xxx");
+            _fileNameEditable = true;
             break;
         }
       }
@@ -103,6 +109,15 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
         result.add(RegExp.escape(textContent));
         rawResult.add(textContent);
       }
+    }
+    result.add(r"\..*");
+    final recommondExt = getExtensionListFromMimeType(
+      _data!.mimetype,
+    )?.safeFirst;
+    if (recommondExt == null) {
+      rawResult.add(".*");
+    } else {
+      rawResult.add(recommondExt);
     }
     _fileNamePattern = RegExp(result.join(""));
     _defaultFileName = rawResult.join("");
@@ -158,7 +173,7 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
           _data!.title,
           style: const TextStyle(fontFamily: 'SmileySans', fontSize: 24),
         ),
-        bottomLineLarge,
+        bottomLine,
         Text(
           "科目：${_data?.subjectName}",
           style: const TextStyle(
@@ -167,6 +182,7 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
             color: mainColorRed,
           ),
         ),
+        SizedBox(height: 5),
         Text(
           "截止时间：${getLocalTimeString(_data!.endedAt)}(${getDayDifferenceString(_data!.endedAt)})",
           style: const TextStyle(
@@ -175,18 +191,120 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
             color: mainColorPurple,
           ),
         ),
-        bottomLine,
-        TextField(
-          controller: _controller,
-          onChanged: (value) {
-            if (_fileNamePattern != null) {
-              _fileNameDebouncer.run(() {
-                if (!_fileNamePattern!.hasMatch(_controller.text)) {
-                  _controller.text = _defaultFileName ?? "";
+        SizedBox(height: 5),
+        bottomLineSmall,
+        Text(
+          "文件名：",
+          style: const TextStyle(fontFamily: 'SmileySans', fontSize: 16),
+        ),
+        Transform.translate(
+          offset: Offset(-5, 0),
+          child: TextField(
+            maxLines: 2,
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.all(0),
+              focusedBorder: OutlineInputBorder(),
+            ),
+            style: const TextStyle(
+              fontFamily: 'SmileySans',
+              fontSize: 16,
+              color: Colors.grey,
+            ),
+            controller: _controller,
+            enabled: _fileNameEditable,
+            onChanged: (value) {
+              if (_fileNamePattern != null) {
+                _fileNameDebouncer.run(() {
+                  if (!_fileNamePattern!.hasMatch(_controller.text)) {
+                    _controller.text = _defaultFileName ?? "";
+                  }
+                });
+              }
+            },
+          ),
+        ),
+        bottomLineSmall,
+        SizedBox(height: 5),
+        if (_selectedFile != null)
+          Container(
+            padding: EdgeInsets.all(5),
+            margin: EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              gradient: whiteLinearGradient,
+              border: Border.all(color: mainColorGrey40),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: mainColorGrey20),
+                  ),
+                  child: FileIcon(_controller.text, size: hugeIconSize),
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '文件名：${_controller.text}',
+                        style: const TextStyle(
+                          fontFamily: 'SmileySans',
+                          fontSize: 12,
+                          overflow: TextOverflow.ellipsis
+                        ),
+                      ),
+                      Text(
+                        '文件大小：${formatBytes(_selectedFile?.bytes?.length)}',
+                        style: const TextStyle(
+                          fontFamily: 'SmileySans',
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        InkWell(
+          onTap: () {
+            _filePickerDebouncer.run(() async {
+              if (_data == null) return;
+              final exts = getExtensionListFromMimeType(_data!.mimetype);
+              PlatformFile? file = exts == null
+                  ? await pickFileAny()
+                  : await pickFile(exts: exts);
+              if (file == null || file.bytes == null) return;
+              _selectedFile = file;
+              setState(() {});
+              if (file.extension is String) {
+                if (_defaultFileName is String) {
+                  final pp = _defaultFileName?.lastIndexOf(".");
+                  if (pp != -1) {
+                    _defaultFileName =
+                        '${_defaultFileName?.substring(0, pp)}.${file.extension}';
+                  }
                 }
-              });
-            }
+                final p = _controller.text.lastIndexOf('.');
+                if (p != -1) {
+                  _controller.text =
+                      '${_controller.text.substring(0, p)}.${file.extension}';
+                }
+              }
+            });
           },
+          child: Container(
+            height: 80,
+            width: 80,
+            decoration: BoxDecoration(
+              border: Border.all(color: mainColorGrey20),
+              gradient: whiteLinearGradient,
+            ),
+            child: Icon(Icons.add, size: largeIconSize, color: Colors.grey),
+          ),
         ),
       ],
     );

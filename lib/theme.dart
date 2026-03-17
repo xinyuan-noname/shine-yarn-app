@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 const double largeIconSize = 48;
+const double hugeIconSize = 72;
 
 const bgColorLight = Color.fromRGBO(230, 240, 255, 1);
 const bgColorLight80 = Color.fromRGBO(230, 240, 255, 0.80);
@@ -36,7 +37,11 @@ const mainColorPurple50 = Color.fromARGB(128, 167, 157, 255);
 const mainColorPurple40 = Color.fromARGB(102, 167, 157, 255);
 const mainColorPurple30 = Color.fromARGB(77, 167, 157, 255);
 
-const mainColorGrey20 = Color.fromRGBO(158, 158, 158, 0.2);
+const mainColorGrey = Color.fromARGB(255, 158, 158, 158);
+const mainColorGrey80 = Color.fromARGB(204, 158, 158, 158);
+const mainColorGrey60 = Color.fromARGB(153, 158, 158, 158);
+const mainColorGrey40 = Color.fromARGB(102, 158, 158, 158);
+const mainColorGrey20 = Color.fromARGB(51, 158, 158, 158);
 
 const mainColorRed = Color.fromRGBO(255, 83, 83, 1);
 const mainColorRed70 = Color.fromARGB(179, 255, 83, 83);
@@ -120,11 +125,11 @@ const TextStyle purpleButtonStyle = TextStyle(
 );
 const TextStyle textFieldStyle = TextStyle(
   fontFamily: 'SmileySans',
-  fontSize: 19.2,
+  fontSize: 19,
 );
 const TextStyle textFieldHintStyle = TextStyle(
   fontFamily: 'SmileySans',
-  fontSize: 19.2,
+  fontSize: 19,
   color: Colors.grey,
 );
 
