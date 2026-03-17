@@ -156,6 +156,7 @@ class _HomePageState extends State<HomePage> {
     if (taskNoticeResult is List<TaskStorageData>) {
       _taskNoticeList.clear();
       _taskNoticeList.addAll(taskNoticeResult);
+      setState(() {});
     }
   }
 

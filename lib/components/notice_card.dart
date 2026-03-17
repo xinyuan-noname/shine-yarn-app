@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/pages/notice_upload_page.dart';
+import 'package:shine/routes.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/time.dart';
@@ -22,11 +24,11 @@ class NoticeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final onPressMap = <Type, GestureTapCallback>{
       UploadTaskStorageData: () async {
-        // final data = taskData as UploadTaskStorageData;
-        // await globalNavigatorKey.currentState?.pushNamed(
-        //   '/task/upload',
-        //   // arguments: TaskUploadPageArgs(data: data),
-        // );
+        final data = taskData as UploadTaskStorageData;
+        await globalNavigatorKey.currentState?.pushNamed(
+          '/notice/upload',
+          arguments: NoticeUploadPageArgs(data: data),
+        );
       },
     };
     return Card(

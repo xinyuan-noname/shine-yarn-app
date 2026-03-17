@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shine/pages/admin_page.dart';
 import 'package:shine/pages/home_page.dart';
 import 'package:shine/pages/login_page.dart';
+import 'package:shine/pages/notice_upload_page.dart';
 import 'package:shine/pages/password_page.dart';
 import 'package:shine/pages/profile_page.dart';
 import 'package:shine/pages/register_page.dart';
@@ -25,5 +26,6 @@ final Map<String, WidgetBuilder> appRouters = {
   "/task/draw": (_) => TaskDrawPage(),
   "/task/vote": (_) => TaskVotePage(),
   "/task/upload": (_) => TaskUploadPage(),
+  "/notice/upload": (_) => NoticeUploadPage(),
 };
 final globalNavigatorKey = GlobalKey<NavigatorState>();

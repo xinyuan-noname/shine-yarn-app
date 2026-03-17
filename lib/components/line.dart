@@ -22,7 +22,7 @@ final bottomLineLarge = PreferredSize(
   preferredSize: Size.fromHeight(0),
   child: Container(
     color: mainColorGrey20,
-    height: 6,
+    height: 4,
     margin: EdgeInsets.only(bottom: 1),
   ),
 );

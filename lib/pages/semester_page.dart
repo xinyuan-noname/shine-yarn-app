@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/services/api_semesters.dart';
