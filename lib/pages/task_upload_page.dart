@@ -104,9 +104,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
   }
 
   Future _init() async {
-    _subjectNameList.addAll(
-      await SubjectStorage.getCurrentSubjectName(),
-    );
+    _subjectNameList.addAll(await SubjectStorage.getCurrentSubjectName());
     _username = await ProfileStorage.getName();
     _major = await ProfileStorage.getMajor();
     _class = await ProfileStorage.getClass();
@@ -767,8 +765,6 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
     for (final match in matches) {
       final tagKey = match.group(1);
       final textContent = match.group(2);
-      print('$tagKey');
-      print('$textContent');
 
       if (tagKey != null) {
         final formationEntry = _formationInfo.firstWhere(
