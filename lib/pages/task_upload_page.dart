@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:shine/components/custom_back_handler.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/task.dart';
@@ -177,6 +176,11 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
       failMessageDuration: Duration(milliseconds: 800),
     );
     Navigator.of(context).pop();
+    await WsTask.sendRemind(
+      msg: "有新作业“${_taskNameController.text}”发布，请尽快完成",
+      targetList: await ProfileStorage.getUserIdList(),
+      level: 6,
+    );
   }
 
   Future _updateTask() async {
@@ -215,49 +219,44 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
       failMessageDuration: Duration(milliseconds: 800),
     );
     Navigator.of(context).pop();
+    await WsTask.sendRemind(
+      msg: "作业“${_taskNameController.text}”设置有改动，请注意",
+      targetList: await ProfileStorage.getUserIdList(),
+      level: 5,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return CustomBackHandler(
-      onWillPop: () async {
-        if (_taskId == null) {
-          await _createTask();
-        } else {
-          await _updateTask();
-        }
-        return true;
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
       },
-      child: GestureDetector(
-        onTap: () {
-          FocusScope.of(context).unfocus();
-        },
-        child: RepaintBoundary(
-          key: _key,
-          child: Scaffold(
-            resizeToAvoidBottomInset: false,
-            appBar: _buildAppBar(),
-            body: DefaultTabController(
-              length: 2,
-              child: SafeArea(
-                child: Column(
-                  children: [
-                    TabBar(
-                      tabs: [Text("提交设置"), Text("完成情况")],
-                      labelStyle: tabLabelStyle,
-                      padding: EdgeInsets.only(top: 2),
+      child: RepaintBoundary(
+        key: _key,
+        child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          appBar: _buildAppBar(),
+          body: DefaultTabController(
+            length: 2,
+            child: SafeArea(
+              child: Column(
+                children: [
+                  TabBar(
+                    tabs: [Text("提交设置"), Text("完成情况")],
+                    labelStyle: tabLabelStyle,
+                    padding: EdgeInsets.only(top: 2),
+                  ),
+                  Expanded(
+                    child: TabBarView(
+                      children: [_buildUploadWidget(), Container()],
                     ),
-                    Expanded(
-                      child: TabBarView(
-                        children: [_buildUploadWidget(), Container()],
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            bottomNavigationBar: _buildBottomBar(),
           ),
+          bottomNavigationBar: _buildBottomBar(),
         ),
       ),
     );
@@ -719,7 +718,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                   await WsTask.sendRemind(
                     msg: result,
                     targetList: await ProfileStorage.getUserIdList(),
-                    level: 0,
+                    level: 5,
                   );
                   showToast(msg: "发送成功");
                 } catch (err) {

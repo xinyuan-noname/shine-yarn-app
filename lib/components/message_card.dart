@@ -119,7 +119,7 @@ class MessageCard extends StatelessWidget {
   Widget _buildUsername() {
     return Text(
       messageData.sourceUsername,
-      style: const TextStyle(fontFamily: 'SmileySans', fontSize: 22),
+      style: const TextStyle(fontFamily: 'SmileySans', fontSize: 20),
     );
   }
 
@@ -128,7 +128,7 @@ class MessageCard extends StatelessWidget {
       messageData.content,
       style: TextStyle(
         fontFamily: 'SmileySans',
-        fontSize: 19,
+        fontSize: 16,
         color: _levelColor.elementAtOrNull(messageData.level) ?? Colors.grey,
       ),
     );

@@ -37,7 +37,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<TaskStorageData> get _taskList =>
-      _localTaskList.toList()..addAll(_remoteTaskList);
+       _remoteTaskList.toList()..addAll(_localTaskList);
   final List<TaskStorageData> _localTaskList = [];
   final List<TaskStorageData> _remoteTaskList = [];
   final List<TaskStorageData> _taskNoticeList = [];

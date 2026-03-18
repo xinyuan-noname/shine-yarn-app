@@ -442,7 +442,7 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
                   await WsTask.sendRemind(
                     msg: result,
                     targetList: _selectedIdList,
-                    level: 0,
+                    level: 4,
                   );
                   showToast(msg: "发送成功");
                 } catch (err) {

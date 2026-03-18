@@ -236,7 +236,7 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
                         await WsTask.sendRemind(
                           msg: result,
                           targetList: list,
-                          level: 0,
+                          level: 4,
                         );
                         showToast(msg: "发送成功");
                       } catch (err) {
