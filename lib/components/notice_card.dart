@@ -31,7 +31,7 @@ class NoticeCard extends StatelessWidget {
         final data = taskData as UploadTaskStorageData;
         await globalNavigatorKey.currentState?.pushNamed(
           '/notice/upload',
-          arguments: NoticeUploadPageArgs(data: data),
+          arguments: NoticeUploadPageArgs(data: data, uploadData: uploadData),
         );
       },
     };
@@ -132,11 +132,33 @@ class NoticeCard extends StatelessWidget {
     final List<Widget> result = [];
     if (taskData is UploadTaskStorageData) {
       final data = taskData as UploadTaskStorageData;
+      final finished = uploadData != null;
       result.addAll([
-        Text(
-          data.title,
-          style: const TextStyle(fontFamily: 'SmileySans', fontSize: 16),
-          overflow: TextOverflow.ellipsis,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              data.title,
+              style: const TextStyle(fontFamily: 'SmileySans', fontSize: 16),
+              overflow: TextOverflow.ellipsis,
+            ),
+            Container(
+              padding: EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                gradient: finished ? redLinearGradient : greyLinearGradient,
+                boxShadow: [BoxShadow(color: mainColorPurple, blurRadius: 5)],
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Text(
+                finished ? "已完成" : "未完成",
+                style: const TextStyle(
+                  fontFamily: 'SmileySans',
+                  fontSize: 12,
+                  color: bgColorLight,
+                ),
+              ),
+            ),
+          ],
         ),
         Text(
           "科目：${data.subjectName}",

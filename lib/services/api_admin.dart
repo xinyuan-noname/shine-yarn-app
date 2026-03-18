@@ -156,7 +156,6 @@ class ApiAdmin {
     } on DioException catch (err) {
       return err.message ?? "删除用户出错";
     } catch (err) {
-      print(err);
       return "删除用户出错";
     }
   }

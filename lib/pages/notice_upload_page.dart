@@ -12,6 +12,7 @@ import 'package:shine/utils/debouncer.dart';
 import 'package:shine/utils/file.dart';
 import 'package:shine/utils/server.dart';
 import 'package:shine/utils/time.dart';
+import 'package:shine/utils/upload.dart';
 
 class NoticeUploadPage extends StatefulWidget {
   const NoticeUploadPage({super.key});
@@ -22,6 +23,7 @@ class NoticeUploadPage extends StatefulWidget {
 
 class _NoticeUploadPageState extends State<NoticeUploadPage> {
   UploadTaskStorageData? _data;
+  UploadData? _uploadData;
   String _id = "";
   String _class = "";
   String _username = "";
@@ -62,6 +64,7 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is NoticeUploadPageArgs) {
       _data = args.data;
+      _uploadData = args.uploadData;
       setState(() {});
     }
   }
@@ -229,92 +232,115 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
         ),
         bottomLineSmall,
         SizedBox(height: 5),
-        if (_selectedFile != null)
-          Container(
-            padding: EdgeInsets.all(5),
-            margin: EdgeInsets.symmetric(vertical: 10),
-            decoration: BoxDecoration(
-              gradient: whiteLinearGradient,
-              border: Border.all(color: mainColorGrey40),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: mainColorGrey20),
-                  ),
-                  child: FileIcon(_controller.text, size: hugeIconSize),
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '文件名：${_controller.text}',
-                        style: const TextStyle(
-                          fontFamily: 'SmileySans',
-                          fontSize: 12,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Text(
-                        '文件大小：${formatBytes(_selectedFile?.bytes?.length)}',
-                        style: const TextStyle(
-                          fontFamily: 'SmileySans',
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+        _buildFilePart(),
+      ],
+    );
+  }
+
+  Widget _buildFilePart() {
+    final List<Widget> children = [];
+    String? fileName;
+    int? fileSize;
+    if (_uploadData != null) {
+      fileName = _uploadData!.uploadFileName;
+    } else if (_selectedFile != null) {
+      fileName = _controller.text;
+      fileSize = _selectedFile?.bytes?.length;
+    }
+    if (fileName is String) {
+      children.add(
+        Container(
+          padding: EdgeInsets.all(5),
+          margin: EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            gradient: whiteLinearGradient,
+            border: Border.all(color: mainColorGrey40),
           ),
-        InkWell(
-          onTap: () {
-            _filePickerDebouncer.run(() async {
-              if (_data == null) return;
-              final exts = getExtensionListFromMimeType(_data!.mimetype);
-              PlatformFile? file = exts == null
-                  ? await pickFileAny()
-                  : await pickFile(exts: exts);
-              if (file == null || file.bytes == null) return;
-              _selectedFile = file;
-              setState(() {});
-              if (file.extension is String) {
-                if (_defaultFileName is String) {
-                  final pp = _defaultFileName?.lastIndexOf(".");
-                  if (pp != -1) {
-                    _defaultFileName =
-                        '${_defaultFileName?.substring(0, pp)}.${file.extension}';
-                  }
-                }
-                final p = _controller.text.lastIndexOf('.');
-                if (p != -1) {
-                  _controller.text =
-                      '${_controller.text.substring(0, p)}.${file.extension}';
-                }
-              }
-            });
-          },
-          child: Container(
-            height: 80,
-            width: 80,
-            decoration: BoxDecoration(
-              border: Border.all(color: mainColorGrey20),
-              gradient: whiteLinearGradient,
-            ),
-            child: Icon(
-              _selectedFile == null ? Icons.add : Icons.sync,
-              size: largeIconSize,
-              color: Colors.grey,
-            ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: mainColorGrey20),
+                ),
+                child: FileIcon(fileName, size: hugeIconSize),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '文件名：$fileName',
+                      style: const TextStyle(
+                        fontFamily: 'SmileySans',
+                        fontSize: 12,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (fileSize is int)
+                      Text(
+                        '文件大小：${formatBytes(fileSize)}',
+                        style: const TextStyle(
+                          fontFamily: 'SmileySans',
+                          fontSize: 12,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
-      ],
+      );
+    }
+    children.add(
+      InkWell(
+        onTap: () {
+          _filePickerDebouncer.run(() async {
+            if (_data == null) return;
+            final exts = getExtensionListFromMimeType(_data!.mimetype);
+            PlatformFile? file = exts == null
+                ? await pickFileAny()
+                : await pickFile(exts: exts);
+            if (file == null || file.bytes == null) return;
+            _selectedFile = file;
+            setState(() {});
+            if (file.extension is String) {
+              if (_defaultFileName is String) {
+                final pp = _defaultFileName?.lastIndexOf(".");
+                if (pp != -1) {
+                  _defaultFileName =
+                      '${_defaultFileName?.substring(0, pp)}.${file.extension}';
+                }
+              }
+              final p = _controller.text.lastIndexOf('.');
+              if (p != -1) {
+                _controller.text =
+                    '${_controller.text.substring(0, p)}.${file.extension}';
+              }
+            }
+          });
+        },
+        child: Container(
+          height: 80,
+          width: 80,
+          decoration: BoxDecoration(
+            border: Border.all(color: mainColorGrey20),
+            gradient: whiteLinearGradient,
+          ),
+          child: Icon(
+            _selectedFile == null ? Icons.add : Icons.sync,
+            size: largeIconSize,
+            color: Colors.grey,
+          ),
+        ),
+      ),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
     );
   }
 
@@ -381,5 +407,6 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
 
 class NoticeUploadPageArgs {
   final UploadTaskStorageData data;
-  const NoticeUploadPageArgs({required this.data});
+  final UploadData? uploadData;
+  const NoticeUploadPageArgs({required this.data, this.uploadData});
 }
