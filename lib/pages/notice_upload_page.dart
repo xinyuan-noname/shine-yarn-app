@@ -57,6 +57,9 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
       if (_defaultFileName is String) {
         _controller.text = _defaultFileName!;
       }
+      if (_uploadData != null) {
+        _controller.text = _uploadData!.uploadFileName;
+      }
     });
   }
 
