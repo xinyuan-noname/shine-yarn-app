@@ -1,9 +1,12 @@
+import 'package:file_icon/file_icon.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:shine/components/avatar.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/components/mime_type_dropdown.dart';
 import 'package:shine/components/task.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/services/api_task.dart';
@@ -21,6 +24,7 @@ import 'package:shine/utils/server.dart';
 import 'package:shine/utils/share.dart';
 import 'package:shine/utils/time_utils.dart';
 import 'package:shine/utils/upload_utils.dart';
+import 'package:shine/worker/worker.dart';
 import 'package:week_of_year/date_week_extensions.dart';
 
 class TaskUploadPage extends StatefulWidget {
@@ -99,20 +103,39 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
   final TextEditingController _taskNameController = TextEditingController();
   final Debouncer _debouncerS = Debouncer();
   final Debouncer _debouncerE = Debouncer();
-  final List<UploadData> _uploadData = [];
+  final List<UploadData> _uploadDataList = [];
   @override
   void initState() {
     super.initState();
-    _init();
+    showLoadingDialog(
+      context: context,
+      message: _message,
+      request: Future(() async {
+        await _init();
+        return null;
+      }),
+    );
   }
 
-  Future _init() async {
+  Future<void> _init() async {
     await _initProfileData();
     await AsyncUtils.postFrame(() async {
       if (!mounted) return;
       await _handleArgs();
     });
+    if (_taskId != null) {
+      _refreshUploadData();
+    }
     setState(() {});
+  }
+
+  Future<void> _refreshUploadData() async {
+    if (_taskId == null) return;
+    _uploadDataList.clear();
+    final result = await Worker.syncUploadsByTaskId(_taskId!);
+    if (result is List<UploadData>) {
+      _uploadDataList.addAll(result);
+    }
   }
 
   Future<void> _initProfileData() async {
@@ -373,42 +396,10 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
             bottomLineSmall,
             const SizedBox(height: 4),
             const Text("格式:", style: labelStyle),
-            DropdownButton<String>(
-              style: const TextStyle(
-                fontFamily: "SmileySans",
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Colors.black,
-              ),
+            MimeTypeDropdown(
               value: _selectedMimeType,
-              items: [
-                DropdownMenuItem(value: "", child: Text("不限格式")),
-                DropdownMenuItem(
-                  value:
-                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                  child: Text("word文档"),
-                ),
-                DropdownMenuItem(
-                  value: "application/pdf",
-                  child: Text("pdf文档"),
-                ),
-                DropdownMenuItem(
-                  value:
-                      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                  child: Text("excel表格"),
-                ),
-                // DropdownMenuItem(value: "image", child: Text("图片")),
-                // DropdownMenuItem(value: "image/jpeg", child: Text("jpg图片")),
-                // DropdownMenuItem(value: "image/png", child: Text("png图片")),
-                // DropdownMenuItem(value: "video/mp4", child: Text("mp4视频")),
-                // DropdownMenuItem(
-                //   value: "application/zip",
-                //   child: Text("zip压缩包"),
-                // ),
-              ],
-              onChanged: (String? value) {
-                if (value == null) return;
-                _selectedMimeType = value;
+              onChanged: (String newValue) {
+                _selectedMimeType = newValue;
                 setState(() {});
               },
             ),
@@ -640,7 +631,26 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
   }
 
   Widget _buildFinishWidget() {
-    return ListView.builder(itemBuilder: (context, index) {});
+    return ListView.builder(
+      itemCount: _uploadDataList.length,
+      itemBuilder: (context, index) {
+        final uploadData = _uploadDataList[index];
+        return Container(
+          padding: bodyPadding,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  NetworkAvatar(id: uploadData.uploadId),
+                  FileIcon(uploadData.uploadFileName, size: hugeIconSize),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   final List<List<String>> _formationInfo = [

@@ -6,7 +6,7 @@ import 'package:shine/services/dio.dart';
 
 class ApiTaskUpload {
   static final myUploadsCache = [];
-  static Future<String?> uploadAvatar(
+  static Future<String?> upload(
     Uint8List bytes, {
     required String filename,
     required int taskId,
@@ -29,10 +29,22 @@ class ApiTaskUpload {
     }
   }
 
+  static Future getUploadsByTaskId(int taskId) async {
+    if (!ApiService.isOk) return "服务未就绪";
+    try {
+      final response = await dio.get('/task/list/$taskId');
+      return response.data;
+    } on DioException catch (e) {
+      return e.message ?? "获取上传列表失败";
+    } catch (e) {
+      return "获取上传列表失败";
+    }
+  }
+
   static Future getMyUploads() async {
     if (!ApiService.isOk) return "服务未就绪";
     try {
-      final response = await uploadDio.get('/task/upload/my');
+      final response = await dio.get('/task/upload/my');
       return response.data;
     } on DioException catch (e) {
       return e.message ?? "获取上传列表失败";

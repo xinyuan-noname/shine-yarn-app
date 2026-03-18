@@ -248,6 +248,15 @@ class Worker {
     return null;
   }
 
+  static Future<List<UploadData>?> syncUploadsByTaskId(int taskId) async {
+    final uploadsResult = await ApiTaskUpload.getUploadsByTaskId(taskId);
+    if (uploadsResult is List) {
+      final uploadsList = uploadsResult.whereType<Map<String,dynamic>>();
+      return uploadsList.map((e)=>UploadData.fromMap(e)).toList();
+    }
+    return null;
+  }
+
   static startTaskWebSocket() {
     WsTask.start();
   }

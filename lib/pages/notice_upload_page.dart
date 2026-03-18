@@ -403,7 +403,7 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
     final success = await sendRequestAndChangeMessage(
       _message,
       request: Future(() async {
-        return await ApiTaskUpload.uploadAvatar(
+        return await ApiTaskUpload.upload(
           _selectedFile!.bytes!,
           filename: _controller.text,
           taskId: _data!.id,
