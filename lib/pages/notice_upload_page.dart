@@ -356,27 +356,39 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
   }
 
   Widget _buildBottomBar() {
+    final bool edited = _uploadData != null;
     return BottomAppBar(
       height: 60,
       padding: EdgeInsets.symmetric(horizontal: 30, vertical: 5),
       color: bgColorLight60,
       child: ElevatedButton(
-        onPressed: () async {
-          if (_selectedFile == null) {
-            await showToast(msg: "你暂未选择上传文件");
-            return;
-          }
-          _submitFile();
-        },
+        onPressed: edited
+            ? () async {
+                if (_selectedFile == null) {
+                  await showToast(msg: "暂未修改文件");
+                  return;
+                }
+                _submitFile();
+              }
+            : () async {
+                if (_selectedFile == null) {
+                  await showToast(msg: "你暂未选择上传文件");
+                  return;
+                }
+                _submitFile();
+              },
         style: ElevatedButton.styleFrom(
-          side: BorderSide(color: mainColorPurple80, width: 2.0),
+          side: BorderSide(
+            color: edited ? deepColorBlue80 : mainColorPurple80,
+            width: 2.0,
+          ),
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
         ),
-        child: const Text(
-          "提交",
+        child: Text(
+          edited ? "提交修改" : "提交作业",
           style: TextStyle(
-            color: deepColorPurple,
+            color: edited ? deepColorBlue : deepColorPurple,
             fontSize: 24,
             fontWeight: FontWeight.w300,
           ),
@@ -386,7 +398,7 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
   }
 
   Future _submitFile() async {
-    _message.value = "正在上传";
+    _message.value = "正在提交";
     showMessageDialog(context, _message);
     final success = await sendRequestAndChangeMessage(
       _message,
@@ -398,8 +410,8 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
         );
       }),
       initMessageList: [],
-      messageList: ["上传文件中.", "上传文件中..", "上传文件中..."],
-      successMessage: "上传文件成功",
+      messageList: ["提交文件中.", "提交文件中..", "提交文件中..."],
+      successMessage: "提交文件成功",
     );
     Navigator.of(context).pop();
     if (success) {

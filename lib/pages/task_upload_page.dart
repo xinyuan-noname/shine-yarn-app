@@ -485,7 +485,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
       alignment: Alignment(0, 0),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          side: BorderSide(color: mainColorGreenBlue, width: 2.0),
+          side: BorderSide(color: deepColorBlue80, width: 2.0),
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
         ),
@@ -497,12 +497,12 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(Icons.upload, size: 24, color: mainColorGreenBlue),
+            Icon(Icons.upload, size: 24, color: deepColorBlue),
             SizedBox(width: 10),
             Text(
               '更改作业',
               style: TextStyle(
-                color: mainColorGreenBlue,
+                color: deepColorBlue,
                 fontSize: 20,
                 fontWeight: FontWeight.w300,
               ),
@@ -518,7 +518,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
       alignment: Alignment(0, 0),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          side: BorderSide(color: mainColorPurple, width: 2.0),
+          side: BorderSide(color: deepColorPurple, width: 2.0),
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
         ),
@@ -530,12 +530,12 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(Icons.upload, size: 24, color: mainColorPurple),
+            Icon(Icons.upload, size: 24, color: deepColorPurple),
             SizedBox(width: 10),
             Text(
               '发布作业',
               style: TextStyle(
-                color: mainColorPurple,
+                color: deepColorPurple,
                 fontSize: 20,
                 fontWeight: FontWeight.w300,
               ),
