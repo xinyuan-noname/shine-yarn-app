@@ -385,11 +385,11 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                 // DropdownMenuItem(value: "image", child: Text("图片")),
                 // DropdownMenuItem(value: "image/jpeg", child: Text("jpg图片")),
                 // DropdownMenuItem(value: "image/png", child: Text("png图片")),
-                DropdownMenuItem(value: "video/mp4", child: Text("mp4视频")),
-                DropdownMenuItem(
-                  value: "application/zip",
-                  child: Text("zip压缩包"),
-                ),
+                // DropdownMenuItem(value: "video/mp4", child: Text("mp4视频")),
+                // DropdownMenuItem(
+                //   value: "application/zip",
+                //   child: Text("zip压缩包"),
+                // ),
               ],
               onChanged: (String? value) {
                 if (value == null) return;

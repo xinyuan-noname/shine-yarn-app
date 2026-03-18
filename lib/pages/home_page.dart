@@ -40,6 +40,7 @@ class _HomePageState extends State<HomePage> {
   final List<TaskStorageData> _localTaskList = [];
   final List<TaskStorageData> _remoteTaskList = [];
   final List<TaskStorageData> _taskNoticeList = [];
+  final List _myUploadsList = [];
   final List<MessageStorageData> _messageList = [];
   final List _userInfoList = [];
   StreamSubscription<MessageEvent>? _subscription;
@@ -156,8 +157,10 @@ class _HomePageState extends State<HomePage> {
     if (taskNoticeResult is List<TaskStorageData>) {
       _taskNoticeList.clear();
       _taskNoticeList.addAll(taskNoticeResult);
+      if (!mounted) return;
       setState(() {});
     }
+    final taskUploadResult = await Worker.syncMyUploads();
   }
 
   Future<void> _loadSemesterData() async {

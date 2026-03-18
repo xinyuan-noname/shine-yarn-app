@@ -1,13 +1,17 @@
 import 'package:file_icon/file_icon.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/components/toast.dart';
 import 'package:shine/extensions/list.dart';
+import 'package:shine/services/api_task_upload.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/debouncer.dart';
 import 'package:shine/utils/file.dart';
+import 'package:shine/utils/server.dart';
 import 'package:shine/utils/time.dart';
 
 class NoticeUploadPage extends StatefulWidget {
@@ -28,6 +32,7 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
   final _controller = TextEditingController(text: "");
   final _fileNameDebouncer = Debouncer();
   final _filePickerDebouncer = Debouncer();
+  final ValueNotifier<String> _message = ValueNotifier("");
   RegExp? _fileNamePattern;
   String? _defaultFileName;
   bool _fileNameEditable = false;
@@ -253,7 +258,7 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
                         style: const TextStyle(
                           fontFamily: 'SmileySans',
                           fontSize: 12,
-                          overflow: TextOverflow.ellipsis
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Text(
@@ -303,7 +308,11 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
               border: Border.all(color: mainColorGrey20),
               gradient: whiteLinearGradient,
             ),
-            child: Icon(Icons.add, size: largeIconSize, color: Colors.grey),
+            child: Icon(
+              _selectedFile == null ? Icons.add : Icons.sync,
+              size: largeIconSize,
+              color: Colors.grey,
+            ),
           ),
         ),
       ],
@@ -324,7 +333,13 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
       padding: EdgeInsets.symmetric(horizontal: 30, vertical: 5),
       color: bgColorLight60,
       child: ElevatedButton(
-        onPressed: () async {},
+        onPressed: () async {
+          if (_selectedFile == null) {
+            await showToast(msg: "你暂未选择上传文件");
+            return;
+          }
+          _submitFile();
+        },
         style: ElevatedButton.styleFrom(
           side: BorderSide(color: mainColorPurple80, width: 2.0),
           backgroundColor: Colors.transparent,
@@ -340,6 +355,28 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
         ),
       ),
     );
+  }
+
+  Future _submitFile() async {
+    _message.value = "正在上传";
+    showMessageDialog(context, _message);
+    final success = await sendRequestAndChangeMessage(
+      _message,
+      request: Future(() async {
+        return await ApiTaskUpload.uploadAvatar(
+          _selectedFile!.bytes!,
+          filename: _controller.text,
+          taskId: _data!.id,
+        );
+      }),
+      initMessageList: [],
+      messageList: ["上传文件中.", "上传文件中..", "上传文件中..."],
+      successMessage: "上传文件成功",
+    );
+    Navigator.of(context).pop();
+    if (success) {
+      Navigator.of(context).pop();
+    }
   }
 }
 

@@ -9,6 +9,7 @@ import 'package:shine/services/api_schedule.dart';
 import 'package:shine/services/api_semesters.dart';
 import 'package:shine/services/api_subjects.dart';
 import 'package:shine/services/api_task.dart';
+import 'package:shine/services/api_task_upload.dart';
 import 'package:shine/services/notification.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/api_auth.dart';
@@ -23,6 +24,7 @@ import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/utils/course.dart';
 import 'package:shine/utils/message.dart';
+import 'package:shine/utils/upload.dart';
 
 class Worker {
   static Timer? _refreshTimer;
@@ -231,6 +233,15 @@ class Worker {
         }
       }
       return result;
+    }
+    return null;
+  }
+
+  static Future<List<UploadData>?> syncMyUploads() async {
+    final myUploadsResult = await ApiTaskUpload.getMyUploads();
+    if (myUploadsResult is List) {
+      final myUploadsList = myUploadsResult.whereType<Map<String, dynamic>>();
+      return myUploadsList.map((e) => UploadData.fromMap(e)).toList();
     }
     return null;
   }

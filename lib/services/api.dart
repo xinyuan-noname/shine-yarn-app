@@ -120,6 +120,12 @@ class ApiService {
     return payload["userType"] ?? "guest";
   }
 
+  static String get userId {
+    if (_accessToken.isEmpty) return "";
+    final payload = JwtDecoder.decode(_accessToken);
+    return payload["userId"] ?? "";
+  }
+
   static void setBaseUrl(String url) {
     dio.options.baseUrl = url;
     uploadDio.options.baseUrl = url;
@@ -130,6 +136,7 @@ class ApiService {
     dio.options.headers['Authorization'] = 'Bearer $accessToken';
     uploadDio.options.headers['Authorization'] = 'Bearer $accessToken';
   }
+
   static void delAccessToken() {
     _accessToken = "";
     dio.options.headers['Authorization'] = '';
