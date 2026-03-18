@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/pages/home_page.dart';
 import 'package:shine/pages/notice_upload_page.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/storage/task_storage.dart';
@@ -33,6 +34,7 @@ class NoticeCard extends StatelessWidget {
           '/notice/upload',
           arguments: NoticeUploadPageArgs(data: data, uploadData: uploadData),
         );
+        HomePageRefreshNotifier.refreshMessage();
       },
     };
     return Card(

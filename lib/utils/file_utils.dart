@@ -28,7 +28,6 @@ Future<PlatformFile?> pickFileAny() async {
 }
 
 List<String>? getExtensionListFromMimeType(String mimetype) {
-  print(mimetype);
   switch (mimetype) {
     case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
       return ["docx"];

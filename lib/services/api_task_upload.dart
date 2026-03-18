@@ -32,7 +32,7 @@ class ApiTaskUpload {
   static Future getUploadsByTaskId(int taskId) async {
     if (!ApiService.isOk) return "服务未就绪";
     try {
-      final response = await dio.get('/task/list/$taskId');
+      final response = await dio.get('/task/upload/list/$taskId');
       return response.data;
     } on DioException catch (e) {
       return e.message ?? "获取上传列表失败";

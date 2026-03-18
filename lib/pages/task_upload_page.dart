@@ -107,26 +107,26 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
   @override
   void initState() {
     super.initState();
-    showLoadingDialog(
-      context: context,
-      message: _message,
-      request: Future(() async {
-        await _init();
-        return null;
-      }),
-    );
+    _init();
   }
 
   Future<void> _init() async {
-    await _initProfileData();
-    await AsyncUtils.postFrame(() async {
-      if (!mounted) return;
-      await _handleArgs();
+    AsyncUtils.postFrame(() async {
+      showLoadingDialog(
+        context: context,
+        message: _message,
+        request: Future(() async {
+          await _initProfileData();
+          await _handleArgs();
+          if (!mounted) return null;
+          setState(() {});
+          if (_taskId != null) {
+            await _refreshUploadData();
+          }
+          return null;
+        }),
+      );
     });
-    if (_taskId != null) {
-      _refreshUploadData();
-    }
-    setState(() {});
   }
 
   Future<void> _refreshUploadData() async {
@@ -136,6 +136,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
     if (result is List<UploadData>) {
       _uploadDataList.addAll(result);
     }
+    setState(() {});
   }
 
   Future<void> _initProfileData() async {
@@ -395,7 +396,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
             ),
             bottomLineSmall,
             const SizedBox(height: 4),
-            const Text("格式:", style: labelStyle),
+            const Text("文件类型:", style: labelStyle),
             MimeTypeDropdown(
               value: _selectedMimeType,
               onChanged: (String newValue) {
@@ -406,7 +407,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
             bottomLineSmall,
             const SizedBox(height: 4),
             const Text(
-              "文件名:",
+              "文件名格式:",
               style: TextStyle(fontFamily: "SmileySans", fontSize: 16),
             ),
             _buildFileNameWidget(),

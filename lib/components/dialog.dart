@@ -54,18 +54,19 @@ Future<void> showLoadingDialog({
   required ValueNotifier<String> message,
   required Future<String?> request,
 }) async {
-  return await showMessageDialog(context, message).then((_) async {
-    await sendRequestAndChangeMessage(
-      message,
-      request: request,
-      initMessageList: [],
-      messageList: ["正在加载中.", "正在加载中..", "正在加载中..."],
-      successMessage: "加载成功",
-      successMessageDuration: Duration(milliseconds: 300),
-      failMessageDuration: Duration(milliseconds: 800),
-    );
+  final future = showMessageDialog(context, message);
+  sendRequestAndChangeMessage(
+    message,
+    request: request,
+    initMessageList: [],
+    messageList: ["正在加载中.", "正在加载中..", "正在加载中..."],
+    successMessage: "加载成功",
+    successMessageDuration: Duration(milliseconds: 300),
+    failMessageDuration: Duration(milliseconds: 800),
+  ).then((_) {
     Navigator.of(context).pop();
   });
+  return await future;
 }
 
 Future<void> showAlertDialog({

@@ -23,7 +23,7 @@ class MimeTypeDropdown extends StatelessWidget {
     this.showUnlimited = true,
     this.customOptions,
   });
-  
+
   static const List<MapEntry<String, String>> defaultOptions = [
     MapEntry(
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -34,11 +34,11 @@ class MimeTypeDropdown extends StatelessWidget {
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "excel 表格",
     ),
-    MapEntry("image", "图片"),
-    MapEntry("image/jpeg", "jpg 图片"),
-    MapEntry("image/png", "png 图片"),
-    MapEntry("video/mp4", "mp4 视频"),
-    MapEntry("application/zip", "zip 压缩包"),
+    // MapEntry("image", "图片"),
+    // MapEntry("image/jpeg", "jpg 图片"),
+    // MapEntry("image/png", "png 图片"),
+    // MapEntry("video/mp4", "mp4 视频"),
+    // MapEntry("application/zip", "zip 压缩包"),
   ];
 
   @override
@@ -50,11 +50,11 @@ class MimeTypeDropdown extends StatelessWidget {
         fontWeight: FontWeight.w500,
         color: Colors.black,
       ),
-      value: value.isEmpty ? null : value,
-      hint: const Text("请选择文件格式"),
+      value: value.isEmpty && !showUnlimited ? null : value,
+      hint: const Text("请选择文件类型"),
       items: [
         if (showUnlimited)
-          const DropdownMenuItem(value: "", child: Text("不限格式")),
+          const DropdownMenuItem(value: "", child: Text("不限类型")),
         ..._buildOptions(customOptions ?? defaultOptions),
       ],
       onChanged: (String? newValue) {
