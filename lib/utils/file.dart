@@ -28,27 +28,28 @@ Future<PlatformFile?> pickFileAny() async {
 }
 
 List<String>? getExtensionListFromMimeType(String mimetype) {
+  print(mimetype);
   switch (mimetype) {
     case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-      return [".docx"];
+      return ["docx"];
 
     case "application/pdf":
-      return [".pdf"];
+      return ["pdf"];
 
     case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-      return [".xlsx", ".xls"];
+      return ["xlsx", "xls"];
 
     case "image/jpeg":
-      return [".jpg"];
+      return ["jpg"];
 
     case "image/png":
-      return [".png"];
+      return ["png"];
 
     case "video/mp4":
-      return [".mp4"];
+      return ["mp4"];
 
     case "application/zip":
-      return [".zip"];
+      return ["zip"];
 
     default:
       return null;

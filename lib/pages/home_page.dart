@@ -15,6 +15,7 @@ import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/course.dart';
+import 'package:shine/utils/debouncer.dart';
 import 'package:shine/utils/upload.dart';
 import 'package:shine/views/message_view.dart';
 import 'package:shine/views/schedule_view.dart';
@@ -37,13 +38,14 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<TaskStorageData> get _taskList =>
-       _remoteTaskList.toList()..addAll(_localTaskList);
+      _remoteTaskList.toList()..addAll(_localTaskList);
   final List<TaskStorageData> _localTaskList = [];
   final List<TaskStorageData> _remoteTaskList = [];
   final List<TaskStorageData> _taskNoticeList = [];
   final List<UploadData> _myUploadsList = [];
   final List<MessageStorageData> _messageList = [];
   final List _userInfoList = [];
+  final Debouncer _messageEventUpdateDebouncer = Debouncer();
   StreamSubscription<MessageEvent>? _subscription;
   int _ts = 0;
   String _username = "???";
@@ -86,7 +88,9 @@ class _HomePageState extends State<HomePage> {
       _updateMessageData();
     };
     _subscription = EventBus.stream.listen((event) {
-      _updateMessageData();
+      _messageEventUpdateDebouncer.run(() {
+        _updateMessageData();
+      });
     });
     await DatabaseProvider.init();
     _loadMine();
