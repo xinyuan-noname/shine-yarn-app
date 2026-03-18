@@ -11,6 +11,7 @@ import 'package:shine/components/task.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/services/api_task.dart';
 import 'package:shine/services/ws_task.dart';
+import 'package:shine/storage/group_storage.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/storage/subject_storage.dart';
@@ -104,6 +105,14 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
   final Debouncer _debouncerS = Debouncer();
   final Debouncer _debouncerE = Debouncer();
   final List<UploadData> _uploadDataList = [];
+  final List<Map<String, dynamic>> _allUserList = [];
+  List<Map<String, dynamic>> get _unfinishedUserList => _allUserList
+      .where(
+        (user) => _uploadDataList.every(
+          (uploadData) => uploadData.uploadId != user['id'],
+        ),
+      )
+      .toList();
   @override
   void initState() {
     super.initState();
@@ -118,6 +127,12 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
         request: Future(() async {
           await _initProfileData();
           await _handleArgs();
+          final allUserOrNull = await GroupStorage.getGroupUserList(
+            GroupStorageKey.entire,
+          );
+          if (allUserOrNull is List<Map<String, dynamic>>) {
+            _allUserList.addAll(allUserOrNull);
+          }
           if (!mounted) return null;
           setState(() {});
           if (_taskId != null) {
@@ -632,25 +647,66 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
   }
 
   Widget _buildFinishWidget() {
-    return ListView.builder(
-      itemCount: _uploadDataList.length,
-      itemBuilder: (context, index) {
-        final uploadData = _uploadDataList[index];
-        return Container(
-          padding: bodyPadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  NetworkAvatar(id: uploadData.uploadId),
-                  FileIcon(uploadData.uploadFileName, size: hugeIconSize),
-                ],
-              ),
-            ],
+    final unfinishedUserList = _unfinishedUserList;
+    final avatarList = List.generate(unfinishedUserList.length, (index) {
+      final user = unfinishedUserList[index];
+      final String id = user["id"];
+      final String username = user["username"];
+      return SizedBox(
+        width: 80,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            NetworkAvatar(id: id),
+            Text(
+              username,
+              style: const TextStyle(fontFamily: "SmileySans", fontSize: 12),
+            ),
+          ],
+        ),
+      );
+    });
+    return ListView(
+      children: [
+        ExpansionTile(
+          title: Text(
+            "完成的同学(${_uploadDataList.length}人)",
+            style: expansionListTitleStyle,
           ),
-        );
-      },
+          children: [
+            Wrap(
+              children: _uploadDataList
+                  .map(
+                    (uploadData) => Container(
+                      padding: bodyPadding,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              NetworkAvatar(id: uploadData.uploadId),
+                              FileIcon(
+                                uploadData.uploadFileName,
+                                size: hugeIconSize,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+        ),
+        ExpansionTile(
+          title: Text(
+            "未完成的同学(${unfinishedUserList.length}人)",
+            style: expansionListTitleStyle,
+          ),
+          children: [Wrap(direction: Axis.horizontal, children: avatarList)],
+        ),
+      ],
     );
   }
 

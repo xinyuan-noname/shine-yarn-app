@@ -30,12 +30,11 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
   final TextEditingController _drawNumberController = TextEditingController(
     text: "1",
   );
-  final List _allUserList = [];
-  final List _inRangeUserList = [];
-  List get _outRangeUserList => _allUserList
+  final List<Map<String, dynamic>> _allUserList = [];
+  final List<Map<String, dynamic>> _inRangeUserList = [];
+  List<Map<String, dynamic>> get _outRangeUserList => _allUserList
       .where(
         (user) => !_inRangeUserList.any((userIn) {
-          if (user == null || userIn == null) return false;
           return user["id"] == userIn["id"];
         }),
       )
@@ -78,7 +77,7 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
     final allUserOrNull = await GroupStorage.getGroupUserList(
       GroupStorageKey.entire,
     );
-    if (allUserOrNull is List) {
+    if (allUserOrNull is List<Map<String, dynamic>>) {
       _allUserList.addAll(allUserOrNull);
     }
   }
@@ -89,23 +88,12 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
       final groupStorageKey = args.groupStorageKey;
       if (groupStorageKey is GroupStorageKey) {
         final result = await GroupStorage.getGroupUserList(groupStorageKey);
-        if (result is List) {
+        if (result is List<Map<String, dynamic>>) {
           _inRangeUserList.clear();
           _inRangeUserList.addAll(result);
           setState(() {});
         }
       }
-      // if (data is CheckTaskStorageData) {
-      //   final finishedList = data.finished;
-      //   final unfinishedList = data.unfinished;
-      //   _taskId = data.id;
-      //   _title = data.title;
-      //   _selectedList.clear();
-      //   _selectedList.addAll(finishedList);
-      //   _unselectedList.clear();
-      //   _unselectedList.addAll(unfinishedList);
-      //   setState(() {});
-      // }
     }
   }
 

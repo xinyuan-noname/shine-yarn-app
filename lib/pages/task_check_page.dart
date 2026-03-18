@@ -45,7 +45,7 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
       final data = args.data;
       if (groupStorageKey is GroupStorageKey) {
         final result = await GroupStorage.getGroupUserList(groupStorageKey);
-        if (result is List) {
+        if (result is List<Map<String, dynamic>>) {
           _unselectedList.clear();
           _unselectedList.addAll(result);
           setState(() {});

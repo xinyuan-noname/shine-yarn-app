@@ -22,12 +22,14 @@ class MessageCard extends StatelessWidget {
   final VoidCallback? deleteCallback;
   final GestureLongPressCallback? onLongPress;
   final GestureTapCallback? onPress;
+  final bool hasController;
   const MessageCard({
     super.key,
     required this.messageData,
     this.deleteCallback,
     this.onLongPress,
     this.onPress,
+    this.hasController = true,
   });
 
   @override
@@ -45,23 +47,25 @@ class MessageCard extends StatelessWidget {
       },
     };
     return Slidable(
-      endActionPane: ActionPane(
-        extentRatio: 0.25,
-        motion: ScrollMotion(),
-        children: [
-          SlidableAction(
-            onPressed: (BuildContext context) {
-              final deleteAction =
-                  deleteCallback ?? onDeleteMap[messageData.runtimeType];
-              if (deleteAction != null) deleteAction();
-            },
-            icon: Icons.delete,
-            backgroundColor: mainColorRed,
-            spacing: 0,
-            borderRadius: BorderRadius.circular(20),
-          ),
-        ],
-      ),
+      endActionPane: hasController
+          ? ActionPane(
+              extentRatio: 0.25,
+              motion: ScrollMotion(),
+              children: [
+                SlidableAction(
+                  onPressed: (BuildContext context) {
+                    final deleteAction =
+                        deleteCallback ?? onDeleteMap[messageData.runtimeType];
+                    if (deleteAction != null) deleteAction();
+                  },
+                  icon: Icons.delete,
+                  backgroundColor: mainColorRed,
+                  spacing: 0,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ],
+            )
+          : null,
       child: GestureDetector(
         onLongPress: onLongPress,
         onTap: onPress ?? onPressMap[messageData.runtimeType],
