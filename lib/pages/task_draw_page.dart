@@ -201,7 +201,9 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
                 final list = _drawResultReversed[i];
                 final avatarList = List.generate(list.length, (index) {
                   String id = list[index];
-                  Map user = _allUserList.firstWhere((ele) => ele["id"] == id);
+                  Map user = _allUserList.firstWhere(
+                    (ele) => ele["id"] == id,
+                  );
                   String username = user["username"];
                   return SizedBox(
                     width: 80,

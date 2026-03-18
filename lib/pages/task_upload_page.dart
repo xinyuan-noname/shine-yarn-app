@@ -7,7 +7,6 @@ import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/task.dart';
 import 'package:shine/components/toast.dart';
-import 'package:shine/extensions/list.dart';
 import 'package:shine/services/api_task.dart';
 import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/profile_storage.dart';
@@ -839,7 +838,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
       }
     }
     result +=
-        getExtensionListFromMimeType(_selectedMimeType)?.safeFirst ?? ".*";
+        getExtensionListFromMimeType(_selectedMimeType)?.firstOrNull ?? ".*";
     return result;
   }
 

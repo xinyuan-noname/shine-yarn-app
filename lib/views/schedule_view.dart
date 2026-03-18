@@ -237,11 +237,7 @@ class ScheduleView extends StatelessWidget {
     return getWeekDates(showDate).map((d) {
       return Container(
         decoration: isToday(d)
-            ? BoxDecoration(
-                boxShadow: [
-                  BoxShadow(color: mainColorGreenBlue)
-                ]
-              )
+            ? BoxDecoration(boxShadow: [BoxShadow(color: mainColorGreenBlue)])
             : null,
         width: _cellWidth,
         child: Column(
@@ -303,8 +299,8 @@ class ScheduleView extends StatelessWidget {
     final List<Widget> children = [];
     final index = date.weekday - 1;
     for (int i = 1; i <= semesterPhaseList.length; i++) {
-      ScheduleData? currentScheduleData = scheduleDataList.safeElementAt(0);
-      final scheduleItem = courseList.safeElementAt(0);
+      ScheduleData? currentScheduleData = scheduleDataList.elementAtOrNull(0);
+      final scheduleItem = courseList.elementAtOrNull(0);
       if (scheduleItem == null) {
         children.add(_genEmptyCourse());
         continue;

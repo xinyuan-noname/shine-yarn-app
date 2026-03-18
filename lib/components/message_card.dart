@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/line.dart';
-import 'package:shine/extensions/list.dart';
 import 'package:shine/pages/home_page.dart';
 import 'package:shine/storage/message_storage.dart';
 import 'package:shine/theme.dart';
@@ -73,7 +72,7 @@ class MessageCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           shadowColor:
-              _levelColor.safeElementAt(messageData.level) ?? Colors.grey,
+              _levelColor.elementAtOrNull(messageData.level) ?? Colors.grey,
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
@@ -130,7 +129,7 @@ class MessageCard extends StatelessWidget {
       style: TextStyle(
         fontFamily: 'SmileySans',
         fontSize: 19,
-        color: _levelColor.safeElementAt(messageData.level) ?? Colors.grey,
+        color: _levelColor.elementAtOrNull(messageData.level) ?? Colors.grey,
       ),
     );
   }

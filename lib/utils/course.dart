@@ -1,12 +1,11 @@
-import 'package:shine/extensions/list.dart';
 
 class CourseSchedule {
   final int weekday;
   final List<int> period;
   final List<int> weeks;
   final String location;
-  int get start => period.safeElementAt(0) ?? 0;
-  int get end => period.safeLast ?? 0;
+  int get start => period.elementAtOrNull(0) ?? 0;
+  int get end => period.lastOrNull ?? 0;
   int get periodLength => end - start + 1;
 
   CourseSchedule({

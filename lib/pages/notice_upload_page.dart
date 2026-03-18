@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/toast.dart';
-import 'package:shine/extensions/list.dart';
 import 'package:shine/services/api_task_upload.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/task_storage.dart';
@@ -118,7 +117,7 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
     result.add(r"\..*");
     final recommondExt = getExtensionListFromMimeType(
       _data!.mimetype,
-    )?.safeFirst;
+    )?.firstOrNull;
     if (recommondExt == null) {
       rawResult.add(".*");
     } else {

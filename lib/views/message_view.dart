@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:shine/components/message_card.dart';
 import 'package:shine/components/notice_card.dart';
@@ -34,7 +35,7 @@ class MessageView extends StatelessWidget {
                 .map(
                   (taskData) => NoticeCard(
                     taskData: taskData,
-                    uploadData: uploadDataList.firstWhere(
+                    uploadData: uploadDataList.firstWhereOrNull(
                       (e) => e.taskId == taskData.id,
                     ),
                   ),

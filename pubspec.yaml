@@ -62,6 +62,7 @@ dependencies:
   week_of_year: ^2.2.0
   flutter_typeahead: ^5.2.0
   file_icon: ^1.0.0
+  collection: ^1.19.1
 
 dev_dependencies:
   flutter_test:
