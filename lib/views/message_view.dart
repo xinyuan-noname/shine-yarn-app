@@ -7,18 +7,21 @@ import 'package:shine/components/notice_card.dart';
 import 'package:shine/storage/message_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/upload.dart';
 
 class MessageView extends StatelessWidget {
   final RefreshCallback onRefresh;
   final List<MessageStorageData> messageList;
   final List<TaskStorageData> taskNoticeList;
+  final List<UploadData> uploadDataList;
   final VoidCallback? deleteCallback;
   const MessageView({
     super.key,
+    this.deleteCallback,
     required this.onRefresh,
     required this.messageList,
-    this.deleteCallback,
     required this.taskNoticeList,
+    required this.uploadDataList,
   });
 
   @override
@@ -28,7 +31,14 @@ class MessageView extends StatelessWidget {
         if (taskNoticeList.isNotEmpty)
           CarouselSlider(
             items: taskNoticeList
-                .map((taskData) => NoticeCard(taskData: taskData))
+                .map(
+                  (taskData) => NoticeCard(
+                    taskData: taskData,
+                    uploadData: uploadDataList.firstWhere(
+                      (e) => e.taskId == taskData.id,
+                    ),
+                  ),
+                )
                 .toList(),
             options: CarouselOptions(
               height: 160,
@@ -39,7 +49,7 @@ class MessageView extends StatelessWidget {
               autoPlayAnimationDuration: Duration(milliseconds: 800),
               autoPlayCurve: Curves.fastOutSlowIn,
               scrollDirection: Axis.horizontal,
-              enableInfiniteScroll: false
+              enableInfiniteScroll: false,
             ),
           ),
         Expanded(

@@ -12,6 +12,7 @@ class ApiTask {
     required String format,
     required String source,
   }) async {
+    if (!ApiService.isOk) return "服务未就绪";
     return ApiTask.createTask(
       title: title,
       startedAt: startedAt,
@@ -36,6 +37,7 @@ class ApiTask {
     required int notice,
     required String source,
   }) async {
+    if (!ApiService.isOk) return "服务未就绪";
     try {
       final response = await dio.post(
         "/task/config/create",
@@ -60,6 +62,7 @@ class ApiTask {
   }
 
   static Future getAllTasks() async {
+    if (!ApiService.isOk) return "服务未就绪";
     try {
       final response = await dio.get("/task/config/all");
       final data = response.data;
@@ -81,6 +84,7 @@ class ApiTask {
     String? taskType,
     String? format,
   }) async {
+    if (!ApiService.isOk) return "服务未就绪";
     try {
       final Map<String, dynamic> data = {};
       if (title != null) data["title"] = title;

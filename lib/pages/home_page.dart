@@ -15,6 +15,7 @@ import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/course.dart';
+import 'package:shine/utils/upload.dart';
 import 'package:shine/views/message_view.dart';
 import 'package:shine/views/schedule_view.dart';
 import 'package:shine/views/task_view.dart';
@@ -40,7 +41,7 @@ class _HomePageState extends State<HomePage> {
   final List<TaskStorageData> _localTaskList = [];
   final List<TaskStorageData> _remoteTaskList = [];
   final List<TaskStorageData> _taskNoticeList = [];
-  final List _myUploadsList = [];
+  final List<UploadData> _myUploadsList = [];
   final List<MessageStorageData> _messageList = [];
   final List _userInfoList = [];
   StreamSubscription<MessageEvent>? _subscription;
@@ -161,6 +162,10 @@ class _HomePageState extends State<HomePage> {
       setState(() {});
     }
     final taskUploadResult = await Worker.syncMyUploads();
+    if (taskUploadResult is List<UploadData>) {
+      _myUploadsList.clear();
+      _myUploadsList.addAll(taskUploadResult);
+    }
   }
 
   Future<void> _loadSemesterData() async {
@@ -224,6 +229,7 @@ class _HomePageState extends State<HomePage> {
             MessageView(
               taskNoticeList: _taskNoticeList,
               messageList: _messageList,
+              uploadDataList: _myUploadsList,
               onRefresh: () async {
                 await _updateMessageData();
               },

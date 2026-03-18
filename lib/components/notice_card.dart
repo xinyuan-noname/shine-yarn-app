@@ -6,18 +6,22 @@ import 'package:shine/routes.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/time.dart';
+import 'package:shine/utils/upload.dart';
 
 class NoticeCard extends StatelessWidget {
   final GestureTapCallback? onPress;
 
   final GestureLongPressCallback? onLongPress;
 
+  final UploadData? uploadData;
+
   final TaskStorageData taskData;
   const NoticeCard({
     super.key,
     this.onPress,
-    required this.taskData,
     this.onLongPress,
+    this.uploadData,
+    required this.taskData,
   });
 
   @override

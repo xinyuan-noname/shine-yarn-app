@@ -6,6 +6,7 @@ import 'package:shine/services/dio.dart';
 
 class ApiProfiles {
   static Future<String?> uploadAvatar(Uint8List bytes) async {
+    if (!ApiService.isOk) return "服务未就绪";
     final formData = FormData.fromMap({
       'avatar': MultipartFile.fromBytes(bytes, filename: 'avatar.jpg'),
     });
@@ -20,6 +21,7 @@ class ApiProfiles {
   }
 
   static Future getAvatar(String id) async {
+    if (!ApiService.isOk) return null;
     try {
       final response = await dio.get(
         '/profiles/avatar/$id',
@@ -35,6 +37,7 @@ class ApiProfiles {
   }
 
   static Future getMyAvatar() async {
+    if (!ApiService.isOk) return null;
     try {
       final response = await dio.get(
         '/profiles/my/avatar',

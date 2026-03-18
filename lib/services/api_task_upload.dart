@@ -11,6 +11,7 @@ class ApiTaskUpload {
     required String filename,
     required int taskId,
   }) async {
+    if (!ApiService.isOk) return "服务未就绪";
     final formData = FormData.fromMap({
       'upload': MultipartFile.fromBytes(bytes, filename: filename),
       'taskId': taskId,
@@ -28,7 +29,8 @@ class ApiTaskUpload {
     }
   }
 
-  static Future getMyUploads()async{
+  static Future getMyUploads() async {
+    if (!ApiService.isOk) return "服务未就绪";
     try {
       final result = await uploadDio.get('/task/upload/my');
       return result;

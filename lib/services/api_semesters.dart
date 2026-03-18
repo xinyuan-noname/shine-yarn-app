@@ -9,6 +9,7 @@ class ApiSemesters {
     required DateTime startedAt,
     required List<List<DateTime>> phaseList,
   }) async {
+    if (!ApiService.isOk) return "服务未就绪";
     try {
       final d = {
         "semesterName": semesterName,
@@ -77,6 +78,7 @@ class ApiSemesters {
   static Future<String?> deleteCurrentSemester({
     required String semesterName,
   }) async {
+    if (!ApiService.isOk) return "服务未就绪";
     try {
       final d = {"semesterName": semesterName};
       await dio.delete("/semesters/delete", data: d);

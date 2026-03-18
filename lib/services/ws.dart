@@ -6,21 +6,21 @@ import 'package:shine/services/ws_task.dart';
 class WebSocketServer {
   static String _token = '';
   static Future<String?> syncWsToken() async {
-    if (!ApiService.prepared) return "服务未就绪";
+    if (!ApiService.isOk) return "服务未就绪";
     try {
       final response = await dio.get("/ws/token");
       if (response.data is! Map) {
-        return "获取WebSocket令牌失效";
+        return "获取 WebSocket 令牌失效";
       }
       if (response.data['token'] is! String) {
-        return "获取WebSocket令牌失效";
+        return "获取 WebSocket 令牌失效";
       }
       _token = response.data['token'];
       return null;
     } on DioException catch (e) {
-      return e.message ?? "获取WebSocket令牌失效";
+      return e.message ?? "获取 WebSocket 令牌失效";
     } catch (e) {
-      return "获取WebSocket令牌失效";
+      return "获取 WebSocket 令牌失效";
     }
   }
 

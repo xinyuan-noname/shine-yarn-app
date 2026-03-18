@@ -6,6 +6,7 @@ import 'package:shine/worker/worker.dart';
 
 class ApiAuth {
   static Future<String?> login(input) async {
+    if (!ApiService.isOk) return "服务未就绪";
     try {
       final response = await dio.post("/auth/login", data: input);
       final Map<String, dynamic> data = response.data;
@@ -26,6 +27,7 @@ class ApiAuth {
   }
 
   static refresh() async {
+    if (!ApiService.isOk) return "服务未就绪";
     final refreshToken = await TokenStorage.getRefreshToken();
     try {
       final response = await dio.post(
@@ -47,6 +49,7 @@ class ApiAuth {
   }
 
   static logout() async {
+    if (!ApiService.isOk) return "服务未就绪";
     final refreshToken = await TokenStorage.getRefreshToken();
     await TokenStorage.deleteAccessToken();
     await TokenStorage.deleteRefreshToken();
@@ -61,6 +64,7 @@ class ApiAuth {
   }
 
   static Future<String?> changePassword(input) async {
+    if (!ApiService.isOk) return "服务未就绪";
     try {
       await dio.patch("/auth/password", data: input);
       return null;
@@ -72,6 +76,7 @@ class ApiAuth {
   }
 
   static Future<String?> changePasswordRequired(input) async {
+    if (!ApiService.isOk) return "服务未就绪";
     try {
       await dio.patch("/auth/password_required", data: input);
       return null;
@@ -83,6 +88,7 @@ class ApiAuth {
   }
 
   static Future getAdminInfo() async {
+    if (!ApiService.isOk) return "服务未就绪";
     try {
       final response = await dio.get('/auth/admin');
       return response.data;
@@ -94,6 +100,7 @@ class ApiAuth {
   }
 
   static Future<String?> resetPassword(input) async {
+    if (!ApiService.isOk) return "服务未就绪";
     try {
       await dio.patch("/auth/password/reset", data: input);
       return null;
@@ -105,6 +112,7 @@ class ApiAuth {
   }
 
   static Future issuePasswordKey(String id) async {
+    if (!ApiService.isOk) return "服务未就绪";
     try {
       final response = await dio.post(
         "/auth/issue/password_key",

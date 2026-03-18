@@ -25,6 +25,7 @@ class ApiAdmin {
   }
 
   static Future<String?> checkSignatureByRSA() async {
+    if (!ApiService.isOk) return "服务未就绪";
     if (_rsaPrivateKey == null) return "签名出错";
     try {
       final word = nowBase64();
@@ -41,6 +42,7 @@ class ApiAdmin {
   }
 
   static Future<List<dynamic>?> getUserInfo() async {
+    if (!ApiService.isOk) return null;
     if (_rsaPrivateKey == null) return null;
     try {
       final word = nowBase64();
@@ -65,6 +67,7 @@ class ApiAdmin {
   }
 
   static Future issuePasswordKey(String id) async {
+    if (!ApiService.isOk) return null;
     if (_rsaPrivateKey == null) return null;
     try {
       final data = ApiAdmin.sign([id]);
@@ -83,6 +86,7 @@ class ApiAdmin {
     required String id,
     required isAdmin,
   }) async {
+    if (!ApiService.isOk) return "服务未就绪";
     if (_rsaPrivateKey == null) return "签名出错";
     try {
       final data = ApiAdmin.sign([id, isAdmin]);
@@ -101,6 +105,7 @@ class ApiAdmin {
     required String id,
     required String position,
   }) async {
+    if (!ApiService.isOk) return "服务未就绪";
     if (_rsaPrivateKey == null) return "签名出错";
     try {
       final data = ApiAdmin.sign([id]);
@@ -116,6 +121,7 @@ class ApiAdmin {
   }
 
   static Future<String?> deleteUser(String id) async {
+    if (!ApiService.isOk) return "服务未就绪";
     if (_rsaPrivateKey == null) return "签名出错";
     try {
       final data = ApiAdmin.sign([id]);
@@ -131,6 +137,7 @@ class ApiAdmin {
   }
 
   static Future deleteUserBatch(List<Map<String, dynamic>> userList) async {
+    if (!ApiService.isOk) return "服务未就绪";
     if (_rsaPrivateKey == null) return "签名出错";
     try {
       final data = userList;
@@ -155,6 +162,7 @@ class ApiAdmin {
   }
 
   static Future<String?> register(Map<String, dynamic> input) async {
+    if (!ApiService.isOk) return "服务未就绪";
     if (_rsaPrivateKey == null) return "签名出错";
     try {
       final String id = input["id"];
@@ -173,6 +181,7 @@ class ApiAdmin {
   }
 
   static Future registerFromExcel(Uint8List bytes) async {
+    if (!ApiService.isOk) return "服务未就绪";
     if (_rsaPrivateKey == null) return "签名出错";
     final word = nowBase64();
     final data = ApiAdmin.sign([word]);
@@ -196,6 +205,7 @@ class ApiAdmin {
   }
 
   static Future<String?> elevate() async {
+    if (!ApiService.isOk) return "服务未就绪";
     if (_rsaPrivateKey == null) return "签名出错";
     try {
       final word = nowBase64();
