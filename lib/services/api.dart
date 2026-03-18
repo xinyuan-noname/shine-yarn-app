@@ -6,7 +6,7 @@ import 'package:shine/components/toast.dart';
 import 'package:shine/config/app_config.dart';
 import 'package:shine/services/dio.dart';
 import 'package:shine/utils/device_info.dart';
-import 'package:shine/utils/routes.dart';
+import 'package:shine/utils/routes_utils.dart';
 import 'package:shine/worker/worker.dart';
 
 class ApiService {

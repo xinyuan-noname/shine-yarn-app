@@ -14,7 +14,7 @@ import 'package:shine/storage/admin_storage.dart';
 import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/share.dart';
-import 'package:shine/utils/file.dart';
+import 'package:shine/utils/file_utils.dart';
 import 'package:shine/utils/server.dart';
 import 'package:shine/worker/worker.dart';
 

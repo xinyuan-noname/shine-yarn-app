@@ -17,7 +17,7 @@ import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/device_info.dart';
 import 'package:shine/utils/image.dart';
-import 'package:shine/utils/routes.dart';
+import 'package:shine/utils/routes_utils.dart';
 import 'package:shine/utils/server.dart';
 import 'package:shine/worker/worker.dart';
 

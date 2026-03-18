@@ -11,7 +11,7 @@ import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/theme.dart';
-import 'package:shine/utils/time.dart';
+import 'package:shine/utils/time_utils.dart';
 
 Widget _buildBottomSheetItem({
   required IconData icon,

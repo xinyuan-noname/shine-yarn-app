@@ -8,7 +8,7 @@ import 'package:shine/components/notice_card.dart';
 import 'package:shine/storage/message_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
-import 'package:shine/utils/upload.dart';
+import 'package:shine/utils/upload_utils.dart';
 
 class MessageView extends StatelessWidget {
   final RefreshCallback onRefresh;

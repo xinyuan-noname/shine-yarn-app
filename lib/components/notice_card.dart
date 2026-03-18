@@ -5,8 +5,8 @@ import 'package:shine/pages/notice_upload_page.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
-import 'package:shine/utils/time.dart';
-import 'package:shine/utils/upload.dart';
+import 'package:shine/utils/time_utils.dart';
+import 'package:shine/utils/upload_utils.dart';
 
 class NoticeCard extends StatelessWidget {
   final GestureTapCallback? onPress;

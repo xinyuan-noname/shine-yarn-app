@@ -24,7 +24,7 @@ import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/utils/course.dart';
 import 'package:shine/utils/message.dart';
-import 'package:shine/utils/upload.dart';
+import 'package:shine/utils/upload_utils.dart';
 
 class Worker {
   static Timer? _refreshTimer;

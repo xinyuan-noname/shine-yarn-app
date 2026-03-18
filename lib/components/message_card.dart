@@ -5,7 +5,7 @@ import 'package:shine/components/line.dart';
 import 'package:shine/pages/home_page.dart';
 import 'package:shine/storage/message_storage.dart';
 import 'package:shine/theme.dart';
-import 'package:shine/utils/time.dart';
+import 'package:shine/utils/time_utils.dart';
 
 final List<Color> _levelColor = [
   Colors.grey,

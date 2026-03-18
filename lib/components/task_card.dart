@@ -10,7 +10,7 @@ import 'package:shine/services/api.dart';
 import 'package:shine/services/api_task.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
-import 'package:shine/utils/time.dart';
+import 'package:shine/utils/time_utils.dart';
 
 class TaskCard extends StatelessWidget {
   final GestureTapCallback? onPress;

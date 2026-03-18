@@ -7,7 +7,7 @@ import 'package:shine/routes.dart';
 import 'package:shine/services/api_auth.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';
-import 'package:shine/utils/routes.dart';
+import 'package:shine/utils/routes_utils.dart';
 import 'package:shine/utils/server.dart';
 
 class LoginPage extends StatefulWidget {

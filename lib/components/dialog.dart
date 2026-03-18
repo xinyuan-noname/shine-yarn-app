@@ -6,6 +6,7 @@ import 'package:shine/components/input.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/server.dart';
 
 const dialogTitleStyle = TextStyle(
   fontSize: 20,
@@ -27,12 +28,12 @@ final dialogButtonStyle = TextButton.styleFrom(
   foregroundColor: bgColorLight80,
   textStyle: dialogActionStyle,
 );
-void showMessageDialog(
+Future showMessageDialog(
   BuildContext context,
   ValueNotifier<String> message, {
   bool? barrierDissmissible,
 }) {
-  showDialog(
+  return showDialog(
     context: context,
     barrierDismissible: barrierDissmissible ?? false,
     builder: (_) => ValueListenableBuilder<String>(
@@ -46,6 +47,25 @@ void showMessageDialog(
       ),
     ),
   );
+}
+
+Future<void> showLoadingDialog({
+  required BuildContext context,
+  required ValueNotifier<String> message,
+  required Future<String?> request,
+}) async {
+  return await showMessageDialog(context, message).then((_) async {
+    await sendRequestAndChangeMessage(
+      message,
+      request: request,
+      initMessageList: [],
+      messageList: ["正在加载中.", "正在加载中..", "正在加载中..."],
+      successMessage: "加载成功",
+      successMessageDuration: Duration(milliseconds: 300),
+      failMessageDuration: Duration(milliseconds: 800),
+    );
+    Navigator.of(context).pop();
+  });
 }
 
 Future<void> showAlertDialog({

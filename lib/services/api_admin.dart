@@ -5,7 +5,7 @@ import 'package:crypton/crypton.dart';
 import 'package:dio/dio.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/dio.dart';
-import 'package:shine/utils/string.dart';
+import 'package:shine/utils/string_utils.dart';
 
 class ApiAdmin {
   static RSAPrivateKey? _rsaPrivateKey;

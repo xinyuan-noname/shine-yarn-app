@@ -13,12 +13,14 @@ import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/async_utils.dart';
 import 'package:shine/utils/debouncer.dart';
-import 'package:shine/utils/file.dart';
+import 'package:shine/utils/file_utils.dart';
 import 'package:shine/utils/image.dart';
 import 'package:shine/utils/server.dart';
 import 'package:shine/utils/share.dart';
-import 'package:shine/utils/time.dart';
+import 'package:shine/utils/time_utils.dart';
+import 'package:shine/utils/upload_utils.dart';
 import 'package:week_of_year/date_week_extensions.dart';
 
 class TaskUploadPage extends StatefulWidget {
@@ -97,6 +99,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
   final TextEditingController _taskNameController = TextEditingController();
   final Debouncer _debouncerS = Debouncer();
   final Debouncer _debouncerE = Debouncer();
+  final List<UploadData> _uploadData = [];
   @override
   void initState() {
     super.initState();
@@ -104,19 +107,32 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
   }
 
   Future _init() async {
-    _subjectNameList.addAll(await SubjectStorage.getCurrentSubjectName());
-    _username = await ProfileStorage.getName();
-    _major = await ProfileStorage.getMajor();
-    _class = await ProfileStorage.getClass();
-    _academy = await ProfileStorage.getAcademy();
-    _id = await ProfileStorage.getId();
-    _semesterStartedAt =
-        await SemesterStorage.getCurrentSemesterStartedAt() ?? DateTime.now();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    await _initProfileData();
+    await AsyncUtils.postFrame(() async {
       if (!mounted) return;
-      _handleArgs();
+      await _handleArgs();
     });
     setState(() {});
+  }
+
+  Future<void> _initProfileData() async {
+    final results = await Future.wait([
+      SubjectStorage.getCurrentSubjectName(),
+      ProfileStorage.getName(),
+      ProfileStorage.getMajor(),
+      ProfileStorage.getClass(),
+      ProfileStorage.getAcademy(),
+      ProfileStorage.getId(),
+      SemesterStorage.getCurrentSemesterStartedAt(),
+    ]);
+    _subjectNameList.clear();
+    _subjectNameList.addAll(results[0] as List<String>);
+    _username = results[1] as String;
+    _major = results[2] as String;
+    _class = results[3] as String;
+    _academy = results[4] as String;
+    _id = results[5] as String;
+    _semesterStartedAt = results[6] as DateTime? ?? DateTime.now();
   }
 
   Future<void> _handleArgs() async {
@@ -135,12 +151,16 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
     }
   }
 
-  Future _createTask() async {
-    if (_taskId != null) return;
+  void ensureTaskName() {
     if (_taskNameController.text.isEmpty) {
       _taskNameController.text =
           "${_startedAt.year}-${_startedAt.month}-${_startedAt.day}-${_startedAt.hour}-${_startedAt.minute}任务";
     }
+  }
+
+  Future _createTask() async {
+    if (_taskId != null) return;
+    ensureTaskName();
 
     _message.value = "正在上传任务中";
     showMessageDialog(context, _message);
@@ -185,10 +205,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
 
   Future _updateTask() async {
     if (_taskId == null) return;
-    if (_taskNameController.text.isEmpty) {
-      _taskNameController.text =
-          "${_startedAt.year}-${_startedAt.month}-${_startedAt.day}-${_startedAt.hour}-${_startedAt.minute}任务";
-    }
+    ensureTaskName();
     _message.value = "正在更改任务中";
     showMessageDialog(context, _message);
     await sendRequestAndChangeMessage(
@@ -249,7 +266,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                   ),
                   Expanded(
                     child: TabBarView(
-                      children: [_buildUploadWidget(), Container()],
+                      children: [_buildUploadWidget(), _buildFinishWidget()],
                     ),
                   ),
                 ],
@@ -622,6 +639,10 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
     );
   }
 
+  Widget _buildFinishWidget() {
+    return ListView.builder(itemBuilder: (context, index) {});
+  }
+
   final List<List<String>> _formationInfo = [
     ["academy", "学院"],
     ["major", "专业"],
@@ -750,10 +771,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
     );
   }
 
-  /// 从字符串反推 _nameNodeList
-  /// [fileName] 文件名，格式如 "%tag[academy]%张三%tag[major]%作业"
   void _parseNameNodeList(String fileName) {
-    // 清空现有列表
     for (final node in _nameNodeList) {
       node.dispose();
     }
