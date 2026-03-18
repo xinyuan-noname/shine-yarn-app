@@ -89,10 +89,10 @@ class Worker {
         Worker.scheduleUrl(defaultDuration);
       } on DioException {
         showToast(msg: "服务未就绪，以离线模式进入");
-        ApiService.setBaseUrl("");
+        ApiService.openOfflineMode();
       } catch (e) {
         showToast(msg: "服务未就绪，以离线模式进入");
-        ApiService.setBaseUrl("");
+        ApiService.openOfflineMode();
       }
     });
   }

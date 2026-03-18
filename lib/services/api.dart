@@ -11,6 +11,7 @@ import 'package:shine/worker/worker.dart';
 
 class ApiService {
   static String _accessToken = '';
+  static bool _offlineMode = false;
   static final _errorInterceptor = InterceptorsWrapper(
     onError: (DioException err, handler) {
       final res = err.response;
@@ -99,7 +100,7 @@ class ApiService {
   }
 
   static bool get isOk {
-    return dio.options.baseUrl.isNotEmpty;
+    return dio.options.baseUrl.isNotEmpty || _offlineMode;
   }
 
   static bool get prepared {
@@ -196,5 +197,9 @@ class ApiService {
     } catch (e) {
       return DioMediaType('application', 'octet-stream');
     }
+  }
+
+  static openOfflineMode() {
+    ApiService._offlineMode = true;
   }
 }
