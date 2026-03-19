@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shine/cache/user_cache.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/custom_back_handler.dart';
 import 'package:shine/components/dialog.dart';
@@ -30,7 +31,7 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
   final TextEditingController _drawNumberController = TextEditingController(
     text: "1",
   );
-  final List<Map<String, dynamic>> _allUserList = [];
+  final List<Map<String, dynamic>> _allUserList = UserCache.getUserList();
   final List<Map<String, dynamic>> _inRangeUserList = [];
   List<Map<String, dynamic>> get _outRangeUserList => _allUserList
       .where(
@@ -74,12 +75,6 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
       if (!mounted) return;
       await _handleArgs();
     });
-    final allUserOrNull = await GroupStorage.getGroupUserList(
-      GroupStorageKey.entire,
-    );
-    if (allUserOrNull is List<Map<String, dynamic>>) {
-      _allUserList.addAll(allUserOrNull);
-    }
   }
 
   Future<void> _handleArgs() async {

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:shine/cache/user_cache.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/file_display_bar.dart';
@@ -11,7 +12,6 @@ import 'package:shine/components/task.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/services/api_task.dart';
 import 'package:shine/services/ws_task.dart';
-import 'package:shine/storage/group_storage.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/storage/subject_storage.dart';
@@ -105,7 +105,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
   final Debouncer _debouncerS = Debouncer();
   final Debouncer _debouncerE = Debouncer();
   final List<UploadData> _uploadDataList = [];
-  final List<Map<String, dynamic>> _allUserList = [];
+  final List<Map<String, dynamic>> _allUserList = UserCache.getUserList();
   List<Map<String, dynamic>> get _unfinishedUserList => _allUserList
       .where(
         (user) => _uploadDataList.every(
@@ -127,14 +127,6 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
         request: Future(() async {
           await _initProfileData();
           await _handleArgs();
-          final allUserOrNull = await GroupStorage.getGroupUserList(
-            GroupStorageKey.entire,
-          );
-          if (allUserOrNull is List<Map<String, dynamic>>) {
-            _allUserList.addAll(allUserOrNull);
-          }
-          if (!mounted) return null;
-          setState(() {});
           if (_taskId != null) {
             await _refreshUploadData();
           }
@@ -669,6 +661,8 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
     return ListView(
       children: [
         ExpansionTile(
+          initiallyExpanded: true,
+          childrenPadding: EdgeInsets.symmetric(horizontal: 8),
           title: Text(
             "完成的同学(${_uploadDataList.length}人)",
             style: expansionListTitleStyle,
@@ -678,16 +672,38 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
               children: _uploadDataList
                   .map(
                     (uploadData) => Container(
-                      padding: bodyPadding,
+                      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                      margin: EdgeInsets.symmetric(vertical: 3),
+                      decoration: BoxDecoration(
+                        gradient: whiteLinearGradient,
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(color: mainColorGrey60),
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              NetworkAvatar(id: uploadData.uploadId),
+                              Column(
+                                children: [
+                                  NetworkAvatar(id: uploadData.uploadId),
+                                  Text(
+                                    UserCache.getUsername(
+                                          uploadData.uploadId,
+                                        ) ??
+                                        "未知用户",
+                                    style: const TextStyle(
+                                      fontFamily: "SmileySans",
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(width: 10),
                               Expanded(
                                 child: FileDisplayBar(
                                   fileName: uploadData.uploadFileName,
+                                  maxLines: 2,
                                 ),
                               ),
                             ],
@@ -701,6 +717,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
           ],
         ),
         ExpansionTile(
+          initiallyExpanded: true,
           title: Text(
             "未完成的同学(${unfinishedUserList.length}人)",
             style: expansionListTitleStyle,
@@ -806,7 +823,10 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                 try {
                   await WsTask.sendRemind(
                     msg: result,
-                    targetList: await ProfileStorage.getUserIdList(),
+                    targetList: _unfinishedUserList
+                        .map((e) => e['username'])
+                        .whereType<String>()
+                        .toList(),
                     level: 5,
                   );
                   showToast(msg: "发送成功");

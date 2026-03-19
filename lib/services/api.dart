@@ -127,6 +127,12 @@ class ApiService {
     return payload["userId"] ?? "";
   }
 
+  static Map<String, dynamic> get accessTokenPayload {
+    if (_accessToken.isEmpty) return {};
+    final payload = JwtDecoder.decode(_accessToken);
+    return payload;
+  }
+
   static void setBaseUrl(String url) {
     dio.options.baseUrl = url;
     uploadDio.options.baseUrl = url;
