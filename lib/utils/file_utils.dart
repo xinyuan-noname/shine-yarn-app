@@ -36,7 +36,7 @@ List<String>? getExtensionListFromMimeType(String mimetype) {
       return ["pdf"];
 
     case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-      return ["xlsx", "xls"];
+      return ["xlsx"];
 
     case "image/jpeg":
       return ["jpg"];
