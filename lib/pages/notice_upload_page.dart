@@ -259,11 +259,17 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
           onPress: () async {
             if (_selectedFile is PlatformFile) {
               if (fileName!.endsWith(".pdf")) {
-                gotoViewPdfFile(_selectedFile!.path);
+                gotoViewPdfFile(_selectedFile!.path as String);
+              } else if (isImageFile(fileName)) {
+                gotoViewImageFile(_selectedFile!.path as String);
               }
             } else {
               if (fileName!.endsWith(".pdf")) {
                 gotoViewPdfUrl(
+                  "/task/upload/file/${_data!.id}/${ApiService.userId}",
+                );
+              } else if (isImageFile(fileName)) {
+                gotoViewImageUrl(
                   "/task/upload/file/${_data!.id}/${ApiService.userId}",
                 );
               }

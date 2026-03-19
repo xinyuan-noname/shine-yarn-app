@@ -707,10 +707,13 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                                   maxLines: 2,
                                   onPress: () async {
                                     if (_taskId == null) return;
-                                    if (uploadData.uploadFileName.endsWith(
-                                      ".pdf",
-                                    )) {
+                                    final fileName = uploadData.uploadFileName;
+                                    if (fileName.endsWith(".pdf")) {
                                       gotoViewPdfUrl(
+                                        "/task/upload/file/$_taskId/${ApiService.userId}",
+                                      );
+                                    } else if (isImageFile(fileName)) {
+                                      gotoViewImageUrl(
                                         "/task/upload/file/$_taskId/${ApiService.userId}",
                                       );
                                     }

@@ -12,6 +12,7 @@ import 'package:shine/pages/task_check_page.dart';
 import 'package:shine/pages/task_draw_page.dart';
 import 'package:shine/pages/task_upload_page.dart';
 import 'package:shine/pages/task_vote_page.dart';
+import 'package:shine/pages/view_image_page.dart';
 import 'package:shine/pages/view_pdf_page.dart';
 
 final Map<String, WidgetBuilder> appRouters = {
@@ -29,5 +30,6 @@ final Map<String, WidgetBuilder> appRouters = {
   "/task/upload": (_) => TaskUploadPage(),
   "/notice/upload": (_) => NoticeUploadPage(),
   "/view/pdf": (_) => ViewPdfPage(),
+  '/view/image': (_) => ViewImagePage(),
 };
 final globalNavigatorKey = GlobalKey<NavigatorState>();

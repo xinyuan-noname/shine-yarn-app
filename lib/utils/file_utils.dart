@@ -1,7 +1,25 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:shine/pages/view_image_page.dart';
 import 'package:shine/pages/view_pdf_page.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
+import 'package:path/path.dart' as path;
+
+bool isImageFile(String filePath) {
+  const imageExtensions = {
+    'jpg',
+    'jpeg',
+    'png',
+    'gif',
+    'bmp',
+    'webp',
+    'svg',
+    'tiff',
+    'tif',
+  };
+  final ext = path.extension(filePath).substring(1).toLowerCase(); 
+  return imageExtensions.contains(ext);
+}
 
 Future<PlatformFile?> pickFile({List<String>? exts}) async {
   FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -72,15 +90,30 @@ String formatBytes(int? bytes) {
   return '${(bytes / (1000_000_000)).toStringAsFixed(2)} GB';
 }
 
-Future gotoViewPdfFile(filepath) async {
+Future gotoViewPdfFile(String filepath) async {
   await globalNavigatorKey.currentState?.pushNamed(
     "/view/pdf",
     arguments: ViewPdfPageArgs(filePath: filepath),
   );
 }
-Future gotoViewPdfUrl(url) async {
+
+Future gotoViewPdfUrl(String url) async {
   await globalNavigatorKey.currentState?.pushNamed(
     "/view/pdf",
     arguments: ViewPdfPageArgs(url: "${ApiService.url}$url"),
+  );
+}
+
+Future gotoViewImageFile(String filepath) async {
+  await globalNavigatorKey.currentState?.pushNamed(
+    "/view/image",
+    arguments: ViewImagePageArgs(filePath: filepath),
+  );
+}
+
+Future gotoViewImageUrl(String url) async {
+  await globalNavigatorKey.currentState?.pushNamed(
+    "/view/image",
+    arguments: ViewImagePageArgs(url: "${ApiService.url}$url"),
   );
 }

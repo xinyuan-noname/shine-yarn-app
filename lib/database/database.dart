@@ -24,7 +24,7 @@ class RemindMessage extends Table {
 
 @DriftDatabase(tables: [TaskCheck, RemindMessage])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase(QueryExecutor executor) : super(executor);
+  AppDatabase(super.executor);
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (Migrator m) => m.createAll(),

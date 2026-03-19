@@ -19,6 +19,19 @@ Future shareImage({
     ),
   );
 }
+Future shareImageByXFile({
+  required XFile image,
+  String name = "share.png",
+  String mimeType = "image/png",
+  String? title,
+}) async {
+  SharePlus.instance.share(
+    ShareParams(
+      text: title,
+      files: [image],
+    ),
+  );
+}
 
 Map<String, String>? extractIdAndPassword(String text) {
   final match = RegExp(r'^(\d+)的密码令牌：([\da-zA-Z-]+)').firstMatch(text);

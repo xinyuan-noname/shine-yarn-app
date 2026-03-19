@@ -65,6 +65,7 @@ dependencies:
   collection: ^1.19.1
   pdfx: ^2.9.2
   internet_file: ^1.0.0
+  permission_handler: ^11.4.0
 
 dev_dependencies:
   flutter_test:
