@@ -5,12 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dio/dio.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:shine/components/custom_back_handler.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/components/toast.dart';
-import 'package:shine/utils/share.dart';
 import 'package:shine/utils/permission_utils.dart';
 
 class ViewImagePage extends StatefulWidget {
@@ -131,13 +128,10 @@ class _ViewImagePageState extends State<ViewImagePage> {
       if (!await saveDir.exists()) {
         await saveDir.create(recursive: true);
       }
-
-      // 生成文件名
       final fileName = 'image_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final savePath = '${saveDir.path}/$fileName';
 
       if (_imageUrl != null) {
-        // 使用 Dio 下载图片
         final dio = Dio();
         dio.options.headers.addAll(ApiService.headers.cast<String, String>());
 
@@ -153,11 +147,9 @@ class _ViewImagePageState extends State<ViewImagePage> {
           },
         );
       } else if (_imageData != null) {
-        // 保存内存中的数据
         final file = File(savePath);
         await file.writeAsBytes(_imageData!);
       } else if (_filePath != null) {
-        // 复制文件到下载目录
         final sourceFile = File(_filePath!);
         await sourceFile.copy(savePath);
       }
@@ -169,9 +161,6 @@ class _ViewImagePageState extends State<ViewImagePage> {
 
       // 显示成功提示
       showToast(msg: '图片已保存到：$savePath');
-
-      // 询问是否分享图片
-      _showShareDialog(savePath);
     } catch (e) {
       setState(() {
         _isDownloading = false;
@@ -181,43 +170,17 @@ class _ViewImagePageState extends State<ViewImagePage> {
     }
   }
 
-  void _showShareDialog(String filePath) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('下载成功'),
-        content: const Text('是否要分享这张图片？'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text('稍后再说'),
-          ),
-          ElevatedButton.icon(
-            onPressed: () async {
-              Navigator.pop(context);
-              shareImageByXFile(image: XFile(filePath), title: "分享图片");
-            },
-            icon: const Icon(Icons.share),
-            label: const Text('分享'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return CustomBackHandler(
-      onWillPop: () async {
-        return true;
-      },
-      child: Scaffold(
-        appBar: _buildAppBar(),
-        body: SizedBox.expand(child: _buildBody()),
-        bottomNavigationBar: _buildBottomBar(),
+    return Scaffold(
+      appBar: _buildAppBar(),
+      body: SafeArea(
+        child: Container(
+          alignment: Alignment.center,
+          child: _buildBody(),
+        ),
       ),
+      bottomNavigationBar: _buildBottomBar(),
     );
   }
 
@@ -290,7 +253,6 @@ class _ViewImagePageState extends State<ViewImagePage> {
       );
     }
     return InteractiveViewer(
-      constrained: false,
       child: Container(alignment: Alignment.center, child: _buildImage()),
     );
   }
