@@ -124,7 +124,7 @@ class ApiService {
   static String get userId {
     if (_accessToken.isEmpty) return "";
     final payload = JwtDecoder.decode(_accessToken);
-    return payload["userId"] ?? "";
+    return payload["id"] ?? "";
   }
 
   static Map<String, dynamic> get accessTokenPayload {

@@ -4,6 +4,7 @@ import 'package:shine/components/dialog.dart';
 import 'package:shine/components/file_display_bar.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/toast.dart';
+import 'package:shine/services/api.dart';
 import 'package:shine/services/api_task_upload.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/task_storage.dart';
@@ -244,14 +245,32 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
     final List<Widget> children = [];
     String? fileName;
     int? fileSize;
-    if (_uploadData != null) {
-      fileName = _uploadData!.uploadFileName;
-    } else if (_selectedFile != null) {
+    if (_selectedFile != null) {
       fileName = _controller.text;
       fileSize = _selectedFile?.bytes?.length;
+    } else if (_uploadData != null) {
+      fileName = _uploadData!.uploadFileName;
     }
     if (fileName is String) {
-      children.add(FileDisplayBar(fileName: fileName, fileSize: fileSize));
+      children.add(
+        FileDisplayBar(
+          fileName: fileName,
+          fileSize: fileSize,
+          onPress: () async {
+            if (_selectedFile is PlatformFile) {
+              if (fileName!.endsWith(".pdf")) {
+                gotoViewPdfFile(_selectedFile!.path);
+              }
+            } else {
+              if (fileName!.endsWith(".pdf")) {
+                gotoViewPdfUrl(
+                  "/task/upload/file/${_data!.id}/${ApiService.userId}",
+                );
+              }
+            }
+          },
+        ),
+      );
     }
     children.add(
       InkWell(
@@ -264,7 +283,6 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
                 : await pickFile(exts: exts);
             if (file == null || file.bytes == null) return;
             _selectedFile = file;
-            setState(() {});
             if (file.extension is String) {
               if (_defaultFileName is String) {
                 final pp = _defaultFileName?.lastIndexOf(".");
@@ -278,6 +296,7 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
                 _controller.text =
                     '${_controller.text.substring(0, p)}.${file.extension}';
               }
+              setState(() {});
             }
           });
         },

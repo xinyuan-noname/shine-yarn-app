@@ -10,6 +10,7 @@ import 'package:shine/components/line.dart';
 import 'package:shine/components/mime_type_dropdown.dart';
 import 'package:shine/components/task.dart';
 import 'package:shine/components/toast.dart';
+import 'package:shine/services/api.dart';
 import 'package:shine/services/api_task.dart';
 import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/profile_storage.dart';
@@ -704,6 +705,16 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                                 child: FileDisplayBar(
                                   fileName: uploadData.uploadFileName,
                                   maxLines: 2,
+                                  onPress: () async {
+                                    if (_taskId == null) return;
+                                    if (uploadData.uploadFileName.endsWith(
+                                      ".pdf",
+                                    )) {
+                                      gotoViewPdfUrl(
+                                        "/task/upload/file/$_taskId/${ApiService.userId}",
+                                      );
+                                    }
+                                  },
                                 ),
                               ),
                             ],
@@ -717,7 +728,6 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
           ],
         ),
         ExpansionTile(
-          initiallyExpanded: true,
           title: Text(
             "未完成的同学(${unfinishedUserList.length}人)",
             style: expansionListTitleStyle,

@@ -1,4 +1,7 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:shine/pages/view_pdf_page.dart';
+import 'package:shine/routes.dart';
+import 'package:shine/services/api.dart';
 
 Future<PlatformFile?> pickFile({List<String>? exts}) async {
   FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -67,4 +70,17 @@ String formatBytes(int? bytes) {
     return '${(bytes / (1000_000)).toStringAsFixed(2)} MB';
   }
   return '${(bytes / (1000_000_000)).toStringAsFixed(2)} GB';
+}
+
+Future gotoViewPdfFile(filepath) async {
+  await globalNavigatorKey.currentState?.pushNamed(
+    "/view/pdf",
+    arguments: ViewPdfPageArgs(filePath: filepath),
+  );
+}
+Future gotoViewPdfUrl(url) async {
+  await globalNavigatorKey.currentState?.pushNamed(
+    "/view/pdf",
+    arguments: ViewPdfPageArgs(url: "${ApiService.url}$url"),
+  );
 }
