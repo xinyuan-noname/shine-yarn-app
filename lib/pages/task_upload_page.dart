@@ -1,10 +1,10 @@
-import 'package:file_icon/file_icon.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:shine/components/avatar.dart';
 import 'package:shine/components/dialog.dart';
+import 'package:shine/components/file_display_bar.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/mime_type_dropdown.dart';
 import 'package:shine/components/task.dart';
@@ -685,9 +685,10 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                           Row(
                             children: [
                               NetworkAvatar(id: uploadData.uploadId),
-                              FileIcon(
-                                uploadData.uploadFileName,
-                                size: hugeIconSize,
+                              Expanded(
+                                child: FileDisplayBar(
+                                  fileName: uploadData.uploadFileName,
+                                ),
                               ),
                             ],
                           ),

@@ -22,11 +22,16 @@ class GroupStorage {
     await prefs.setStringList(key.value, s);
   }
 
-  static Future<List<Map<String,dynamic>>?> getGroupUserList(GroupStorageKey key) async {
+  static Future<List<Map<String, dynamic>>?> getGroupUserList(
+    GroupStorageKey key,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final list = prefs.getStringList(key.value);
     if (list == null) return null;
-    return list.map((e) => jsonDecode(e)).whereType<Map<String, dynamic>>().toList();
+    return list
+        .map((e) => jsonDecode(e))
+        .whereType<Map<String, dynamic>>()
+        .toList();
   }
 
   static Future delUserList(GroupStorageKey key) async {

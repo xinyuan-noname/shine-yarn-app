@@ -354,48 +354,44 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
       leftItems: _inRangeUserList,
       rightItems: _outRangeUserList,
       leftItemBuilder: (context, item, index) {
-        if (item is Map<String, dynamic>) {
-          final id = item["id"];
-          final username = item["username"];
-          if (id is String && username is String) {
-            return UserInfoBar(
-              id: id,
-              username: username,
-              onTap: () {
-                _inRangeUserList.remove(item);
-                setState(() {});
-              },
-            );
-          }
+        final id = item["id"];
+        final username = item["username"];
+        if (id is String && username is String) {
+          return UserInfoBar(
+            id: id,
+            username: username,
+            onTap: () {
+              _inRangeUserList.remove(item);
+              setState(() {});
+            },
+          );
         }
-        return null;
+              return null;
       },
       rightItemBuilder: (context, item, index) {
-        if (item is Map<String, dynamic>) {
-          final id = item["id"];
-          final username = item["username"];
-          if (id is String && username is String) {
-            return UserInfoBar(
-              id: id,
-              username: username,
-              idStyle: const TextStyle(
-                fontFamily: "SmileySans",
-                color: Colors.grey,
-                fontSize: 15,
-              ),
-              usernameStyle: const TextStyle(
-                fontFamily: "SmileySans",
-                color: Colors.grey,
-                fontSize: 15,
-              ),
-              onTap: () {
-                _inRangeUserList.add(item);
-                setState(() {});
-              },
-            );
-          }
+        final id = item["id"];
+        final username = item["username"];
+        if (id is String && username is String) {
+          return UserInfoBar(
+            id: id,
+            username: username,
+            idStyle: const TextStyle(
+              fontFamily: "SmileySans",
+              color: Colors.grey,
+              fontSize: 15,
+            ),
+            usernameStyle: const TextStyle(
+              fontFamily: "SmileySans",
+              color: Colors.grey,
+              fontSize: 15,
+            ),
+            onTap: () {
+              _inRangeUserList.add(item);
+              setState(() {});
+            },
+          );
         }
-        return null;
+              return null;
       },
     );
   }

@@ -238,6 +238,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                 ),
                                 autoPlayCurve: Curves.fastOutSlowIn,
                                 scrollDirection: Axis.horizontal,
+                                enableInfiniteScroll: false,
                               ),
                             ),
                       const SizedBox(height: 20),

@@ -1,7 +1,7 @@
-import 'package:file_icon/file_icon.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
+import 'package:shine/components/file_display_bar.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/services/api_task_upload.dart';
@@ -251,52 +251,7 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
       fileSize = _selectedFile?.bytes?.length;
     }
     if (fileName is String) {
-      children.add(
-        Container(
-          padding: EdgeInsets.all(5),
-          margin: EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            gradient: whiteLinearGradient,
-            border: Border.all(color: mainColorGrey40),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: mainColorGrey20),
-                ),
-                child: FileIcon(fileName, size: hugeIconSize),
-              ),
-              SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '文件名：$fileName',
-                      style: const TextStyle(
-                        fontFamily: 'SmileySans',
-                        fontSize: 12,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (fileSize is int)
-                      Text(
-                        '文件大小：${formatBytes(fileSize)}',
-                        style: const TextStyle(
-                          fontFamily: 'SmileySans',
-                          fontSize: 12,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
+      children.add(FileDisplayBar(fileName: fileName, fileSize: fileSize));
     }
     children.add(
       InkWell(

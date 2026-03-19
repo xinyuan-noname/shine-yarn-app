@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:shine/cache/user_cache.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/services/api_admin.dart';
 import 'package:shine/services/api_message.dart';
@@ -154,7 +155,12 @@ class Worker {
     for (final nameKeyEnum in list) {
       if (!force) {
         final storage = await GroupStorage.getGroupUserList(nameKeyEnum);
-        if (storage is List) continue;
+        if (storage is List<Map<String, dynamic>>) {
+          if (nameKeyEnum == GroupStorageKey.entire) {
+            UserCache.setFromGroupDataList(storage);
+          }
+          continue;
+        }
       }
       final result = await ApiGroup.getGlobalGroupData(nameKeyEnum);
       if (result is List) {
@@ -251,8 +257,8 @@ class Worker {
   static Future<List<UploadData>?> syncUploadsByTaskId(int taskId) async {
     final uploadsResult = await ApiTaskUpload.getUploadsByTaskId(taskId);
     if (uploadsResult is List) {
-      final uploadsList = uploadsResult.whereType<Map<String,dynamic>>();
-      return uploadsList.map((e)=>UploadData.fromMap(e)).toList();
+      final uploadsList = uploadsResult.whereType<Map<String, dynamic>>();
+      return uploadsList.map((e) => UploadData.fromMap(e)).toList();
     }
     return null;
   }
