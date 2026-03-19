@@ -817,7 +817,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                   context: context,
                   title: "请设置提醒消息, 点击确定以发送",
                   label: "提醒消息",
-                  initValue: "请尽快完成作业",
+                  initValue: "请尽快完成作业“${_taskNameController.text}”",
                 );
                 if (result == null) return;
                 try {
