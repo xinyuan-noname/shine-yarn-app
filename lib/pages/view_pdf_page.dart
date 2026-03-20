@@ -97,11 +97,11 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
     return AppBar(
       title: Text(
         '文档查看',
-        style: titleTextStyle.copyWith(fontSize: 18, color: Colors.white),
+        style: titleTextStyle.copyWith(fontSize: 18, color: bgColorLight),
       ),
       centerTitle: true,
       backgroundColor: deepColorPurple,
-      foregroundColor: Colors.white,
+      foregroundColor: bgColorLight,
     );
   }
 
@@ -178,10 +178,10 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: bgColorLight,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: const Color.fromRGBO(0, 0, 0, 0.1),
             blurRadius: 4,
             offset: const Offset(0, -2),
           ),
