@@ -13,7 +13,7 @@ import 'package:shine/storage/group_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/image.dart';
-import 'package:shine/utils/share.dart';
+import 'package:shine/utils/share_utils.dart';
 
 
 class TaskCheckPage extends StatefulWidget {

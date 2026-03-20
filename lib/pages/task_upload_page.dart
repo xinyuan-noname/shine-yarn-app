@@ -19,11 +19,11 @@ import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/async_utils.dart';
-import 'package:shine/utils/debouncer.dart';
+import 'package:shine/utils/debouncer_utils.dart';
 import 'package:shine/utils/file_utils.dart';
 import 'package:shine/utils/image.dart';
 import 'package:shine/utils/server.dart';
-import 'package:shine/utils/share.dart';
+import 'package:shine/utils/share_utils.dart';
 import 'package:shine/utils/time_utils.dart';
 import 'package:shine/utils/upload_utils.dart';
 import 'package:shine/worker/worker.dart';
@@ -856,6 +856,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
               icon: Icons.notifications_outlined,
               title: '一键提醒',
             ),
+            buildBottomItem(onTap: () {}, icon: Icons.download, title: '打包文件'),
             buildBottomItem(
               onTap: () async {
                 final image = await captureWidgetToPng(globalKey: _key);

@@ -15,7 +15,7 @@ import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/course.dart';
-import 'package:shine/utils/debouncer.dart';
+import 'package:shine/utils/debouncer_utils.dart';
 import 'package:shine/utils/upload_utils.dart';
 import 'package:shine/views/message_view.dart';
 import 'package:shine/views/schedule_view.dart';

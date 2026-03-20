@@ -24,6 +24,7 @@ import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/utils/course.dart';
+import 'package:shine/utils/download_utils.dart';
 import 'package:shine/utils/message.dart';
 import 'package:shine/utils/upload_utils.dart';
 
@@ -286,6 +287,10 @@ class Worker {
         badgeCount: count,
       );
     });
+  }
+
+  static startDownload() {
+    DownloadUtils().init();
   }
 
   static void dispose() {

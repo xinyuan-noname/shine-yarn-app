@@ -9,7 +9,7 @@ import 'package:shine/services/api_task_upload.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
-import 'package:shine/utils/debouncer.dart';
+import 'package:shine/utils/debouncer_utils.dart';
 import 'package:shine/utils/file_utils.dart';
 import 'package:shine/utils/server.dart';
 import 'package:shine/utils/time_utils.dart';

@@ -66,6 +66,7 @@ dependencies:
   pdfx: ^2.9.2
   internet_file: ^1.0.0
   permission_handler: ^11.4.0
+  background_downloader: ^9.5.4
 
 dev_dependencies:
   flutter_test:

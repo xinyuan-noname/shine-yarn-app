@@ -10,7 +10,7 @@ import 'package:shine/extensions/text_editing.dart';
 import 'package:shine/services/api_auth.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';
-import 'package:shine/utils/share.dart';
+import 'package:shine/utils/share_utils.dart';
 import 'package:shine/utils/server.dart';
 
 const contentTextStyle = TextStyle(
