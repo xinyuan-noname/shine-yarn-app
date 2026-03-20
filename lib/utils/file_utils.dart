@@ -27,6 +27,9 @@ bool isDocument(String filePath) {
     'xlsx',
     'doc',
     'docx',
+    'ppt',
+    'pptx',
+    'pdf',
   };
   final ext = path.extension(filePath).substring(1).toLowerCase();
   return documentExtensions.contains(ext);

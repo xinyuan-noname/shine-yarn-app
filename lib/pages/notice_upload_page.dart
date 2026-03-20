@@ -262,6 +262,8 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
                 gotoViewPdfFile(_selectedFile!.path as String);
               } else if (isImageFile(fileName)) {
                 gotoViewImageFile(_selectedFile!.path as String);
+              } else if (isDocument(fileName)) {
+                showToast(msg: "请提交后再查看");
               }
             } else {
               final taskId = _data!.id;
@@ -277,6 +279,8 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
                 gotoViewPdfUrl(
                   "/task/upload/view/document/$taskId/${ApiService.userId}",
                 );
+              } else {
+                showToast(msg: "暂不支持预览");
               }
             }
           },

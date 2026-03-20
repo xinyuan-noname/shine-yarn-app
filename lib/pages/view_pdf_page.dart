@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:internet_file/internet_file.dart';
@@ -114,7 +113,7 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
             CircularProgressIndicator(),
             SizedBox(height: 16),
             Text(
-              '正在加载 PDF...',
+              '正在加载文档...',
               style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
           ],
@@ -129,10 +128,17 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
           children: [
             Icon(Icons.error_outline, size: 48, color: Colors.red),
             SizedBox(height: 16),
-            Text(
-              _error!,
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
-              textAlign: TextAlign.center,
+            Expanded(
+              child: Text(
+                _error!,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 10,
+              ),
             ),
             SizedBox(height: 24),
             ElevatedButton.icon(
@@ -245,5 +251,5 @@ class ViewPdfPageArgs {
   final String? filePath;
   final String? url;
 
-  const ViewPdfPageArgs({this.filePath,  this.url});
+  const ViewPdfPageArgs({this.filePath, this.url});
 }
