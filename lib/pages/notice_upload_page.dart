@@ -264,13 +264,18 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
                 gotoViewImageFile(_selectedFile!.path as String);
               }
             } else {
+              final taskId = _data!.id;
               if (fileName!.endsWith(".pdf")) {
                 gotoViewPdfUrl(
-                  "/task/upload/file/${_data!.id}/${ApiService.userId}",
+                  "/task/upload/file/$taskId/${ApiService.userId}",
                 );
               } else if (isImageFile(fileName)) {
                 gotoViewImageUrl(
-                  "/task/upload/file/${_data!.id}/${ApiService.userId}",
+                  "/task/upload/file/$taskId/${ApiService.userId}",
+                );
+              } else if (isDocument(fileName)) {
+                gotoViewPdfUrl(
+                  "/task/upload/view/document/$taskId/${ApiService.userId}",
                 );
               }
             }
@@ -314,7 +319,7 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
             gradient: whiteLinearGradient,
           ),
           child: Icon(
-            _selectedFile == null ? Icons.add : Icons.sync,
+            fileName == null ? Icons.add : Icons.sync,
             size: largeIconSize,
             color: Colors.grey,
           ),

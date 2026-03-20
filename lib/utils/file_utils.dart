@@ -17,8 +17,19 @@ bool isImageFile(String filePath) {
     'tiff',
     'tif',
   };
-  final ext = path.extension(filePath).substring(1).toLowerCase(); 
+  final ext = path.extension(filePath).substring(1).toLowerCase();
   return imageExtensions.contains(ext);
+}
+
+bool isDocument(String filePath) {
+  const documentExtensions = {
+    'xls',
+    'xlsx',
+    'doc',
+    'docx',
+  };
+  final ext = path.extension(filePath).substring(1).toLowerCase();
+  return documentExtensions.contains(ext);
 }
 
 Future<PlatformFile?> pickFile({List<String>? exts}) async {

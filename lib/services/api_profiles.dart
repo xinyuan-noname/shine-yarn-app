@@ -20,37 +20,6 @@ class ApiProfiles {
     }
   }
 
-  static Future getAvatar(String id) async {
-    if (!ApiService.isOk) return null;
-    try {
-      final response = await dio.get(
-        '/profiles/avatar/$id',
-        options: Options(
-          headers: {'Accept': 'image/*'},
-          responseType: ResponseType.bytes,
-        ),
-      );
-      return response.data;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  static Future getMyAvatar() async {
-    if (!ApiService.isOk) return null;
-    try {
-      final response = await dio.get(
-        '/profiles/my/avatar',
-        options: Options(
-          headers: {'Accept': 'image/*'},
-          responseType: ResponseType.bytes,
-        ),
-      );
-      return response.data;
-    } catch (e) {
-      return null;
-    }
-  }
 
   static Future getMyProfile() async {
     if (!ApiService.prepared) return "服务未就绪";

@@ -7,7 +7,7 @@ class NetworkAvatar extends StatelessWidget {
   final String id;
   final double radius;
   final int? ts;
-  String get _imageUrl => "${ApiService.url}/profiles/avatar/$id";
+  String get _imageUrl => "${ApiService.url}/asset/avatar/$id";
   Map<String, String> get _httpHeaders {
     final raw = ApiService.headers;
     return raw.cast<String, String>();

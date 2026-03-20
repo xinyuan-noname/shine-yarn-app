@@ -716,6 +716,12 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                                       gotoViewImageUrl(
                                         "/task/upload/file/$_taskId/${ApiService.userId}",
                                       );
+                                    } else if (isDocument(fileName)) {
+                                      gotoViewPdfUrl(
+                                        "/task/upload/view/document/$_taskId/${ApiService.userId}",
+                                      );
+                                    } else {
+                                      showToast(msg: "暂不支持预览");
                                     }
                                   },
                                 ),

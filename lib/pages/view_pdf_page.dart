@@ -96,7 +96,7 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       title: Text(
-        'PDF 查看',
+        '文档查看',
         style: titleTextStyle.copyWith(fontSize: 18, color: Colors.white),
       ),
       centerTitle: true,
