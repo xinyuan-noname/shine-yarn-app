@@ -140,6 +140,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
   }
 
   Future _syncUploadData() async {
+    if (_taskId == null) return;
     _uploadDataList.clear();
     final result = await Worker.syncUploadsByTaskId(_taskId!);
     if (result is List<UploadData>) {
@@ -149,7 +150,6 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
   }
 
   void _refreshUploadData() {
-    if (_taskId == null) return;
     _debouncerRefresh.run(() async {
       _syncUploadData();
     });
@@ -251,6 +251,9 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
         level: 3,
       );
     }
+    if (mounted) {
+      Navigator.pop(context);
+    }
   }
 
   Future _updateTask() async {
@@ -295,16 +298,15 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
     } else {
       final startedAtP = _previousData?.createdAt;
       if (startedAtP == null) return;
-      if (startedAtP.day == _startedAt.day &&
-          startedAtP.difference(_startedAt).inDays < 1) {
-        return;
-      }
       await WsTask.sendRemind(
         msg:
-            "作业“${_taskNameController.text}”改为于${getDayDifferenceString(_startedAt)}发布",
+            "作业“${_taskNameController.text}”改为于${getLocalTimeString(_startedAt)}(${getDayDifferenceString(_startedAt)})发布",
         targetList: await ProfileStorage.getUserIdList(),
         level: 3,
       );
+    }
+    if (mounted) {
+      Navigator.pop(context);
     }
   }
 
@@ -695,7 +697,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
 
     return RefreshIndicator(
       onRefresh: () async {
-        _refreshUploadData();
+        await _syncUploadData();
       },
       child: ListView(
         children: [
@@ -776,10 +778,12 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                               alignment: Alignment.centerLeft,
                               child: GestureDetector(
                                 onTap: () async {
+                                  final username = UserCache.getUsername(
+                                    uploadData.uploadId,
+                                  );
                                   final result = await showPromptDialog(
                                     context: context,
-                                    title:
-                                        '请输入打回${UserCache.getUsername(uploadData.uploadId)}任务的原因？',
+                                    title: '请输入打回$username任务的原因？',
                                     label: '打回原因',
                                   );
                                   if (result != null) {
@@ -788,14 +792,12 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                                           taskId: uploadData.taskId,
                                           uploadId: uploadData.uploadId,
                                         );
-                                    showToast(
-                                      msg:
-                                          msg ??
-                                          "${UserCache.getUsername(uploadData.uploadId)}的任务已删除成功",
-                                    );
-                                    if (mounted) {
-                                      _refreshUploadData();
+                                    if (msg is String) {
+                                      showToast(msg: '打回失败\n错误消息:$msg');
+                                      return;
                                     }
+                                    showToast(msg: "$username已打回成功");
+                                    _refreshUploadData();
                                     WsTask.sendRemind(
                                       msg:
                                           '你的“${_taskNameController.text}”任务被打回，请重新提交。\n打回原因：$result',
