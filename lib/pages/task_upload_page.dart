@@ -88,7 +88,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
   int? _taskId;
 
   final ValueNotifier<String> _message = ValueNotifier("");
-
+  UploadTaskStorageData? _previousData;
   String _selectedMimeType = "";
   String _username = "";
   String _major = "";
@@ -183,6 +183,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
       _parseNameNodeList(args.data.format);
       _startedKey = UniqueKey();
       _endedKey = UniqueKey();
+      _previousData = args.data;
       setState(() {});
     }
   }
@@ -232,11 +233,20 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
       failMessageDuration: Duration(milliseconds: 800),
     );
     Navigator.of(context).pop();
-    await WsTask.sendRemind(
-      msg: "有新作业“${_taskNameController.text}”发布，请尽快完成",
-      targetList: await ProfileStorage.getUserIdList(),
-      level: 6,
-    );
+    if (DateTime.now().isAfter(_startedAt)) {
+      await WsTask.sendRemind(
+        msg: "有新作业“${_taskNameController.text}”发布，请尽快完成",
+        targetList: await ProfileStorage.getUserIdList(),
+        level: 6,
+      );
+    } else if (DateTime.now().isBefore(_startedAt)) {
+      await WsTask.sendRemind(
+        msg:
+            "有新作业“${_taskNameController.text}”将于${getDayDifferenceString(_startedAt)}发布，请注意",
+        targetList: await ProfileStorage.getUserIdList(),
+        level: 3,
+      );
+    }
   }
 
   Future _updateTask() async {
@@ -272,11 +282,26 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
       failMessageDuration: Duration(milliseconds: 800),
     );
     Navigator.of(context).pop();
-    await WsTask.sendRemind(
-      msg: "作业“${_taskNameController.text}”设置有改动，请注意",
-      targetList: await ProfileStorage.getUserIdList(),
-      level: 5,
-    );
+    if (DateTime.now().isAfter(_startedAt)) {
+      await WsTask.sendRemind(
+        msg: "作业“${_taskNameController.text}”设置有改动，请注意",
+        targetList: await ProfileStorage.getUserIdList(),
+        level: 5,
+      );
+    } else {
+      final startedAtP = _previousData?.createdAt;
+      if (startedAtP == null) return;
+      if (startedAtP.day == _startedAt.day &&
+          startedAtP.difference(_startedAt).inDays < 1) {
+        return;
+      }
+      await WsTask.sendRemind(
+        msg:
+            "作业“${_taskNameController.text}”改为于${getDayDifferenceString(_startedAt)}发布",
+        targetList: await ProfileStorage.getUserIdList(),
+        level: 3,
+      );
+    }
   }
 
   @override
@@ -761,7 +786,8 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                                         );
                                     showToast(
                                       msg:
-                                          msg ?? "${uploadData.taskId}的任务已删除成功",
+                                          msg ??
+                                          "${UserCache.getUsername(uploadData.uploadId)}的任务已删除成功",
                                     );
                                     if (mounted) {
                                       _refreshUploadData();
