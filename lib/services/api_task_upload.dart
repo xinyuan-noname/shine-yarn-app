@@ -52,4 +52,19 @@ class ApiTaskUpload {
       return "获取上传列表失败";
     }
   }
+
+  static Future<String?> deleteUpload({
+    required int taskId,
+    required String uploadId,
+  }) async {
+    if (!ApiService.isOk) return "服务未就绪";
+    try {
+      await dio.delete('/task/upload/delete/$taskId/$uploadId');
+      return null;
+    } on DioException catch (e) {
+      return e.message ?? "删除任务提交失败";
+    } catch (e) {
+      return "删除任务提交失败";
+    }
+  }
 }

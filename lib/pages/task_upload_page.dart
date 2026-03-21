@@ -12,6 +12,7 @@ import 'package:shine/components/task.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/api_task.dart';
+import 'package:shine/services/api_task_upload.dart';
 import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/semester_storage.dart';
@@ -105,6 +106,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
   final TextEditingController _taskNameController = TextEditingController();
   final Debouncer _debouncerS = Debouncer();
   final Debouncer _debouncerE = Debouncer();
+  final Debouncer _debouncerRefresh = Debouncer();
   final List<UploadData> _uploadDataList = [];
   final List<Map<String, dynamic>> _allUserList = UserCache.getUserList();
   List<Map<String, dynamic>> get _unfinishedUserList => _allUserList
@@ -129,7 +131,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
           await _initProfileData();
           await _handleArgs();
           if (_taskId != null) {
-            await _refreshUploadData();
+            _refreshUploadData();
           }
           return null;
         }),
@@ -137,14 +139,16 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
     });
   }
 
-  Future<void> _refreshUploadData() async {
+  void _refreshUploadData() {
     if (_taskId == null) return;
-    _uploadDataList.clear();
-    final result = await Worker.syncUploadsByTaskId(_taskId!);
-    if (result is List<UploadData>) {
-      _uploadDataList.addAll(result);
-    }
-    setState(() {});
+    _debouncerRefresh.run(() async {
+      _uploadDataList.clear();
+      final result = await Worker.syncUploadsByTaskId(_taskId!);
+      if (result is List<UploadData>) {
+        _uploadDataList.addAll(result);
+      }
+      setState(() {});
+    });
   }
 
   Future<void> _initProfileData() async {
@@ -659,91 +663,154 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
         ),
       );
     });
-    return ListView(
-      children: [
-        ExpansionTile(
-          initiallyExpanded: true,
-          childrenPadding: EdgeInsets.symmetric(horizontal: 8),
-          title: Text(
-            "完成的同学(${_uploadDataList.length}人)",
-            style: expansionListTitleStyle,
-          ),
-          children: [
-            Wrap(
-              children: _uploadDataList
-                  .map(
-                    (uploadData) => Container(
-                      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 3),
-                      margin: EdgeInsets.symmetric(vertical: 3),
-                      decoration: BoxDecoration(
-                        gradient: whiteLinearGradient,
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(color: mainColorGrey60),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Column(
-                                children: [
-                                  NetworkAvatar(id: uploadData.uploadId),
-                                  Text(
-                                    UserCache.getUsername(
-                                          uploadData.uploadId,
-                                        ) ??
-                                        "未知用户",
-                                    style: const TextStyle(
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        _refreshUploadData();
+      },
+      child: ListView(
+        children: [
+          ExpansionTile(
+            initiallyExpanded: true,
+            childrenPadding: EdgeInsets.symmetric(horizontal: 8),
+            title: Text(
+              "完成的同学(${_uploadDataList.length}人)",
+              style: expansionListTitleStyle,
+            ),
+            children: [
+              Wrap(
+                children: _uploadDataList
+                    .map(
+                      (uploadData) => Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 3,
+                        ),
+                        margin: EdgeInsets.symmetric(vertical: 3),
+                        decoration: BoxDecoration(
+                          gradient: whiteLinearGradient,
+                          borderRadius: BorderRadius.circular(5),
+                          border: Border.all(color: mainColorGrey60),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Column(
+                                  children: [
+                                    NetworkAvatar(id: uploadData.uploadId),
+                                    Text(
+                                      UserCache.getUsername(
+                                            uploadData.uploadId,
+                                          ) ??
+                                          "未知用户",
+                                      style: const TextStyle(
+                                        fontFamily: "SmileySans",
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(width: 10),
+                                Expanded(
+                                  child: FileDisplayBar(
+                                    fileName: uploadData.uploadFileName,
+                                    maxLines: 2,
+                                    onPress: () async {
+                                      if (_taskId == null) return;
+                                      final fileName =
+                                          uploadData.uploadFileName;
+                                      if (fileName.endsWith(".pdf")) {
+                                        gotoViewPdfUrl(
+                                          "/task/upload/file/$_taskId/${ApiService.userId}",
+                                        );
+                                      } else if (isImageFile(fileName)) {
+                                        gotoViewImageUrl(
+                                          "/task/upload/file/$_taskId/${ApiService.userId}",
+                                        );
+                                      } else if (isDocument(fileName)) {
+                                        gotoViewPdfUrl(
+                                          "/task/upload/view/document/$_taskId/${ApiService.userId}",
+                                        );
+                                      } else {
+                                        showToast(msg: "暂不支持预览");
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                            bottomLineSmall,
+                            SizedBox(height: 2),
+                            Container(
+                              alignment: Alignment.centerLeft,
+                              child: GestureDetector(
+                                onTap: () async {
+                                  final result = await showPromptDialog(
+                                    context: context,
+                                    title:
+                                        '请输入打回${UserCache.getUsername(uploadData.uploadId)}任务的原因？',
+                                    label: '打回原因',
+                                  );
+                                  if (result != null) {
+                                    final msg =
+                                        await ApiTaskUpload.deleteUpload(
+                                          taskId: uploadData.taskId,
+                                          uploadId: uploadData.uploadId,
+                                        );
+                                    showToast(
+                                      msg:
+                                          msg ?? "${uploadData.taskId}的任务已删除成功",
+                                    );
+                                    if (mounted) {
+                                      _refreshUploadData();
+                                    }
+                                    WsTask.sendRemind(
+                                      msg:
+                                          '你的“${_taskNameController.text}”任务被打回，请重新提交。\n打回原因：$result',
+                                      targetList: [uploadData.uploadId],
+                                      level: 6,
+                                    );
+                                  }
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: redLinearGradient,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 2,
+                                  ),
+                                  child: Text(
+                                    "打回任务",
+                                    style: TextStyle(
                                       fontFamily: "SmileySans",
-                                      fontSize: 12,
+                                      fontSize: 14,
+                                      color: bgColorLight,
                                     ),
                                   ),
-                                ],
-                              ),
-                              SizedBox(width: 10),
-                              Expanded(
-                                child: FileDisplayBar(
-                                  fileName: uploadData.uploadFileName,
-                                  maxLines: 2,
-                                  onPress: () async {
-                                    if (_taskId == null) return;
-                                    final fileName = uploadData.uploadFileName;
-                                    if (fileName.endsWith(".pdf")) {
-                                      gotoViewPdfUrl(
-                                        "/task/upload/file/$_taskId/${ApiService.userId}",
-                                      );
-                                    } else if (isImageFile(fileName)) {
-                                      gotoViewImageUrl(
-                                        "/task/upload/file/$_taskId/${ApiService.userId}",
-                                      );
-                                    } else if (isDocument(fileName)) {
-                                      gotoViewPdfUrl(
-                                        "/task/upload/view/document/$_taskId/${ApiService.userId}",
-                                      );
-                                    } else {
-                                      showToast(msg: "暂不支持预览");
-                                    }
-                                  },
                                 ),
                               ),
-                            ],
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ],
-        ),
-        ExpansionTile(
-          title: Text(
-            "未完成的同学(${unfinishedUserList.length}人)",
-            style: expansionListTitleStyle,
+                    )
+                    .toList(),
+              ),
+            ],
           ),
-          children: [Wrap(direction: Axis.horizontal, children: avatarList)],
-        ),
-      ],
+          ExpansionTile(
+            title: Text(
+              "未完成的同学(${unfinishedUserList.length}人)",
+              style: expansionListTitleStyle,
+            ),
+            children: [Wrap(direction: Axis.horizontal, children: avatarList)],
+          ),
+        ],
+      ),
     );
   }
 
