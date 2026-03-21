@@ -69,7 +69,6 @@ Future<void> showLoadingDialog({
   return await future;
 }
 
-
 Future<void> showAlertDialog({
   required BuildContext context,
   required String title,
@@ -308,7 +307,15 @@ Future<GroupStorageKey?> showGroupStorageKeySelectionDialog({
   );
 }
 
-Future gotoAdminDialog(BuildContext context) async {
+Future showAlertIsInDevelopmentDialog(BuildContext context) async {
+  return await showAlertDialog(
+    context: context,
+    title: "本功能正在开发中",
+    content: "请酌情使用",
+  );
+}
+
+Future showGotoAdminDialog(BuildContext context) async {
   final result = await showConfrimDialog(
     context: context,
     title: '即将进入超级管理员界面!',

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/toast.dart';
-import 'package:shine/config/app_config.dart';
 import 'package:shine/pages/home_page.dart';
 import 'package:shine/pages/task_check_page.dart';
 import 'package:shine/pages/task_draw_page.dart';
@@ -174,6 +173,7 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
                   showToast(msg: "游客(无密码登录用户)暂不支持发起任务");
                   return;
                 }
+                await showAlertIsInDevelopmentDialog(context);
                 final result = await showGroupStorageKeySelectionDialog(
                   context: context,
                   title: '选择一个群组作为本次选人的范围',
@@ -188,22 +188,20 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
               },
             ),
             //
-            if (!AppConfig.isProduction)
-              _buildBottomSheetItem(
-                icon: Icons.ballot,
-                title: '投票',
-                onTap: () async {
-                  Navigator.of(context).pop();
-                  if (ApiService.userType == "guest") {
-                    showToast(msg: "游客(无密码登录用户)暂不支持发起任务");
-                    return;
-                  }
-                  await globalNavigatorKey.currentState?.pushNamed(
-                    '/task/vote',
-                  );
-                  HomePageRefreshNotifier.refreshTask();
-                },
-              ),
+            _buildBottomSheetItem(
+              icon: Icons.ballot,
+              title: '投票',
+              onTap: () async {
+                Navigator.of(context).pop();
+                if (ApiService.userType == "guest") {
+                  showToast(msg: "游客(无密码登录用户)暂不支持发起任务");
+                  return;
+                }
+                await showAlertIsInDevelopmentDialog(context);
+                await globalNavigatorKey.currentState?.pushNamed('/task/vote');
+                HomePageRefreshNotifier.refreshTask();
+              },
+            ),
           ],
         ),
       );

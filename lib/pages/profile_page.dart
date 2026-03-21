@@ -261,7 +261,7 @@ class _ProfilePageState extends State<ProfilePage> {
         onTap: () {
           _tapVersionCount++;
           if (_tapVersionCount >= 5) {
-            gotoAdminDialog(context);
+            showGotoAdminDialog(context);
             _tapVersionCount = 0;
           }
         },

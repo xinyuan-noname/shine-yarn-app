@@ -71,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
           onTap: () {
             _titleTapCount++;
             if (_titleTapCount >= 5) {
-              gotoAdminDialog(context);
+              showGotoAdminDialog(context);
               _titleTapCount = 0;
             }
           },
