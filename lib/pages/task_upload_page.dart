@@ -131,7 +131,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
           await _initProfileData();
           await _handleArgs();
           if (_taskId != null) {
-            _refreshUploadData();
+            await _syncUploadData();
           }
           return null;
         }),
@@ -139,15 +139,19 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
     });
   }
 
+  Future _syncUploadData() async {
+    _uploadDataList.clear();
+    final result = await Worker.syncUploadsByTaskId(_taskId!);
+    if (result is List<UploadData>) {
+      _uploadDataList.addAll(result);
+    }
+    if (mounted) setState(() {});
+  }
+
   void _refreshUploadData() {
     if (_taskId == null) return;
     _debouncerRefresh.run(() async {
-      _uploadDataList.clear();
-      final result = await Worker.syncUploadsByTaskId(_taskId!);
-      if (result is List<UploadData>) {
-        _uploadDataList.addAll(result);
-      }
-      setState(() {});
+      _syncUploadData();
     });
   }
 

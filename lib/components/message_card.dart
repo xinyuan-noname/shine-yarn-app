@@ -132,9 +132,10 @@ class MessageCard extends StatelessWidget {
       messageData.content,
       style: TextStyle(
         fontFamily: 'SmileySans',
-        fontSize: 16,
+        fontSize: 14,
         color: _levelColor.elementAtOrNull(messageData.level) ?? Colors.grey,
       ),
+      maxLines: 10,
     );
   }
 

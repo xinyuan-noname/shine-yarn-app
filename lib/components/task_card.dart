@@ -276,6 +276,29 @@ class TaskCard extends StatelessWidget {
     }
     if (taskData is UploadTaskStorageData) {
       final data = taskData as UploadTaskStorageData;
+      String? status;
+      if (data.createdAt!.isAfter(DateTime.now())) status = '未开始';
+      if (data.endedAt.isBefore(DateTime.now())) status = '已过期';
+      if (status != null) {
+        result.add(
+          Container(
+            padding: EdgeInsets.symmetric(vertical: 2, horizontal: 3),
+            decoration: BoxDecoration(
+              gradient: greyLinearGradient,
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: Text(
+              status,
+              style: const TextStyle(
+                fontFamily: 'SmileySans',
+                fontSize: 14,
+                overflow: TextOverflow.ellipsis,
+                color: bgColorLight80,
+              ),
+            ),
+          ),
+        );
+      }
       result.addAll([
         Text(
           "科目：${data.subjectName}",

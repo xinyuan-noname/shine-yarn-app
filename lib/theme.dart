@@ -185,5 +185,5 @@ const whiteLinearGradient = LinearGradient(
 const greyLinearGradient = LinearGradient(
   begin: Alignment.topLeft,
   end: Alignment.bottomRight,
-  colors: [Colors.grey, mainColorGrey20],
+  colors: [Colors.grey, mainColorGrey80],
 );
