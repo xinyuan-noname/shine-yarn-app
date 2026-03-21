@@ -298,8 +298,23 @@ class Worker {
       headers: ApiService.headers.cast<String, String>(),
       filename: filename,
       onStatusChanged: (taskId, status) {
-        if (status == TaskStatus.failed) {
-          showToast(msg: "任务失败");
+        switch (status) {
+          case TaskStatus.complete:
+            showToast(
+              msg: "“$filename”下载完成，请于系统消息栏跳转",
+              duration: Duration(seconds: 5),
+            );
+            break;
+          case TaskStatus.notFound:
+          case TaskStatus.failed:
+          case TaskStatus.waitingToRetry:
+            showToast(msg: "“$filename”下载失败，请于消息栏重试下载");
+          case TaskStatus.canceled:
+            showToast(msg: "“$filename”下载已取消");
+          case TaskStatus.paused:
+            showToast(msg: "“$filename”下载暂停");
+          default:
+            break;
         }
       },
     );

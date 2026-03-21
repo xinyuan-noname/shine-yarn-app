@@ -870,7 +870,11 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                   );
                   if (!result) return;
                 }
-                Worker.startDownload(url: '/task/upload/zip/$_taskId',filename: '${_taskNameController.text}.zip');
+                Worker.startDownload(
+                  url: '/task/upload/zip/$_taskId',
+                  filename:
+                      '${_taskNameController.text}-${DateTime.now().millisecondsSinceEpoch ~/ 1000}.zip',
+                );
               },
               icon: Icons.download_outlined,
               title: '打包文件',

@@ -1,7 +1,7 @@
 import 'package:week_of_year/date_week_extensions.dart';
 
 DateTime getTodayStartMoment() {
-  final now = DateTime.now();
+  final now = DateTime.now().toLocal();
   return DateTime(now.year, now.month, now.day);
 }
 
@@ -28,6 +28,17 @@ String getLocalTimeString(DateTime time) {
   } catch (e) {
     return time.toString();
   }
+}
+
+String getLocalTimeYMDString(DateTime time, {String joinedString = '/'}) {
+  final dd = time.toLocal();
+  final y = dd.year % 100;
+  final m = dd.month;
+  final d = dd.day;
+  final yS = y < 10 ? '0$y' : '$y';
+  final mS = m < 10 ? '0$m' : '$m';
+  final dS = d < 10 ? '0$d' : '$d';
+  return [yS, mS, dS].join(joinedString);
 }
 
 List<DateTime> getWeekDates(DateTime date) {
