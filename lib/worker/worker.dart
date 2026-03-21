@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:background_downloader/background_downloader.dart';
 import 'package:dio/dio.dart';
 import 'package:shine/cache/user_cache.dart';
 import 'package:shine/components/toast.dart';
@@ -289,8 +290,19 @@ class Worker {
     });
   }
 
-  static startDownload() {
-    DownloadUtils().init();
+  static startDownload({required String url, required String filename}) async {
+    final downloader = DownloadUtils();
+    await downloader.init();
+    downloader.startDownload(
+      url: '${ApiService.url}$url',
+      headers: ApiService.headers.cast<String, String>(),
+      filename: filename,
+      onStatusChanged: (taskId, status) {
+        if (status == TaskStatus.failed) {
+          showToast(msg: "任务失败");
+        }
+      },
+    );
   }
 
   static void dispose() {

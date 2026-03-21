@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 1. 兼容旧版背景下载器可能存到的位置 -->
+    <external-path name="external_files" path="." />
+
+    <!-- 2. 【关键】适配 Flutter 的默认私有目录 (app_flutter) -->
+    <!-- 这里的 name 可以随便取，但 path 必须对应 -->
+    <files-path name="flutter_files" path="." />
+
+    <!-- 3. 如果文件在 cache 目录 -->
+    <cache-path name="cache_files" path="." />
+
+    <!-- 4. 针对外部存储根目录 (如果你之后切回了外部存储) -->
+    <external-path name="external_storage_root" path="." />
+
+    <!-- 5. 专门针对 Download 目录 (如果你之后切回了外部存储) -->
+    <external-files-path name="external_downloads" path="Download" />
+</paths>

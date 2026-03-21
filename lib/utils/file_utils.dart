@@ -1,9 +1,22 @@
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shine/pages/view_image_page.dart';
 import 'package:shine/pages/view_pdf_page.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
 import 'package:path/path.dart' as path;
+
+Future<Directory?> getExternalDirectory() async {
+  Directory? directory;
+  if (Platform.isAndroid) {
+    directory = await getExternalStorageDirectory();
+  } else if (Platform.isIOS) {
+    directory = await getApplicationDocumentsDirectory();
+  }
+  return directory;
+}
 
 bool isImageFile(String filePath) {
   const imageExtensions = {

@@ -5,6 +5,8 @@ import 'package:shine/components/toast.dart';
 
 import 'permission_utils.dart';
 
+
+
 typedef DownloadCallback = void Function(String taskId, TaskStatus status);
 
 typedef DownloadProgressCallback = void Function(String taskId, int progress);
@@ -30,23 +32,23 @@ class DownloadUtils {
 
   final Map<String, DownloadTaskWrapper> _activeTasks = {};
 
-  /// 下载进度缓存
   final Map<String, int> _progressCache = {};
 
-  /// 初始化标志
   bool _isInitialized = false;
 
-  /// 监听器订阅
   StreamSubscription? _updatesSubscription;
 
-  /// 初始化下载器（可选，用于配置全局设置）
-  /// 注意：只需调用一次，重复调用不会重复注册监听器
   Future<void> init() async {
-    // 防止重复初始化
     if (_isInitialized) {
-      print('DownloadUtils 已初始化，无需重复调用');
       return;
     }
+    _downloader.configureNotification(
+      running: TaskNotification("正在下载", "正在下载文件..."),
+      complete: TaskNotification("下载完成", "文件已保存到"),
+      error: TaskNotification("下载失败", "点击下载重试"),
+      progressBar: true,
+      tapOpensFile: true,
+    );
 
     // 启动下载器以激活数据库并确保正确重启
     await _downloader.start();
@@ -77,25 +79,15 @@ class DownloadUtils {
     });
 
     _isInitialized = true;
-    print('DownloadUtils 初始化完成');
   }
 
   Future<bool> _checkPermission() async {
     return await PermissionUtils.ensureDownloadPermission();
   }
 
-  /// 开始下载
-  ///
-  /// [url] 下载地址
-  /// [filename] 文件名（可选，不提供则自动生成）
-  /// [headers] 请求头（可选），如 {'Authorization': 'Bearer xxx'}
-  /// [title] 通知标题
-  /// [description] 通知描述
-  /// [onStatusChanged] 状态变化回调
-  /// [onProgress] 进度回调
   Future<String?> startDownload({
     required String url,
-    String? filename,
+    required String filename,
     Map<String, String>? headers,
     String title = '正在下载...',
     String description = '请稍候',
@@ -103,30 +95,25 @@ class DownloadUtils {
     DownloadProgressCallback? onProgress,
   }) async {
     try {
-      // 检查权限
       final hasPermission = await _checkPermission();
       if (!hasPermission) {
         showToast(msg: '需要存储权限以下载文件');
         return null;
       }
 
-      // 生成文件名
-      final actualFilename = filename ?? _generateFilename(url);
-
-      // 创建下载任务
       final task = DownloadTask(
         url: url,
-        filename: actualFilename,
-        headers: headers, // 支持自定义请求头
+        filename: filename,
+        headers: headers,
         updates: Updates.statusAndProgress,
         allowPause: true,
+        baseDirectory: BaseDirectory.temporary
       );
 
-      // 开始下载
       _activeTasks[task.taskId] = DownloadTaskWrapper(
         task: task,
         url: url,
-        filename: actualFilename,
+        filename: filename,
       );
 
       await _downloader.download(
@@ -158,7 +145,7 @@ class DownloadUtils {
     for (final task in tasks) {
       final taskId = await startDownload(
         url: task['url']!,
-        filename: task['filename'],
+        filename: task['filename']!,
         onStatusChanged: (taskId, status) {
           if (status == TaskStatus.complete) {
             onTaskComplete?.call(taskId);
@@ -167,7 +154,6 @@ class DownloadUtils {
       );
       results.add(taskId);
 
-      // 避免同时下载太多任务
       if (tasks.length > 3) {
         await Future.delayed(const Duration(milliseconds: 500));
       }
@@ -228,53 +214,17 @@ class DownloadUtils {
     return _activeTasks.containsKey(taskId);
   }
 
-  /// 生成文件名
-  String _generateFilename(String url) {
-    final uri = Uri.parse(url);
-    final pathSegments = uri.pathSegments;
-
-    if (pathSegments.isNotEmpty) {
-      final name = pathSegments.last;
-      if (name.contains('.')) {
-        return name;
-      }
-    }
-
-    // 如果无法从 URL 获取文件名，使用时间戳
-    final extension = _extractExtension(url);
-    return 'download_${DateTime.now().millisecondsSinceEpoch}.$extension';
-  }
-
-  /// 从 URL 提取文件扩展名
-  String _extractExtension(String url) {
-    final uri = Uri.parse(url);
-    final path = uri.path;
-    final dotIndex = path.lastIndexOf('.');
-
-    if (dotIndex != -1 && dotIndex < path.length - 1) {
-      return path.substring(dotIndex + 1).toLowerCase();
-    }
-
-    return 'file';
-  }
-
-  /// 清理资源
   void dispose() async {
-    // 取消所有下载
     await cancelAllDownloads();
 
-    // 取消监听器订阅
     await _updatesSubscription?.cancel();
     _updatesSubscription = null;
 
-    // 清空缓存
     _activeTasks.clear();
     _progressCache.clear();
 
-    // 重置初始化标志
     _isInitialized = false;
 
-    print('DownloadUtils 资源已释放');
   }
 }
 

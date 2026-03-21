@@ -856,7 +856,25 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
               icon: Icons.notifications_outlined,
               title: '一键提醒',
             ),
-            buildBottomItem(onTap: () {}, icon: Icons.download, title: '打包文件'),
+            buildBottomItem(
+              onTap: () async {
+                if (_taskId == null) {
+                  showToast(msg: "该任务暂未上传");
+                  return;
+                }
+                if (_unfinishedUserList.isNotEmpty) {
+                  final result = await showConfrimDialog(
+                    context: context,
+                    title: '确认要打包吗',
+                    content: '还有${_unfinishedUserList.length}人未完成该任务',
+                  );
+                  if (!result) return;
+                }
+                Worker.startDownload(url: '/task/upload/zip/$_taskId',filename: '${_taskNameController.text}.zip');
+              },
+              icon: Icons.download_outlined,
+              title: '打包文件',
+            ),
             buildBottomItem(
               onTap: () async {
                 final image = await captureWidgetToPng(globalKey: _key);
