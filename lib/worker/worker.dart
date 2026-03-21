@@ -308,7 +308,7 @@ class Worker {
           case TaskStatus.notFound:
           case TaskStatus.failed:
           case TaskStatus.waitingToRetry:
-            showToast(msg: "“$filename”下载失败，请于消息栏重试下载");
+            showToast(msg: "“$filename”下载失败，请重试下载");
           case TaskStatus.canceled:
             showToast(msg: "“$filename”下载已取消");
           case TaskStatus.paused:

@@ -11,6 +11,7 @@ const deepColorBlue = Color.fromARGB(255, 0, 187, 255);
 const deepColorBlue80 = Color.fromARGB(204, 0, 187, 255);
 
 const mainColorGreenBlue = Color.fromARGB(255, 7, 247, 255);
+const mainColorGreenBlue80 = Color.fromRGBO(7, 247, 255, 0.80);
 const mainColorGreenBlue60 = Color.fromRGBO(7, 247, 255, 0.60);
 const mainColorGreenBlue50 = Color.fromRGBO(7, 247, 255, 0.50);
 const mainColorGreenBlue40 = Color.fromRGBO(7, 247, 255, 0.40);
@@ -171,6 +172,11 @@ const blueLinearGradient = LinearGradient(
   begin: Alignment.topLeft,
   end: Alignment.bottomRight,
   colors: [deepColorBlue, mainColorGreenBlue],
+);
+const blueLinearGradient80 = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [deepColorBlue80, mainColorGreenBlue80],
 );
 const blueLinearGradientReversed = LinearGradient(
   begin: Alignment.topLeft,

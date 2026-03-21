@@ -45,7 +45,7 @@ class DownloadUtils {
       complete: TaskNotification("下载完成", "文件已保存到"),
       paused: TaskNotification("下载暂停", "点击可继续"),
       canceled: TaskNotification("下载取消", "下载已取消"),
-      error: TaskNotification("下载失败", "点击下载重试"),
+      error: TaskNotification("下载失败", "请重新下载"),
       progressBar: true,
       tapOpensFile: true,
     );

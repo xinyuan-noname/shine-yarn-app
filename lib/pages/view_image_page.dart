@@ -3,12 +3,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:dio/dio.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/theme.dart';
-import 'package:shine/components/toast.dart';
-import 'package:shine/utils/permission_utils.dart';
 
 class ViewImagePage extends StatefulWidget {
   const ViewImagePage({super.key});
@@ -23,8 +19,6 @@ class _ViewImagePageState extends State<ViewImagePage> {
   Uint8List? _imageData;
   bool _isLoading = true;
   String? _error;
-  bool _isDownloading = false;
-  double _downloadProgress = 0.0;
 
   @override
   void initState() {
@@ -87,96 +81,13 @@ class _ViewImagePageState extends State<ViewImagePage> {
     }
   }
 
-  Future<void> _downloadImage() async {
-    if (_isDownloading) return;
-
-    try {
-      setState(() {
-        _isDownloading = true;
-        _downloadProgress = 0.0;
-      });
-
-      // 请求存储权限
-      final hasPermission = await PermissionUtils.ensureDownloadPermission();
-      if (!hasPermission) {
-        showToast(msg: '需要存储权限以下载图片');
-        setState(() {
-          _isDownloading = false;
-        });
-        return;
-      }
-
-      Directory? directory;
-      if (Platform.isAndroid) {
-        directory = await getExternalStorageDirectory();
-      } else if (Platform.isIOS) {
-        directory = await getApplicationDocumentsDirectory();
-      }
-
-      if (directory == null) {
-        showToast(msg: '无法获取存储目录');
-        setState(() {
-          _isDownloading = false;
-        });
-        return;
-      }
-
-      // 创建保存图片的目录
-      final saveDir = Directory('${directory.path}/Download/Shine');
-      if (!await saveDir.exists()) {
-        await saveDir.create(recursive: true);
-      }
-      final fileName = 'image_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final savePath = '${saveDir.path}/$fileName';
-
-      if (_imageUrl != null) {
-        final dio = Dio();
-        dio.options.headers.addAll(ApiService.headers.cast<String, String>());
-
-        await dio.download(
-          _imageUrl!,
-          savePath,
-          onReceiveProgress: (received, total) {
-            if (total != -1) {
-              setState(() {
-                _downloadProgress = received / total;
-              });
-            }
-          },
-        );
-      } else if (_imageData != null) {
-        final file = File(savePath);
-        await file.writeAsBytes(_imageData!);
-      } else if (_filePath != null) {
-        final sourceFile = File(_filePath!);
-        await sourceFile.copy(savePath);
-      }
-
-      setState(() {
-        _isDownloading = false;
-        _downloadProgress = 0.0;
-      });
-
-      // 显示成功提示
-      showToast(msg: '图片已保存到：$savePath');
-    } catch (e) {
-      setState(() {
-        _isDownloading = false;
-        _downloadProgress = 0.0;
-      });
-      showToast(msg: '下载失败：${e.toString()}');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
       body: SafeArea(
-        child: Container(
-          alignment: Alignment.center,
-          child: _buildBody(),
-        ),
+        child: Container(alignment: Alignment.center, child: _buildBody()),
       ),
       bottomNavigationBar: _buildBottomBar(),
     );
@@ -191,14 +102,6 @@ class _ViewImagePageState extends State<ViewImagePage> {
       centerTitle: true,
       backgroundColor: deepColorPurple,
       foregroundColor: Colors.white,
-      actions: [
-        if (!_isLoading && _error == null)
-          IconButton(
-            icon: const Icon(Icons.download),
-            onPressed: _isDownloading ? null : _downloadImage,
-            tooltip: _isDownloading ? '下载中...' : '下载图片',
-          ),
-      ],
     );
   }
 
@@ -286,44 +189,6 @@ class _ViewImagePageState extends State<ViewImagePage> {
   Widget _buildBottomBar() {
     if (_isLoading || _error != null) {
       return const SizedBox.shrink();
-    }
-
-    if (_isDownloading) {
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: const Color.fromRGBO(0, 0, 0, 0.1),
-              blurRadius: 4,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              LinearProgressIndicator(
-                value: _downloadProgress,
-                backgroundColor: Colors.grey[200],
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                  deepColorPurple,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '下载进度：${(_downloadProgress * 100).toStringAsFixed(1)}%',
-                style: textFieldStyle.copyWith(
-                  fontSize: 14,
-                  color: Colors.grey[700],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
     }
 
     return const SizedBox.shrink();

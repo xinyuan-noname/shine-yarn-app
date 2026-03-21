@@ -31,11 +31,11 @@ final dialogButtonStyle = TextButton.styleFrom(
 Future showMessageDialog(
   BuildContext context,
   ValueNotifier<String> message, {
-  bool? barrierDissmissible,
+  bool barrierDismissible=false,
 }) {
   return showDialog(
     context: context,
-    barrierDismissible: barrierDissmissible ?? false,
+    barrierDismissible: barrierDismissible,
     builder: (_) => ValueListenableBuilder<String>(
       valueListenable: message,
       builder: (_, text, __) => Dialog(

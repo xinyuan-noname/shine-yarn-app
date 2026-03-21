@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:internet_file/internet_file.dart';
 import 'package:shine/components/custom_back_handler.dart';
+import 'package:shine/components/toast.dart';
 import 'package:shine/services/api.dart';
+import 'package:shine/services/download.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/worker/worker.dart';
 
 class ViewPdfPage extends StatefulWidget {
   const ViewPdfPage({super.key});
@@ -18,6 +21,8 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
   int _totalPages = 0;
   bool _isLoading = true;
   String? _error;
+  String? _url;
+  String? _filename;
 
   @override
   void initState() {
@@ -46,6 +51,10 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
             _isLoading = false;
           });
         } else if (args.url != null) {
+          _url = args.url;
+          if (args.filename is String) {
+            _filename = args.filename;
+          }
           final fileData = await InternetFile.get(
             args.url!,
             headers: ApiService.headers.cast<String, String>(),
@@ -101,6 +110,19 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
       centerTitle: true,
       backgroundColor: deepColorPurple,
       foregroundColor: bgColorLight,
+      actions: [
+        if (!_isLoading && _error == null)
+          IconButton(
+            icon: const Icon(Icons.download),
+            onPressed: () {
+              if (_url is String && _filename is String) {
+                Worker.startDownload(url: _url!, filename: _filename!);
+                showToast(msg: "已开始下载$_filename");
+              }
+            },
+            tooltip: '下载pdf',
+          ),
+      ],
     );
   }
 
@@ -250,6 +272,13 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
 class ViewPdfPageArgs {
   final String? filePath;
   final String? url;
+  final bool downloadable;
+  final String? filename;
 
-  const ViewPdfPageArgs({this.filePath, this.url});
+  const ViewPdfPageArgs({
+    this.filePath,
+    this.url,
+    this.downloadable = false,
+    this.filename,
+  });
 }

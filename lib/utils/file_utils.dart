@@ -18,32 +18,25 @@ Future<Directory?> getExternalDirectory() async {
   return directory;
 }
 
+const imageExtensions = {
+  'jpg',
+  'jpeg',
+  'png',
+  'gif',
+  'bmp',
+  'webp',
+  'svg',
+  'tiff',
+  'tif',
+};
 bool isImageFile(String filePath) {
-  const imageExtensions = {
-    'jpg',
-    'jpeg',
-    'png',
-    'gif',
-    'bmp',
-    'webp',
-    'svg',
-    'tiff',
-    'tif',
-  };
   final ext = path.extension(filePath).substring(1).toLowerCase();
   return imageExtensions.contains(ext);
 }
 
+const documentExtensions = {'xls', 'xlsx', 'doc', 'docx', 'ppt', 'pptx', 'pdf'};
+
 bool isDocument(String filePath) {
-  const documentExtensions = {
-    'xls',
-    'xlsx',
-    'doc',
-    'docx',
-    'ppt',
-    'pptx',
-    'pdf',
-  };
   final ext = path.extension(filePath).substring(1).toLowerCase();
   return documentExtensions.contains(ext);
 }
@@ -124,10 +117,18 @@ Future gotoViewPdfFile(String filepath) async {
   );
 }
 
-Future gotoViewPdfUrl(String url) async {
+Future gotoViewPdfUrl(
+  String url, {
+  bool downloadable = false,
+  String? filename,
+}) async {
   await globalNavigatorKey.currentState?.pushNamed(
     "/view/pdf",
-    arguments: ViewPdfPageArgs(url: "${ApiService.url}$url"),
+    arguments: ViewPdfPageArgs(
+      url: "${ApiService.url}$url",
+      downloadable: downloadable,
+      filename: filename,
+    ),
   );
 }
 
