@@ -14,7 +14,7 @@ import 'package:shine/components/user_info_bar.dart';
 import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/theme.dart';
-import 'package:shine/utils/image.dart';
+import 'package:shine/utils/image_utils.dart';
 import 'package:shine/utils/share_utils.dart';
 
 class TaskDrawPage extends StatefulWidget {

@@ -5,7 +5,7 @@ import 'package:shine/components/line.dart';
 import 'package:shine/components/radio.dart';
 import 'package:shine/services/api_admin.dart';
 import 'package:shine/theme.dart';
-import 'package:shine/utils/server.dart';
+import 'package:shine/utils/message_utils.dart';
 
 const labelStyle = TextStyle(
   fontFamily: "SmileySans",

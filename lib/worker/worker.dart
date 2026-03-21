@@ -25,8 +25,8 @@ import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/utils/course.dart';
-import 'package:shine/utils/download_utils.dart';
-import 'package:shine/utils/message.dart';
+import 'package:shine/services/download.dart';
+import 'package:shine/utils/message_utils.dart';
 import 'package:shine/utils/upload_utils.dart';
 
 class Worker {

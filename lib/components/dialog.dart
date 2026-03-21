@@ -6,7 +6,7 @@ import 'package:shine/components/input.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/theme.dart';
-import 'package:shine/utils/server.dart';
+import 'package:shine/utils/message_utils.dart';
 
 const dialogTitleStyle = TextStyle(
   fontSize: 20,
@@ -76,7 +76,7 @@ Future<void> showAlertDialog({
   VoidCallback? onYes,
   String confirmText = '确定',
 }) async {
-  await showDialog(
+  return await showDialog(
     context: context,
     barrierDismissible: false,
     builder: (BuildContext context) {

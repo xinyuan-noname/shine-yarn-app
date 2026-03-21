@@ -5,7 +5,7 @@ import 'package:shine/components/line.dart';
 import 'package:shine/extensions/text_editing.dart';
 import 'package:shine/services/api_auth.dart';
 import 'package:shine/theme.dart';
-import 'package:shine/utils/server.dart';
+import 'package:shine/utils/message_utils.dart';
 
 class PasswordPage extends StatefulWidget {
   const PasswordPage({super.key});

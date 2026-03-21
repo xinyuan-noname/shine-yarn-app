@@ -17,6 +17,7 @@ import 'package:shine/theme.dart';
 import 'package:shine/utils/course.dart';
 import 'package:shine/utils/debouncer_utils.dart';
 import 'package:shine/utils/upload_utils.dart';
+import 'package:shine/views/flag_view.dart';
 import 'package:shine/views/message_view.dart';
 import 'package:shine/views/schedule_view.dart';
 import 'package:shine/views/task_view.dart';
@@ -56,6 +57,7 @@ class _HomePageState extends State<HomePage> {
     (Icons.message_outlined, Icons.message, "消息"),
     (Icons.task_outlined, Icons.task, "任务"),
     (Icons.schedule_outlined, Icons.schedule_send, "日程"),
+    (Icons.flag_outlined, Icons.flag, "站点"),
     (Icons.group_outlined, Icons.group, "成员"),
   ];
   int _getBadgeCountFromIndex(index) {
@@ -260,6 +262,7 @@ class _HomePageState extends State<HomePage> {
               },
               showDate: _showDate,
             ),
+            FlagView(),
             UserView(
               userInfoList: _userInfoList,
               message: _message,
@@ -338,6 +341,7 @@ class _HomePageState extends State<HomePage> {
               },
               icon: Icon(Icons.add, size: 32),
             ),
+            SizedBox(),
             SizedBox(),
             SizedBox(),
           ],

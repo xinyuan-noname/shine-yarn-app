@@ -45,7 +45,6 @@ class _ViewImagePageState extends State<ViewImagePage> {
         });
 
         if (args.filePath != null) {
-          // 检查文件是否存在
           final file = File(args.filePath!);
           if (await file.exists()) {
             setState(() {
@@ -107,7 +106,6 @@ class _ViewImagePageState extends State<ViewImagePage> {
         return;
       }
 
-      // 获取下载目录
       Directory? directory;
       if (Platform.isAndroid) {
         directory = await getExternalStorageDirectory();

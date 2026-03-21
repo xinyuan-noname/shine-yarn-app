@@ -11,7 +11,7 @@ import 'package:shine/services/api_auth.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/share_utils.dart';
-import 'package:shine/utils/server.dart';
+import 'package:shine/utils/message_utils.dart';
 
 const contentTextStyle = TextStyle(
   fontSize: 20,

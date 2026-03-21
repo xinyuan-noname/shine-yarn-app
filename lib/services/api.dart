@@ -127,6 +127,12 @@ class ApiService {
     return payload["id"] ?? "";
   }
 
+  static String? get position {
+    if (_accessToken.isEmpty) return null;
+    final payload = JwtDecoder.decode(_accessToken);
+    return payload["position"];
+  }
+
   static Map<String, dynamic> get accessTokenPayload {
     if (_accessToken.isEmpty) return {};
     final payload = JwtDecoder.decode(_accessToken);

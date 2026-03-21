@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:shine/components/toast.dart';
 
-import 'permission_utils.dart';
+import '../utils/permission_utils.dart';
 
 typedef DownloadCallback = void Function(String taskId, TaskStatus status);
 

@@ -173,10 +173,9 @@ Future<void> showTaskGridBottomSheet(BuildContext context) async {
                   showToast(msg: "游客(无密码登录用户)暂不支持发起任务");
                   return;
                 }
-                await showAlertIsInDevelopmentDialog(context);
                 final result = await showGroupStorageKeySelectionDialog(
                   context: context,
-                  title: '选择一个群组作为本次选人的范围',
+                  title: '选择一个群组作为本次选人的范围(本功能处于开发状态中，请酌情使用)',
                 );
                 if (result is GroupStorageKey) {
                   await globalNavigatorKey.currentState?.pushNamed(
