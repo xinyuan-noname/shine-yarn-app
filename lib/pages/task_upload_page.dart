@@ -859,7 +859,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
             buildBottomItem(
               onTap: () async {
                 if (_taskId == null) {
-                  showToast(msg: "该任务暂未上传");
+                  showToast(msg: "该任务暂未发布");
                   return;
                 }
                 if (_unfinishedUserList.isNotEmpty) {

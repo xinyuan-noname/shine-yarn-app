@@ -5,8 +5,6 @@ import 'package:shine/components/toast.dart';
 
 import 'permission_utils.dart';
 
-
-
 typedef DownloadCallback = void Function(String taskId, TaskStatus status);
 
 typedef DownloadProgressCallback = void Function(String taskId, int progress);
@@ -45,19 +43,18 @@ class DownloadUtils {
     _downloader.configureNotification(
       running: TaskNotification("正在下载", "正在下载文件..."),
       complete: TaskNotification("下载完成", "文件已保存到"),
+      paused: TaskNotification("下载暂停", "点击可继续"),
+      canceled: TaskNotification("下载取消", "下载已取消"),
       error: TaskNotification("下载失败", "点击下载重试"),
       progressBar: true,
       tapOpensFile: true,
     );
 
-    // 启动下载器以激活数据库并确保正确重启
     await _downloader.start();
 
-    // 配置全局事件监听器
     _updatesSubscription = _downloader.updates.listen((update) {
       switch (update) {
         case TaskStatusUpdate():
-          // 处理状态更新
           final taskId = update.task.taskId;
           final status = update.status;
 
@@ -70,7 +67,6 @@ class DownloadUtils {
           break;
 
         case TaskProgressUpdate():
-          // 处理进度更新
           final taskId = update.task.taskId;
           final progress = (update.progress * 100).toInt();
           _progressCache[taskId] = progress;
@@ -107,7 +103,7 @@ class DownloadUtils {
         headers: headers,
         updates: Updates.statusAndProgress,
         allowPause: true,
-        baseDirectory: BaseDirectory.temporary
+        baseDirectory: BaseDirectory.temporary,
       );
 
       _activeTasks[task.taskId] = DownloadTaskWrapper(
@@ -224,7 +220,6 @@ class DownloadUtils {
     _progressCache.clear();
 
     _isInitialized = false;
-
   }
 }
 

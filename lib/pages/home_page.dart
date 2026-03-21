@@ -158,17 +158,17 @@ class _HomePageState extends State<HomePage> {
     );
     if (!mounted) return;
     setState(() {});
+    final taskUploadResult = await Worker.syncMyUploads();
+    if (taskUploadResult is List<UploadData>) {
+      _myUploadsList.clear();
+      _myUploadsList.addAll(taskUploadResult);
+    }
     final taskNoticeResult = await Worker.syncTaskNotice();
     if (taskNoticeResult is List<TaskStorageData>) {
       _taskNoticeList.clear();
       _taskNoticeList.addAll(taskNoticeResult);
       if (!mounted) return;
       setState(() {});
-    }
-    final taskUploadResult = await Worker.syncMyUploads();
-    if (taskUploadResult is List<UploadData>) {
-      _myUploadsList.clear();
-      _myUploadsList.addAll(taskUploadResult);
     }
   }
 
