@@ -244,8 +244,9 @@ class _ToolConvertToPdfPageState extends State<ToolConvertToPdfPage> {
         final previousCheckResult = await ApiAsset.checkPdfExist(address: hash);
         if (previousCheckResult == null) {
           _canConvert = false;
-          _downloadUrl = '/asset/pdf/$address';
+          _downloadUrl = '/asset/pdf/$hash';
           setState(() {});
+          return null;
         }
         final result = await ApiAsset.uploadDocumentConvertToPdf(
           data: _selectedFile!.bytes!,
