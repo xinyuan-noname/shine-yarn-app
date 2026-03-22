@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/components/static_header_expansion.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/models/to_do_item_data.dart';
 import 'package:shine/routes.dart';
@@ -51,82 +52,102 @@ class FlagView extends StatelessWidget {
             padding: bodyPadding,
             child: Container(
               padding: const EdgeInsets.all(10),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      if (!isEmpty)
-                        Expanded(
-                          child: SearchBar(
-                            hintText: '请输入搜索的内容',
-                            hintStyle: WidgetStatePropertyAll(
-                              const TextStyle(
-                                fontFamily: "SmileySans",
-                                color: mainColorGrey80,
-                              ),
-                            ),
-                            textStyle: WidgetStatePropertyAll(
-                              const TextStyle(fontFamily: "SmileySans"),
-                            ),
-                            leading: Container(
-                              padding: EdgeInsets.all(5),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: whiteLinearGradient,
-                              ),
-                              child: const Icon(
-                                Icons.search,
-                                size: normalIconSize,
-                              ),
-                            ),
-                            backgroundColor: WidgetStatePropertyAll(
-                              Colors.white,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  Expanded(
-                    child: RefreshIndicator(
-                      onRefresh: onRefresh,
-                      child: ListView.builder(
-                        itemCount: max(1, unfinishedItemList.length),
-                        itemBuilder: (context, index) {
-                          if (isEmpty) {
-                            return Container(
-                              alignment: Alignment.center,
-                              child: const Text(
-                                "暂无事项，快去休息吧！",
-                                style: viewEmptyTextStyle,
-                                textAlign: TextAlign.center,
-                              ),
-                            );
-                          }
-                          final item = unfinishedItemList[index];
-                          return ExpansionTile(
-                            leading: Icon(Icons.dangerous),
-                            initiallyExpanded: true,
-                            childrenPadding: EdgeInsets.symmetric(
-                              horizontal: 8,
-                            ),
-                            title: Text(
-                              item.title,
-                              style: expansionListTitleStyle,
+              child: RefreshIndicator(
+                onRefresh: onRefresh,
+                child: ListView(
+                  children: [
+                    ListView.builder(
+                      physics: NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: max(1, unfinishedItemList.length),
+                      itemBuilder: (context, index) {
+                        if (isEmpty) {
+                          return Container(
+                            alignment: Alignment.center,
+                            child: const Text(
+                              "暂无事项，快去休息吧！",
+                              style: viewEmptyTextStyle,
+                              textAlign: TextAlign.center,
                             ),
                           );
-                        },
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: finishedItemList.length,
-                      itemBuilder: (context, index) {
-                        final item = finishedItemList[index];
+                        }
+                        final item = unfinishedItemList[index];
+                        return GestureDetector(
+                          onLongPress: () {},
+                          child: Container(
+                            padding: EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: StaticHeaderExpansion(
+                              leading: Icon(Icons.panorama_fish_eye),
+                              initiallyExpanded: true,
+                              title: Text(
+                                item.title,
+                                style: expansionListTitleStyle,
+                                textAlign: TextAlign.left,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                              children: [
+                                Text(
+                                  item.content.trim(),
+                                  style: const TextStyle(
+                                    fontFamily: "SmileySans",
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
                       },
                     ),
-                  ),
-                ],
+                    ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: finishedItemList.length,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        final item = finishedItemList[index];
+                        return GestureDetector(
+                          onLongPress: () {},
+                          child: Container(
+                            padding: EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: StaticHeaderExpansion(
+                              leading: GestureDetector(
+                                onTap: () {},
+                                child: Icon(Icons.panorama_fish_eye),
+                              ),
+                              initiallyExpanded: true,
+                              title: Text(
+                                item.title,
+                                style: expansionListTitleLineThroughStyle,
+                                textAlign: TextAlign.left,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                              children: [
+                                Text(
+                                  item.content.trim(),
+                                  style: const TextStyle(
+                                    fontFamily: "SmileySans",
+                                    fontSize: 16,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

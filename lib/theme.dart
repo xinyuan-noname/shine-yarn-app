@@ -107,6 +107,13 @@ const expansionListTitleStyle = TextStyle(
   fontFamily: "SmileySans",
   fontSize: 20,
   fontWeight: FontWeight.w500,
+  color: mainColorGrey80,
+);
+const expansionListTitleLineThroughStyle = TextStyle(
+  fontFamily: "SmileySans",
+  fontSize: 20,
+  fontWeight: FontWeight.w500,
+  decoration: TextDecoration.lineThrough,
 );
 
 const TextStyle cardItemTextStyle = TextStyle(
