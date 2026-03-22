@@ -5,6 +5,8 @@ const double middileIconSize = 48;
 const double largeIconSize = 48;
 const double hugeIconSize = 72;
 
+const deepPurpleShadow = Shadow(color: darkColorPurple, blurRadius: 5);
+
 const bgColorLight = Color.fromRGBO(230, 240, 255, 1);
 const bgColorLight80 = Color.fromRGBO(230, 240, 255, 0.80);
 const bgColorLight60 = Color.fromRGBO(230, 240, 255, 0.60);
@@ -107,11 +109,11 @@ const expansionListTitleStyle = TextStyle(
   fontFamily: "SmileySans",
   fontSize: 20,
   fontWeight: FontWeight.w500,
-  color: mainColorGrey80,
 );
 const expansionListTitleLineThroughStyle = TextStyle(
   fontFamily: "SmileySans",
   fontSize: 20,
+  color: mainColorGrey80,
   fontWeight: FontWeight.w500,
   decoration: TextDecoration.lineThrough,
 );

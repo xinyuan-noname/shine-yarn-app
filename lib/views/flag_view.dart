@@ -7,17 +7,21 @@ import 'package:shine/components/toast.dart';
 import 'package:shine/models/to_do_item_data.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
+import 'package:shine/storage/message_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/time_utils.dart';
 
 class FlagView extends StatelessWidget {
   final List<ToDoItemData> unfinishedItemList;
   final List<ToDoItemData> finishedItemList;
   final RefreshCallback onRefresh;
+  final VoidCallback updateFinishedStatus;
   const FlagView({
     super.key,
     required this.unfinishedItemList,
     required this.finishedItemList,
     required this.onRefresh,
+    required this.updateFinishedStatus,
   });
 
   @override
@@ -71,6 +75,7 @@ class FlagView extends StatelessWidget {
                             ),
                           );
                         }
+                        if (unfinishedItemList.isEmpty) return null;
                         final item = unfinishedItemList[index];
                         return GestureDetector(
                           onLongPress: () {},
@@ -82,6 +87,13 @@ class FlagView extends StatelessWidget {
                             ),
                             child: StaticHeaderExpansion(
                               leading: Icon(Icons.panorama_fish_eye),
+                              onLeadingTap: () async {
+                                await MessageStorage.changeFinishedStatus(
+                                  itemId: item.itemId,
+                                  finished: true,
+                                );
+                                updateFinishedStatus();
+                              },
                               initiallyExpanded: true,
                               title: Text(
                                 item.title,
@@ -97,6 +109,42 @@ class FlagView extends StatelessWidget {
                                     fontFamily: "SmileySans",
                                     fontSize: 16,
                                   ),
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      item.source,
+                                      style: const TextStyle(
+                                        fontFamily: "SmileySans",
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: bgColorLight,
+                                        shadows: [deepPurpleShadow],
+                                      ),
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      getLocalTimeString(
+                                        DateTime.fromMillisecondsSinceEpoch(
+                                          item.ts,
+                                        ),
+                                      ),
+                                      style: const TextStyle(
+                                        fontFamily: "SmileySans",
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: bgColorLight,
+                                        shadows: [deepPurpleShadow],
+                                      ),
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -119,10 +167,18 @@ class FlagView extends StatelessWidget {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: StaticHeaderExpansion(
-                              leading: GestureDetector(
-                                onTap: () {},
-                                child: Icon(Icons.panorama_fish_eye),
+                              leading: Icon(
+                                Icons.check_circle_outline,
+                                color: mainColorGrey80,
                               ),
+                              onLeadingTap: () async {
+                                await MessageStorage.changeFinishedStatus(
+                                  itemId: item.itemId,
+                                  finished: false,
+                                );
+                                updateFinishedStatus();
+                              },
+                              trailingColor: mainColorGrey80,
                               initiallyExpanded: true,
                               title: Text(
                                 item.title,
@@ -138,7 +194,44 @@ class FlagView extends StatelessWidget {
                                     fontFamily: "SmileySans",
                                     fontSize: 16,
                                     decoration: TextDecoration.lineThrough,
+                                    color: mainColorGrey80,
                                   ),
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      item.source,
+                                      style: const TextStyle(
+                                        fontFamily: "SmileySans",
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: bgColorLight,
+                                        shadows: [deepPurpleShadow],
+                                      ),
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      getLocalTimeString(
+                                        DateTime.fromMillisecondsSinceEpoch(
+                                          item.ts,
+                                        ),
+                                      ),
+                                      style: const TextStyle(
+                                        fontFamily: "SmileySans",
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w500,
+                                        color: bgColorLight,
+                                        shadows: [deepPurpleShadow],
+                                      ),
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),

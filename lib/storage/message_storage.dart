@@ -158,4 +158,24 @@ class MessageStorage {
     final list = await _db.getFinishedToDoMessages();
     return list.map((e) => e.id).toList();
   }
+
+  static Future<void> changeFinishedStatus({
+    required String itemId,
+    required bool finished,
+  }) async {
+    final item = await _db.getToDoMessage(itemId);
+    if (item == null) {
+      await _db.insertToDoMessage(
+        id: itemId,
+        finished: finished,
+        updatedAt: DateTime.now(),
+      );
+    } else {
+      await _db.updateToDoMessage(
+        id: itemId,
+        finished: finished,
+        updatedAt: DateTime.now(),
+      );
+    }
+  }
 }

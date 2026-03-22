@@ -76,6 +76,7 @@ class _HomePageState extends State<HomePage> {
   final List<ScheduleData> _scheduleDataList = [];
   DateTime _showDate = DateTime.now();
 
+  final List<ToDoItemData> _allToDoList = [];
   final List<ToDoItemData> _unfinishedToDoList = [];
   final List<ToDoItemData> _finishedToDoList = [];
 
@@ -183,20 +184,25 @@ class _HomePageState extends State<HomePage> {
   Future<void> _updateToDoList() async {
     final toDoListResult = await Worker.syncToDoList();
     if (toDoListResult is List<ToDoItemData>) {
-      final finishedToDoItemIdList =
-          await MessageStorage.getFinishedToDoItemIdList();
-      _finishedToDoList.clear();
-      _unfinishedToDoList.clear();
-      for (final item in toDoListResult) {
-        if (finishedToDoItemIdList.contains(item.itemId)) {
-          _finishedToDoList.add(item);
-        } else {
-          _unfinishedToDoList.add(item);
-        }
-      }
-      if (!mounted) return;
-      setState(() {});
+      _allToDoList.addAll(toDoListResult);
+      _updateToDoListFinishedStatus();
     }
+  }
+
+  Future<void> _updateToDoListFinishedStatus() async {
+    final finishedToDoItemIdList =
+        await MessageStorage.getFinishedToDoItemIdList();
+    _finishedToDoList.clear();
+    _unfinishedToDoList.clear();
+    for (final item in _allToDoList) {
+      if (finishedToDoItemIdList.contains(item.itemId)) {
+        _finishedToDoList.add(item);
+      } else {
+        _unfinishedToDoList.add(item);
+      }
+    }
+    if (!mounted) return;
+    setState(() {});
   }
 
   Future<void> _loadSemesterData() async {
@@ -292,6 +298,9 @@ class _HomePageState extends State<HomePage> {
               finishedItemList: _finishedToDoList,
               onRefresh: () async {
                 await _updateToDoList();
+              },
+              updateFinishedStatus: () async {
+                await _updateToDoListFinishedStatus();
               },
             ),
             UserView(

@@ -14,6 +14,7 @@ class StaticHeaderExpansion extends StatefulWidget {
   final Curve animationCurve;
   final EdgeInsetsGeometry? padding;
   final Color? backgroundColor;
+  final Color? trailingColor;
 
   const StaticHeaderExpansion({
     super.key,
@@ -29,6 +30,7 @@ class StaticHeaderExpansion extends StatefulWidget {
     this.animationCurve = Curves.easeInOut,
     this.padding,
     this.backgroundColor,
+    this.trailingColor,
   });
 
   @override
@@ -83,7 +85,6 @@ class _StaticHeaderExpansionState extends State<StaticHeaderExpansion>
     if (widget.onLeadingTap != null) {
       widget.onLeadingTap!();
     }
-    // 注意：这里我们不调用 _toggleExpansion，所以点击 leading 不会展开
   }
 
   @override
@@ -103,8 +104,8 @@ class _StaticHeaderExpansionState extends State<StaticHeaderExpansion>
                 children: [
                   if (widget.leading != null)
                     GestureDetector(
-                      onTap: _handleLeadingTap, // 拦截点击，防止冒泡
-                      behavior: HitTestBehavior.opaque, // 确保即使图标小也能点到
+                      onTap: _handleLeadingTap,
+                      behavior: HitTestBehavior.opaque,
                       child: widget.leading,
                     )
                   else
@@ -137,7 +138,10 @@ class _StaticHeaderExpansionState extends State<StaticHeaderExpansion>
                           begin: 0.0,
                           end: 0.5,
                         ).animate(_heightAnimation),
-                        child: const Icon(Icons.expand_more),
+                        child: Icon(
+                          Icons.expand_more,
+                          color: widget.trailingColor,
+                        ),
                       ),
                 ],
               ),
@@ -147,10 +151,12 @@ class _StaticHeaderExpansionState extends State<StaticHeaderExpansion>
           SizeTransition(
             sizeFactor: _heightAnimation,
             axisAlignment: -1.0,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [bottomLine, ...widget.children],
+            child: GestureDetector(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [bottomLine, ...widget.children],
+              ),
             ),
           ),
         ],
