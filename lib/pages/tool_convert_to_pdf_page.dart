@@ -245,6 +245,7 @@ class _ToolConvertToPdfPageState extends State<ToolConvertToPdfPage> {
         if (previousCheckResult == null) {
           _canConvert = false;
           _downloadUrl = '/asset/pdf/$address';
+          setState(() {});
         }
         final result = await ApiAsset.uploadDocumentConvertToPdf(
           data: _selectedFile!.bytes!,

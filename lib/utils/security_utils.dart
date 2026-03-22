@@ -11,6 +11,7 @@ String convertToHash(
   Uint8List data, {
   HashDigestCoding coding = HashDigestCoding.base64Url,
   HashAlgorithm algorithm = HashAlgorithm.sha256,
+  bool padding = false,
 }) {
   final digest = _computeHash(data, algorithm);
 
@@ -18,11 +19,12 @@ String convertToHash(
     case HashDigestCoding.binary:
       return digest.toString();
     case HashDigestCoding.hex:
-      return digest.toString().substring(2); // 移除 '0x' 前缀
+      return digest.toString().substring(2);
     case HashDigestCoding.base64:
       return base64Encode(digest.bytes);
     case HashDigestCoding.base64Url:
-      return base64UrlEncode(digest.bytes);
+      final hash = base64UrlEncode(digest.bytes);
+      return padding ? hash : hash.replaceAll('=', '');
   }
 }
 
@@ -41,11 +43,13 @@ String hashString(
   String input, {
   HashDigestCoding coding = HashDigestCoding.base64Url,
   HashAlgorithm algorithm = HashAlgorithm.sha256,
+  bool padding = false,
 }) {
   final data = utf8.encode(input);
   return convertToHash(
     Uint8List.fromList(data),
     coding: coding,
     algorithm: algorithm,
+    padding: padding,
   );
 }
