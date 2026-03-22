@@ -19,9 +19,9 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
   int _currentPage = 1;
   int _totalPages = 0;
   bool _isLoading = true;
-  bool _downloadable = false;
   String? _error;
   String? _url;
+  bool _downloadable = false;
   String? _downloadUrl;
   String? _filename;
 

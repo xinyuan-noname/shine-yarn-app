@@ -5,7 +5,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shine/pages/view_image_page.dart';
 import 'package:shine/pages/view_pdf_page.dart';
 import 'package:shine/routes.dart';
-import 'package:shine/services/api.dart';
 import 'package:path/path.dart' as path;
 import 'package:shine/utils/uri_utils.dart';
 
@@ -122,7 +121,7 @@ Future gotoViewPdfUrl(
   String url, {
   bool downloadable = false,
   String? filename,
-  String? downloadUrl
+  String? downloadUrl,
 }) async {
   await globalNavigatorKey.currentState?.pushNamed(
     "/view/pdf",
@@ -142,9 +141,19 @@ Future gotoViewImageFile(String filepath) async {
   );
 }
 
-Future gotoViewImageUrl(String url) async {
+Future gotoViewImageUrl(
+  String url, {
+  bool downloadable = false,
+  String? filename,
+  String? downloadUrl,
+}) async {
   await globalNavigatorKey.currentState?.pushNamed(
     "/view/image",
-    arguments: ViewImagePageArgs(url: ensureUrl(url)),
+    arguments: ViewImagePageArgs(
+      url: ensureUrl(url),
+      downloadUrl: downloadUrl,
+      downloadable: downloadable,
+      filename: filename,
+    ),
   );
 }

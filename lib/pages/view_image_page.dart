@@ -3,8 +3,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:shine/components/toast.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/worker/worker.dart';
 
 class ViewImagePage extends StatefulWidget {
   const ViewImagePage({super.key});
@@ -19,6 +21,10 @@ class _ViewImagePageState extends State<ViewImagePage> {
   Uint8List? _imageData;
   bool _isLoading = true;
   String? _error;
+   String? _url;
+  bool _downloadable = false;
+  String? _downloadUrl;
+  String? _filename;
 
   @override
   void initState() {
@@ -52,13 +58,16 @@ class _ViewImagePageState extends State<ViewImagePage> {
             });
           }
         } else if (args.url != null) {
+          _url = args.url;
+          if (args.filename is String) {
+            _filename = args.filename;
+          }
+          if (args.downloadUrl is String) {
+            _downloadUrl = args.downloadUrl;
+          }
+          _downloadable = args.downloadable;
           setState(() {
             _imageUrl = args.url;
-            _isLoading = false;
-          });
-        } else if (args.data != null) {
-          setState(() {
-            _imageData = args.data as Uint8List;
             _isLoading = false;
           });
         } else {
@@ -81,7 +90,6 @@ class _ViewImagePageState extends State<ViewImagePage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,6 +110,20 @@ class _ViewImagePageState extends State<ViewImagePage> {
       centerTitle: true,
       backgroundColor: deepColorPurple,
       foregroundColor: Colors.white,
+      actions: [
+        if (!_isLoading && _error == null && _downloadable)
+          IconButton(
+            icon: const Icon(Icons.download),
+            onPressed: () {
+              final String? downloadUrl = _downloadUrl ?? _url;
+              if (downloadUrl is String && _filename is String) {
+                Worker.startDownload(url: downloadUrl, filename: _filename!);
+                showToast(msg: "已开始下载$_filename");
+              }
+            },
+            tooltip: '下载图片',
+          ),
+      ],
     );
   }
 
@@ -203,7 +225,15 @@ class _ViewImagePageState extends State<ViewImagePage> {
 class ViewImagePageArgs {
   final String? filePath;
   final String? url;
-  final Uint8List? data;
+  final bool downloadable;
+  final String? downloadUrl;
+  final String? filename;
 
-  const ViewImagePageArgs({this.filePath, this.data, this.url});
+  const ViewImagePageArgs({
+    this.filePath,
+    this.url,
+    this.downloadable = false,
+    this.downloadUrl,
+    this.filename,
+  });
 }

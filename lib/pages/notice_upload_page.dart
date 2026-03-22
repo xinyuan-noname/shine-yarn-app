@@ -275,6 +275,7 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
               } else if (isImageFile(fileName)) {
                 gotoViewImageUrl(
                   "/task/upload/file/$taskId/${ApiService.userId}",
+                  downloadable: true,
                 );
               } else if (isDocument(fileName)) {
                 gotoViewPdfUrl(
