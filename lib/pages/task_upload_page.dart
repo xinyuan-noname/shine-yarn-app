@@ -756,11 +756,13 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                                         gotoViewPdfUrl(
                                           "/task/upload/file/$_taskId/${ApiService.userId}",
                                           downloadable: true,
+                                          filename: fileName,
                                         );
                                       } else if (isImageFile(fileName)) {
                                         gotoViewImageUrl(
                                           "/task/upload/file/$_taskId/${ApiService.userId}",
                                           downloadable: true,
+                                          filename: fileName,
                                         );
                                       } else if (isDocument(fileName)) {
                                         gotoViewPdfUrl(
@@ -768,6 +770,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                                           downloadable: true,
                                           downloadUrl:
                                               "/task/upload/file/$_taskId/${ApiService.userId}",
+                                          filename: fileName,
                                         );
                                       } else {
                                         showToast(msg: "暂不支持预览");
