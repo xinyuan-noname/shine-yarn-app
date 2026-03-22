@@ -701,11 +701,276 @@ class RemindMessageCompanion extends UpdateCompanion<RemindMessageData> {
   }
 }
 
+class $ToDoMessageTable extends ToDoMessage
+    with TableInfo<$ToDoMessageTable, ToDoMessageData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ToDoMessageTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _finishedMeta = const VerificationMeta(
+    'finished',
+  );
+  @override
+  late final GeneratedColumn<bool> finished = GeneratedColumn<bool>(
+    'finished',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("finished" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, finished, updatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'to_do_message';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ToDoMessageData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('finished')) {
+      context.handle(
+        _finishedMeta,
+        finished.isAcceptableOrUnknown(data['finished']!, _finishedMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_finishedMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => const {};
+  @override
+  ToDoMessageData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ToDoMessageData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      finished: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}finished'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ToDoMessageTable createAlias(String alias) {
+    return $ToDoMessageTable(attachedDatabase, alias);
+  }
+}
+
+class ToDoMessageData extends DataClass implements Insertable<ToDoMessageData> {
+  final String id;
+  final bool finished;
+  final DateTime updatedAt;
+  const ToDoMessageData({
+    required this.id,
+    required this.finished,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['finished'] = Variable<bool>(finished);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  ToDoMessageCompanion toCompanion(bool nullToAbsent) {
+    return ToDoMessageCompanion(
+      id: Value(id),
+      finished: Value(finished),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ToDoMessageData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ToDoMessageData(
+      id: serializer.fromJson<String>(json['id']),
+      finished: serializer.fromJson<bool>(json['finished']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'finished': serializer.toJson<bool>(finished),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  ToDoMessageData copyWith({String? id, bool? finished, DateTime? updatedAt}) =>
+      ToDoMessageData(
+        id: id ?? this.id,
+        finished: finished ?? this.finished,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  ToDoMessageData copyWithCompanion(ToDoMessageCompanion data) {
+    return ToDoMessageData(
+      id: data.id.present ? data.id.value : this.id,
+      finished: data.finished.present ? data.finished.value : this.finished,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ToDoMessageData(')
+          ..write('id: $id, ')
+          ..write('finished: $finished, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, finished, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ToDoMessageData &&
+          other.id == this.id &&
+          other.finished == this.finished &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ToDoMessageCompanion extends UpdateCompanion<ToDoMessageData> {
+  final Value<String> id;
+  final Value<bool> finished;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const ToDoMessageCompanion({
+    this.id = const Value.absent(),
+    this.finished = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ToDoMessageCompanion.insert({
+    required String id,
+    required bool finished,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       finished = Value(finished),
+       updatedAt = Value(updatedAt);
+  static Insertable<ToDoMessageData> custom({
+    Expression<String>? id,
+    Expression<bool>? finished,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (finished != null) 'finished': finished,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ToDoMessageCompanion copyWith({
+    Value<String>? id,
+    Value<bool>? finished,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ToDoMessageCompanion(
+      id: id ?? this.id,
+      finished: finished ?? this.finished,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (finished.present) {
+      map['finished'] = Variable<bool>(finished.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ToDoMessageCompanion(')
+          ..write('id: $id, ')
+          ..write('finished: $finished, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $TaskCheckTable taskCheck = $TaskCheckTable(this);
   late final $RemindMessageTable remindMessage = $RemindMessageTable(this);
+  late final $ToDoMessageTable toDoMessage = $ToDoMessageTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -713,6 +978,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     taskCheck,
     remindMessage,
+    toDoMessage,
   ];
 }
 
@@ -1110,6 +1376,168 @@ typedef $$RemindMessageTableProcessedTableManager =
       RemindMessageData,
       PrefetchHooks Function()
     >;
+typedef $$ToDoMessageTableCreateCompanionBuilder =
+    ToDoMessageCompanion Function({
+      required String id,
+      required bool finished,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ToDoMessageTableUpdateCompanionBuilder =
+    ToDoMessageCompanion Function({
+      Value<String> id,
+      Value<bool> finished,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$ToDoMessageTableFilterComposer
+    extends Composer<_$AppDatabase, $ToDoMessageTable> {
+  $$ToDoMessageTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get finished => $composableBuilder(
+    column: $table.finished,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ToDoMessageTableOrderingComposer
+    extends Composer<_$AppDatabase, $ToDoMessageTable> {
+  $$ToDoMessageTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get finished => $composableBuilder(
+    column: $table.finished,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ToDoMessageTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ToDoMessageTable> {
+  $$ToDoMessageTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<bool> get finished =>
+      $composableBuilder(column: $table.finished, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$ToDoMessageTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ToDoMessageTable,
+          ToDoMessageData,
+          $$ToDoMessageTableFilterComposer,
+          $$ToDoMessageTableOrderingComposer,
+          $$ToDoMessageTableAnnotationComposer,
+          $$ToDoMessageTableCreateCompanionBuilder,
+          $$ToDoMessageTableUpdateCompanionBuilder,
+          (
+            ToDoMessageData,
+            BaseReferences<_$AppDatabase, $ToDoMessageTable, ToDoMessageData>,
+          ),
+          ToDoMessageData,
+          PrefetchHooks Function()
+        > {
+  $$ToDoMessageTableTableManager(_$AppDatabase db, $ToDoMessageTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ToDoMessageTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ToDoMessageTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ToDoMessageTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<bool> finished = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ToDoMessageCompanion(
+                id: id,
+                finished: finished,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required bool finished,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ToDoMessageCompanion.insert(
+                id: id,
+                finished: finished,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ToDoMessageTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ToDoMessageTable,
+      ToDoMessageData,
+      $$ToDoMessageTableFilterComposer,
+      $$ToDoMessageTableOrderingComposer,
+      $$ToDoMessageTableAnnotationComposer,
+      $$ToDoMessageTableCreateCompanionBuilder,
+      $$ToDoMessageTableUpdateCompanionBuilder,
+      (
+        ToDoMessageData,
+        BaseReferences<_$AppDatabase, $ToDoMessageTable, ToDoMessageData>,
+      ),
+      ToDoMessageData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1118,4 +1546,6 @@ class $AppDatabaseManager {
       $$TaskCheckTableTableManager(_db, _db.taskCheck);
   $$RemindMessageTableTableManager get remindMessage =>
       $$RemindMessageTableTableManager(_db, _db.remindMessage);
+  $$ToDoMessageTableTableManager get toDoMessage =>
+      $$ToDoMessageTableTableManager(_db, _db.toDoMessage);
 }

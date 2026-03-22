@@ -22,7 +22,13 @@ class RemindMessage extends Table {
   DateTimeColumn get sentAt => dateTime()();
 }
 
-@DriftDatabase(tables: [TaskCheck, RemindMessage])
+class ToDoMessage extends Table {
+  TextColumn get id => text()();
+  BoolColumn get finished => boolean()();
+  DateTimeColumn get updatedAt => dateTime()();
+}
+
+@DriftDatabase(tables: [TaskCheck, RemindMessage, ToDoMessage])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
   @override
@@ -34,7 +40,7 @@ class AppDatabase extends _$AppDatabase {
   );
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
   Future<List<TaskCheckData>> getAllTaskCheckItems() async {
     return await select(taskCheck).get();
   }
@@ -124,6 +130,64 @@ class AppDatabase extends _$AppDatabase {
     return await (select(
       remindMessage,
     )..where((tbl) => tbl.source.equals(source))).get();
+  }
+
+  // ToDoMessage 相关操作方法
+  Future<List<ToDoMessageData>> getAllToDoMessages() async {
+    return await select(toDoMessage).get();
+  }
+
+  Future<ToDoMessageData?> getToDoMessage(String id) async {
+    final stmt = select(toDoMessage)..where((t) => t.id.equals(id));
+    return await stmt.getSingleOrNull();
+  }
+
+  Future<List<ToDoMessageData>> getFinishedToDoMessages() async {
+    return await (select(toDoMessage)..where((tbl) => tbl.finished.equals(true))).get();
+  }
+
+  Future<List<ToDoMessageData>> getUnfinishedToDoMessages() async {
+    return await (select(toDoMessage)..where((tbl) => tbl.finished.equals(false))).get();
+  }
+
+  Future<void> insertToDoMessage({
+    required String id,
+    required bool finished,
+    DateTime? updatedAt,
+  }) async {
+    await into(toDoMessage).insert(
+      ToDoMessageCompanion(
+        id: Value(id),
+        finished: Value(finished),
+        updatedAt: Value(updatedAt ?? DateTime.now()),
+      ),
+    );
+  }
+
+  Future<void> updateToDoMessage({
+    required String id,
+    bool? finished,
+    DateTime? updatedAt,
+  }) async {
+    final stmt = update(toDoMessage)..where((tbl) => tbl.id.equals(id));
+
+    stmt.write(
+      ToDoMessageCompanion(
+        finished: finished != null ? Value(finished) : const Value.absent(),
+        updatedAt: updatedAt != null
+            ? Value(updatedAt)
+            : const Value.absent(),
+      ),
+    );
+  }
+
+  Future<void> deleteToDoMessage(String id) async {
+    final stmt = delete(toDoMessage)..where((tbl) => tbl.id.equals(id));
+    await stmt.go();
+  }
+
+  Future<void> clearAllToDoMessages() async {
+    await delete(toDoMessage).go();
   }
 }
 
