@@ -1,10 +1,20 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/components/toast.dart';
 import 'package:shine/routes.dart';
+import 'package:shine/services/api.dart';
 import 'package:shine/theme.dart';
 
 class FlagView extends StatelessWidget {
-  const FlagView({super.key});
+  final List unfinishedItemList;
+  final List finishedItemList;
+  const FlagView({
+    super.key,
+    required this.unfinishedItemList,
+    required this.finishedItemList,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,10 +29,125 @@ class FlagView extends StatelessWidget {
               padding: const EdgeInsets.only(top: 2),
             ),
             Expanded(
-              child: TabBarView(children: [SizedBox(), _buildToolBoxWidget()]),
+              child: TabBarView(
+                children: [_buildToDoListWidget(), _buildToolBoxWidget()],
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildToDoListWidget() {
+    final isEmpty = unfinishedItemList.isEmpty && finishedItemList.isEmpty;
+    return SizedBox.expand(
+      child: Stack(
+        children: [
+          Container(
+            padding: bodyPadding,
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      if (!isEmpty)
+                        Expanded(
+                          child: SearchBar(
+                            hintText: '请输入搜索的内容',
+                            hintStyle: WidgetStatePropertyAll(
+                              const TextStyle(
+                                fontFamily: "SmileySans",
+                                color: mainColorGrey80,
+                              ),
+                            ),
+                            textStyle: WidgetStatePropertyAll(
+                              const TextStyle(fontFamily: "SmileySans"),
+                            ),
+                            leading: Container(
+                              padding: EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: whiteLinearGradient,
+                              ),
+                              child: const Icon(
+                                Icons.search,
+                                size: normalIconSize,
+                              ),
+                            ),
+                            backgroundColor: WidgetStatePropertyAll(
+                              Colors.white,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: max(1, unfinishedItemList.length),
+                      itemBuilder: (context, index) {
+                        if (isEmpty) {
+                          return Container(
+                            alignment: Alignment.center,
+                            child: const Text(
+                              "暂无事项，快去休息吧！",
+                              style: viewEmptyTextStyle,
+                              textAlign: TextAlign.center,
+                            ),
+                          );
+                        }
+                        final item = unfinishedItemList[index];
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: finishedItemList.length,
+                      itemBuilder: (context, index) {
+                        final item = finishedItemList[index];
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            right: 0,
+            bottom: 20,
+            child: GestureDetector(
+              onTap: () async {
+                if (ApiService.position == null) {
+                  showToast(msg: "没有职务的同学不能创建事项");
+                  return;
+                }
+                await globalNavigatorKey.currentState?.pushNamed('/to_do');
+              },
+              child: Container(
+                margin: EdgeInsets.all(10),
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: blueLinearGradient,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.white,
+                      spreadRadius: 1,
+                      blurRadius: 10,
+                    ),
+                  ],
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.add,
+                  color: mainColorPurple,
+                  size: largeIconSize,
+                  shadows: [Shadow(color: Colors.white, blurRadius: 5)],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -47,7 +172,7 @@ class FlagView extends StatelessWidget {
           ),
           child: ListView(
             children: [
-              Row(
+              const Row(
                 children: [
                   Icon(
                     Icons.sync,
@@ -68,7 +193,7 @@ class FlagView extends StatelessWidget {
                 ],
               ),
               bottomLineSmall,
-              SizedBox(height: 2),
+              const SizedBox(height: 2),
               GridView(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
@@ -81,7 +206,9 @@ class FlagView extends StatelessWidget {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      globalNavigatorKey.currentState?.pushNamed('/tool/convert/pdf');
+                      globalNavigatorKey.currentState?.pushNamed(
+                        '/tool/convert/pdf',
+                      );
                     },
                     child: Container(
                       decoration: BoxDecoration(

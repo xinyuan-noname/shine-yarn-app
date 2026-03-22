@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+const double normalIconSize = 24;
+const double middileIconSize = 48;
 const double largeIconSize = 48;
 const double hugeIconSize = 72;
 
@@ -132,6 +134,15 @@ const TextStyle textFieldStyle = TextStyle(
 const TextStyle textFieldHintStyle = TextStyle(
   fontFamily: 'SmileySans',
   fontSize: 19,
+  color: Colors.grey,
+);
+const TextStyle textFieldSmallStyle = TextStyle(
+  fontFamily: 'SmileySans',
+  fontSize: 15,
+);
+const TextStyle textFieldHintSmallStyle = TextStyle(
+  fontFamily: 'SmileySans',
+  fontSize: 15,
   color: Colors.grey,
 );
 

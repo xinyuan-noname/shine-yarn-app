@@ -78,7 +78,6 @@ class _TaskVotePageState extends State<TaskVotePage> {
                 initValue: _title,
               );
               if (result is String) {
-                // await TaskStorage.updateCheckTask(id: _taskId!, title: result);
                 _title = result;
                 setState(() {});
               }

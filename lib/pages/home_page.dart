@@ -262,7 +262,7 @@ class _HomePageState extends State<HomePage> {
               },
               showDate: _showDate,
             ),
-            FlagView(),
+            FlagView(unfinishedItemList: [], finishedItemList: []),
             UserView(
               userInfoList: _userInfoList,
               message: _message,

@@ -382,9 +382,6 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
               ),
               textAlign: TextAlign.start,
               style: textFieldStyle,
-              inputFormatters: [
-                FilteringTextInputFormatter.deny(RegExp(r'\s')),
-              ],
               controller: _taskNameController,
             ),
             const SizedBox(height: 4),

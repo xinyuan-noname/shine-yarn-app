@@ -284,4 +284,12 @@ class _ToolConvertToPdfPageState extends State<ToolConvertToPdfPage> {
       _canConvert = true;
     }
   }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+    _fileNameDebouncer.dispose();
+    _message.dispose();
+  }
 }
