@@ -184,6 +184,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _updateToDoList() async {
     final toDoListResult = await Worker.syncToDoList();
     if (toDoListResult is List<ToDoItemData>) {
+      _allToDoList.clear();
       _allToDoList.addAll(toDoListResult);
       _updateToDoListFinishedStatus();
     }

@@ -7,6 +7,12 @@ const double hugeIconSize = 72;
 
 const deepPurpleShadow = Shadow(color: darkColorPurple, blurRadius: 5);
 
+const greyBoxShadow = BoxShadow(
+  color: mainColorGrey80,
+  blurRadius: 5,
+  spreadRadius: 1,
+);
+
 const bgColorLight = Color.fromRGBO(230, 240, 255, 1);
 const bgColorLight80 = Color.fromRGBO(230, 240, 255, 0.80);
 const bgColorLight60 = Color.fromRGBO(230, 240, 255, 0.60);

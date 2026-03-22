@@ -70,7 +70,7 @@ class ApiMessage {
     }
   }
 
-  static Future deletePublicToDoItem(String itemId) async {
+  static Future<String?> deletePublicToDoItem(String itemId) async {
     if (!ApiService.prepared) return "服务未就绪";
     try {
       await dio.delete("/message/to_do/public/delete", data: {"itemId": itemId});

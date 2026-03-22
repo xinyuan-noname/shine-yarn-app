@@ -8,8 +8,9 @@ class StaticHeaderExpansion extends StatefulWidget {
   final Widget? trailing;
   final List<Widget> children;
   final bool initiallyExpanded;
-  final VoidCallback? onLeadingTap; // 单独处理 leading 点击
-  final VoidCallback? onHeaderTap; // 单独处理整个头部点击
+  final VoidCallback? onLeadingTap;
+  final VoidCallback? onHeaderTap;
+  final VoidCallback? onContentTap;
   final Duration animationDuration;
   final Curve animationCurve;
   final EdgeInsetsGeometry? padding;
@@ -26,6 +27,7 @@ class StaticHeaderExpansion extends StatefulWidget {
     this.initiallyExpanded = false,
     this.onLeadingTap,
     this.onHeaderTap,
+    this.onContentTap,
     this.animationDuration = const Duration(milliseconds: 300),
     this.animationCurve = Curves.easeInOut,
     this.padding,
@@ -147,11 +149,11 @@ class _StaticHeaderExpansionState extends State<StaticHeaderExpansion>
               ),
             ),
           ),
-
-          SizeTransition(
-            sizeFactor: _heightAnimation,
-            axisAlignment: -1.0,
-            child: GestureDetector(
+          GestureDetector(
+            onTap: widget.onContentTap,
+            child: SizeTransition(
+              sizeFactor: _heightAnimation,
+              axisAlignment: -1.0,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,

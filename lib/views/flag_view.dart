@@ -1,12 +1,15 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/static_header_expansion.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/models/to_do_item_data.dart';
+import 'package:shine/pages/to_do_page.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
+import 'package:shine/services/api_message.dart';
 import 'package:shine/storage/message_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/time_utils.dart';
@@ -78,11 +81,14 @@ class FlagView extends StatelessWidget {
                         if (unfinishedItemList.isEmpty) return null;
                         final item = unfinishedItemList[index];
                         return GestureDetector(
-                          onLongPress: () {},
+                          onLongPress: () {
+                            _deleteToDoItem(context, item);
+                          },
                           child: Container(
                             padding: EdgeInsets.all(10),
                             decoration: BoxDecoration(
                               color: Colors.white,
+                              boxShadow: [greyBoxShadow],
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: StaticHeaderExpansion(
@@ -93,6 +99,9 @@ class FlagView extends StatelessWidget {
                                   finished: true,
                                 );
                                 updateFinishedStatus();
+                              },
+                              onContentTap: () {
+                                _gotoEditToDoItem(item);
                               },
                               initiallyExpanded: true,
                               title: Text(
@@ -117,7 +126,7 @@ class FlagView extends StatelessWidget {
                                       item.source,
                                       style: const TextStyle(
                                         fontFamily: "SmileySans",
-                                        fontSize: 18,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.w500,
                                         color: bgColorLight,
                                         shadows: [deepPurpleShadow],
@@ -137,7 +146,7 @@ class FlagView extends StatelessWidget {
                                       ),
                                       style: const TextStyle(
                                         fontFamily: "SmileySans",
-                                        fontSize: 18,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.w500,
                                         color: bgColorLight,
                                         shadows: [deepPurpleShadow],
@@ -159,7 +168,9 @@ class FlagView extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final item = finishedItemList[index];
                         return GestureDetector(
-                          onLongPress: () {},
+                          onLongPress: () {
+                            _deleteToDoItem(context, item);
+                          },
                           child: Container(
                             padding: EdgeInsets.all(10),
                             decoration: BoxDecoration(
@@ -178,8 +189,10 @@ class FlagView extends StatelessWidget {
                                 );
                                 updateFinishedStatus();
                               },
+                              onContentTap: () {
+                                _gotoEditToDoItem(item);
+                              },
                               trailingColor: mainColorGrey80,
-                              initiallyExpanded: true,
                               title: Text(
                                 item.title,
                                 style: expansionListTitleLineThroughStyle,
@@ -204,7 +217,7 @@ class FlagView extends StatelessWidget {
                                       item.source,
                                       style: const TextStyle(
                                         fontFamily: "SmileySans",
-                                        fontSize: 18,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.w500,
                                         color: bgColorLight,
                                         shadows: [deepPurpleShadow],
@@ -224,7 +237,7 @@ class FlagView extends StatelessWidget {
                                       ),
                                       style: const TextStyle(
                                         fontFamily: "SmileySans",
-                                        fontSize: 18,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.w500,
                                         color: bgColorLight,
                                         shadows: [deepPurpleShadow],
@@ -388,5 +401,35 @@ class FlagView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _deleteToDoItem(BuildContext context, ToDoItemData data) async {
+    if (ApiService.position == null) return;
+    if (ApiService.position != data.source) {
+      showToast(msg: "你无法操作其他人发布的代办项！");
+      return;
+    }
+    final result = await showConfrimDialog(
+      context: context,
+      title: "是否删除“${data.title}”代办项？",
+      content: "此操作不可挽回！",
+    );
+    if (result) {
+      final deleteResult = await ApiMessage.deletePublicToDoItem(data.itemId);
+      if (deleteResult == null) {
+        showToast(msg: "删除代办项成功");
+        onRefresh();
+      } else {
+        showToast(msg: deleteResult);
+      }
+    }
+  }
+
+  void _gotoEditToDoItem(ToDoItemData data) async {
+    await globalNavigatorKey.currentState?.pushNamed(
+      '/to_do',
+      arguments: ToDoPageArgs(data: data),
+    );
+    onRefresh();
   }
 }

@@ -53,6 +53,8 @@ class _ToDoPageState extends State<ToDoPage> {
       if (!mounted) return;
       _previousData = args.data;
       _itemId = args.data.itemId;
+      _titleController.text = args.data.title;
+      _contentController.text = args.data.content;
       setState(() {});
     }
   }
@@ -176,12 +178,6 @@ class _ToDoPageState extends State<ToDoPage> {
       if (_previousData!.title == title && _previousData!.content == content) {
         showToast(msg: "该代办项未发生变化");
         return;
-      }
-      if (_previousData!.title != title) {
-        WsTask.sendRemind(
-          msg: "代办事项“${_previousData?.title}”已更名为“$title”",
-          targetList: UserCache.getIdList(),
-        );
       }
     }
     _message.value = "";
