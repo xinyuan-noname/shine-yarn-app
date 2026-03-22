@@ -14,7 +14,7 @@ import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
-import 'package:shine/utils/course.dart';
+import 'package:shine/models/course_data.dart';
 import 'package:shine/utils/debouncer_utils.dart';
 import 'package:shine/utils/upload_utils.dart';
 import 'package:shine/views/flag_view.dart';
@@ -74,6 +74,10 @@ class _HomePageState extends State<HomePage> {
   final List<CourseData> _subjectInfo = [];
   final List<ScheduleData> _scheduleDataList = [];
   DateTime _showDate = DateTime.now();
+
+  final List _unfinishedToDoList = [];
+  final List _finishedToDoList = [];
+
   @override
   void initState() {
     super.initState();
@@ -172,6 +176,21 @@ class _HomePageState extends State<HomePage> {
       if (!mounted) return;
       setState(() {});
     }
+    final toDoListResult = await Worker.syncToDoList();
+    if (toDoListResult is List<ToDoMessageData>) {
+      final finishedToDoItemIdList =
+          await MessageStorage.getFinishedToDoItemIdList();
+      _finishedToDoList.clear();
+      _unfinishedToDoList.clear();
+      for (final item in toDoListResult!) {
+        if (finishedToDoItemIdList.contains(item.itemId)) {
+          _finishedToDoList.add(item);
+        } else {
+          _unfinishedToDoList.add(item);
+        }
+      }
+      setState(() {});
+    }
   }
 
   Future<void> _loadSemesterData() async {
@@ -262,7 +281,10 @@ class _HomePageState extends State<HomePage> {
               },
               showDate: _showDate,
             ),
-            FlagView(unfinishedItemList: [], finishedItemList: []),
+            FlagView(
+              unfinishedItemList: _unfinishedToDoList,
+              finishedItemList: _finishedToDoList,
+            ),
             UserView(
               userInfoList: _userInfoList,
               message: _message,

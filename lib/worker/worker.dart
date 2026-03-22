@@ -5,6 +5,7 @@ import 'package:background_downloader/background_downloader.dart';
 import 'package:dio/dio.dart';
 import 'package:shine/cache/user_cache.dart';
 import 'package:shine/components/toast.dart';
+import 'package:shine/models/to_do_item_data.dart';
 import 'package:shine/services/api_admin.dart';
 import 'package:shine/services/api_message.dart';
 import 'package:shine/services/api_schedule.dart';
@@ -24,7 +25,7 @@ import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/storage/task_storage.dart';
-import 'package:shine/utils/course.dart';
+import 'package:shine/models/course_data.dart';
 import 'package:shine/services/download.dart';
 import 'package:shine/utils/message_utils.dart';
 import 'package:shine/utils/upload_utils.dart';
@@ -262,6 +263,15 @@ class Worker {
     if (uploadsResult is List) {
       final uploadsList = uploadsResult.whereType<Map<String, dynamic>>();
       return uploadsList.map((e) => UploadData.fromMap(e)).toList();
+    }
+    return null;
+  }
+
+  static Future<List<ToDoItemData>?> syncToDoList() async {
+    final result = await ApiMessage.getPublicToDoList();
+    if (result is List) {
+      final list = result.whereType<Map<String, dynamic>>();
+      return list.map((e) => ToDoItemData.fromMap(e)).toList();
     }
     return null;
   }

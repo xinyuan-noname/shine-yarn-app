@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shine/utils/course.dart';
+import 'package:shine/models/course_data.dart';
 
 class SubjectStorage {
   static final String _currentSubjectInfoListKey =

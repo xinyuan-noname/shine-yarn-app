@@ -14,6 +14,7 @@ import 'package:shine/components/user_info_bar.dart';
 import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/async_utils.dart';
 import 'package:shine/utils/image_utils.dart';
 import 'package:shine/utils/share_utils.dart';
 
@@ -71,8 +72,7 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
   }
 
   Future _init() async {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
+    await AsyncUtils.postFrame(() async {
       await _handleArgs();
     });
   }
@@ -86,6 +86,7 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
         if (result is List<Map<String, dynamic>>) {
           _inRangeUserList.clear();
           _inRangeUserList.addAll(result);
+          if (!mounted) return;
           setState(() {});
         }
       }
@@ -184,9 +185,7 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
                 final list = _drawResultReversed[i];
                 final avatarList = List.generate(list.length, (index) {
                   String id = list[index];
-                  Map user = _allUserList.firstWhere(
-                    (ele) => ele["id"] == id,
-                  );
+                  Map user = _allUserList.firstWhere((ele) => ele["id"] == id);
                   String username = user["username"];
                   return SizedBox(
                     width: 80,
@@ -361,7 +360,7 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
             },
           );
         }
-              return null;
+        return null;
       },
       rightItemBuilder: (context, item, index) {
         final id = item["id"];
@@ -386,7 +385,7 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
             },
           );
         }
-              return null;
+        return null;
       },
     );
   }

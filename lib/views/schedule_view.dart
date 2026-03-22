@@ -3,7 +3,7 @@ import 'package:shine/components/bottom_sheet.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/extensions/list.dart';
 import 'package:shine/theme.dart';
-import 'package:shine/utils/course.dart';
+import 'package:shine/models/course_data.dart';
 import 'package:shine/utils/time_utils.dart';
 import 'package:week_of_year/date_week_extensions.dart';
 

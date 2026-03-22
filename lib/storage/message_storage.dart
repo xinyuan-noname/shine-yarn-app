@@ -91,7 +91,9 @@ class MessageStorage {
           sourceUsername = sourceMap['username'];
         }
       }
-      final readed = await MessageStorage.judgeRemindMessageReaded(messageData.id);
+      final readed = await MessageStorage.judgeRemindMessageReaded(
+        messageData.id,
+      );
       list.add(
         RemindMessageStorageData(
           id: messageData.id,
@@ -151,4 +153,9 @@ class MessageStorage {
     await _db.deleteRemindMessage(id);
   }
 
+  // -- --
+  static Future<List<String>> getFinishedToDoItemIdList() async {
+    final list = await _db.getFinishedToDoMessages();
+    return list.map((e) => e.id).toList();
+  }
 }

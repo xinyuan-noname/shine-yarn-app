@@ -86,36 +86,25 @@ class CourseData {
   String? get semester => basicInfo.semester;
 }
 
-/// 单节课的安排数据
 class ScheduleData {
-  /// 学期名称
   final String semester;
 
-  /// 周次
   final int week;
 
-  /// 星期几 (1-7 对应周一到周日)
   final int weekday;
 
-  /// 开始节次
   final int periodStart;
 
-  /// 地点
   final String? location;
 
-  /// 是否是实验课 (1 表示是实验，0 表示不是)
   final bool? isExperiment;
 
-  /// 课程别名
   final String? alias;
 
-  /// 作业信息
   final String? homework;
 
-  /// 总结信息
   final String? summary;
 
-  /// 问题信息
   final String? issue;
 
   const ScheduleData({

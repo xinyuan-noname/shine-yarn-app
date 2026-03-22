@@ -15,7 +15,6 @@ import 'package:shine/theme.dart';
 import 'package:shine/utils/image_utils.dart';
 import 'package:shine/utils/share_utils.dart';
 
-
 class TaskCheckPage extends StatefulWidget {
   const TaskCheckPage({super.key});
 
@@ -33,12 +32,12 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
       _handleArgs();
     });
   }
 
   Future<void> _handleArgs() async {
+    if (!mounted) return;
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is TaskCheckPageArgs) {
       final groupStorageKey = args.groupStorageKey;
@@ -48,6 +47,7 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
         if (result is List<Map<String, dynamic>>) {
           _unselectedList.clear();
           _unselectedList.addAll(result);
+          if (!mounted) return;
           setState(() {});
         }
       }
@@ -60,6 +60,7 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
         _selectedList.addAll(finishedList);
         _unselectedList.clear();
         _unselectedList.addAll(unfinishedList);
+        if (!mounted) return;
         setState(() {});
       }
     }
@@ -200,6 +201,7 @@ class _TaskCHeckPageState extends State<TaskCheckPage> {
       ),
     );
   }
+
   Widget _buildBottomBar() {
     return Container(
       decoration: BoxDecoration(

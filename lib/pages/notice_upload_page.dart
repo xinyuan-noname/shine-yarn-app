@@ -9,6 +9,7 @@ import 'package:shine/services/api_task_upload.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/async_utils.dart';
 import 'package:shine/utils/debouncer_utils.dart';
 import 'package:shine/utils/file_utils.dart';
 import 'package:shine/utils/message_utils.dart';
@@ -51,24 +52,22 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
   }
 
   _init() async {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
-      _handleArgs();
-      await _parseFormat();
-      if (_defaultFileName is String) {
-        _controller.text = _defaultFileName!;
-      }
-      if (_uploadData != null) {
-        _controller.text = _uploadData!.uploadFileName;
-      }
-    });
+    AsyncUtils.postFrame(_handleArgs);
+    await _parseFormat();
+    if (_defaultFileName is String) {
+      _controller.text = _defaultFileName!;
+    }
+    if (_uploadData != null) {
+      _controller.text = _uploadData!.uploadFileName;
+    }
   }
 
-  void _handleArgs() {
+  Future<void> _handleArgs() async {
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is NoticeUploadPageArgs) {
       _data = args.data;
       _uploadData = args.uploadData;
+      if (!mounted) return;
       setState(() {});
     }
   }
