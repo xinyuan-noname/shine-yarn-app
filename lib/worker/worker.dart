@@ -168,7 +168,11 @@ class Worker {
       }
       final result = await ApiGroup.getGlobalGroupData(nameKeyEnum);
       if (result is List) {
-        await GroupStorage.saveGroupUserList(nameKeyEnum, result);
+        final storage = result.whereType<Map<String,dynamic>>().toList();
+        await GroupStorage.saveGroupUserList(nameKeyEnum, storage);
+        if (nameKeyEnum == GroupStorageKey.entire) {
+          UserCache.setFromGroupDataList(storage);
+        }
       }
     }
   }

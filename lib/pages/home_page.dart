@@ -5,6 +5,7 @@ import 'package:shine/components/avatar.dart';
 import 'package:shine/components/bottom_sheet.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/database/database.dart';
+import 'package:shine/models/to_do_item_data.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/event.dart';
@@ -75,8 +76,8 @@ class _HomePageState extends State<HomePage> {
   final List<ScheduleData> _scheduleDataList = [];
   DateTime _showDate = DateTime.now();
 
-  final List _unfinishedToDoList = [];
-  final List _finishedToDoList = [];
+  final List<ToDoItemData> _unfinishedToDoList = [];
+  final List<ToDoItemData> _finishedToDoList = [];
 
   @override
   void initState() {
@@ -176,19 +177,24 @@ class _HomePageState extends State<HomePage> {
       if (!mounted) return;
       setState(() {});
     }
+    _updateToDoList();
+  }
+
+  Future<void> _updateToDoList() async {
     final toDoListResult = await Worker.syncToDoList();
-    if (toDoListResult is List<ToDoMessageData>) {
+    if (toDoListResult is List<ToDoItemData>) {
       final finishedToDoItemIdList =
           await MessageStorage.getFinishedToDoItemIdList();
       _finishedToDoList.clear();
       _unfinishedToDoList.clear();
-      for (final item in toDoListResult!) {
+      for (final item in toDoListResult) {
         if (finishedToDoItemIdList.contains(item.itemId)) {
           _finishedToDoList.add(item);
         } else {
           _unfinishedToDoList.add(item);
         }
       }
+      if (!mounted) return;
       setState(() {});
     }
   }
@@ -284,6 +290,9 @@ class _HomePageState extends State<HomePage> {
             FlagView(
               unfinishedItemList: _unfinishedToDoList,
               finishedItemList: _finishedToDoList,
+              onRefresh: () async {
+                await _updateToDoList();
+              },
             ),
             UserView(
               userInfoList: _userInfoList,

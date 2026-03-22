@@ -16,7 +16,10 @@ enum GroupStorageKey {
 }
 
 class GroupStorage {
-  static Future<void> saveGroupUserList(GroupStorageKey key, List list) async {
+  static Future<void> saveGroupUserList(
+    GroupStorageKey key,
+    List<Map<String, dynamic>> list,
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final s = list.map((e) => jsonEncode(e)).toList();
     await prefs.setStringList(key.value, s);

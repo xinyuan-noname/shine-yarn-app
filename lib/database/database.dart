@@ -34,13 +34,11 @@ class AppDatabase extends _$AppDatabase {
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (Migrator m) => m.createAll(),
-    onUpgrade: (Migrator m, int from, int to) async {
-      await m.createTable(remindMessage);
-    },
+    onUpgrade: (Migrator m, int from, int to) async {},
   );
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 1;
   Future<List<TaskCheckData>> getAllTaskCheckItems() async {
     return await select(taskCheck).get();
   }
@@ -143,11 +141,15 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<List<ToDoMessageData>> getFinishedToDoMessages() async {
-    return await (select(toDoMessage)..where((tbl) => tbl.finished.equals(true))).get();
+    return await (select(
+      toDoMessage,
+    )..where((tbl) => tbl.finished.equals(true))).get();
   }
 
   Future<List<ToDoMessageData>> getUnfinishedToDoMessages() async {
-    return await (select(toDoMessage)..where((tbl) => tbl.finished.equals(false))).get();
+    return await (select(
+      toDoMessage,
+    )..where((tbl) => tbl.finished.equals(false))).get();
   }
 
   Future<void> insertToDoMessage({
@@ -174,9 +176,7 @@ class AppDatabase extends _$AppDatabase {
     stmt.write(
       ToDoMessageCompanion(
         finished: finished != null ? Value(finished) : const Value.absent(),
-        updatedAt: updatedAt != null
-            ? Value(updatedAt)
-            : const Value.absent(),
+        updatedAt: updatedAt != null ? Value(updatedAt) : const Value.absent(),
       ),
     );
   }

@@ -3,17 +3,20 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/toast.dart';
+import 'package:shine/models/to_do_item_data.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/theme.dart';
 
 class FlagView extends StatelessWidget {
-  final List unfinishedItemList;
-  final List finishedItemList;
+  final List<ToDoItemData> unfinishedItemList;
+  final List<ToDoItemData> finishedItemList;
+  final RefreshCallback onRefresh;
   const FlagView({
     super.key,
     required this.unfinishedItemList,
     required this.finishedItemList,
+    required this.onRefresh,
   });
 
   @override
@@ -84,21 +87,35 @@ class FlagView extends StatelessWidget {
                     ],
                   ),
                   Expanded(
-                    child: ListView.builder(
-                      itemCount: max(1, unfinishedItemList.length),
-                      itemBuilder: (context, index) {
-                        if (isEmpty) {
-                          return Container(
-                            alignment: Alignment.center,
-                            child: const Text(
-                              "暂无事项，快去休息吧！",
-                              style: viewEmptyTextStyle,
-                              textAlign: TextAlign.center,
+                    child: RefreshIndicator(
+                      onRefresh: onRefresh,
+                      child: ListView.builder(
+                        itemCount: max(1, unfinishedItemList.length),
+                        itemBuilder: (context, index) {
+                          if (isEmpty) {
+                            return Container(
+                              alignment: Alignment.center,
+                              child: const Text(
+                                "暂无事项，快去休息吧！",
+                                style: viewEmptyTextStyle,
+                                textAlign: TextAlign.center,
+                              ),
+                            );
+                          }
+                          final item = unfinishedItemList[index];
+                          return ExpansionTile(
+                            leading: Icon(Icons.dangerous),
+                            initiallyExpanded: true,
+                            childrenPadding: EdgeInsets.symmetric(
+                              horizontal: 8,
+                            ),
+                            title: Text(
+                              item.title,
+                              style: expansionListTitleStyle,
                             ),
                           );
-                        }
-                        final item = unfinishedItemList[index];
-                      },
+                        },
+                      ),
                     ),
                   ),
                   Expanded(
