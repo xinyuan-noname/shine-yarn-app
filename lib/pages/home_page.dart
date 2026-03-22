@@ -160,12 +160,19 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _updateMessageData() async {
+    await Future.wait([_updateLocalMessage(), _updateNotice(), _updateToDoList()]);
+  }
+
+  Future<void> _updateLocalMessage() async {
     _messageList.clear();
     _messageList.addAll(
       (await MessageStorage.getAllMessage()).reversed.toList(),
     );
     if (!mounted) return;
     setState(() {});
+  }
+
+  Future<void> _updateNotice() async {
     final taskUploadResult = await Worker.syncMyUploads();
     if (taskUploadResult is List<UploadData>) {
       _myUploadsList.clear();
@@ -178,7 +185,6 @@ class _HomePageState extends State<HomePage> {
       if (!mounted) return;
       setState(() {});
     }
-    _updateToDoList();
   }
 
   Future<void> _updateToDoList() async {

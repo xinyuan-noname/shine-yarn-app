@@ -1,4 +1,3 @@
-import 'package:file_icon/file_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/file_utils.dart';
@@ -39,7 +38,7 @@ class FileDisplayBar extends StatelessWidget {
               decoration: BoxDecoration(
                 border: Border.all(color: mainColorGrey20),
               ),
-              child: FileIcon(fileName, size: hugeIconSize),
+              child: _buildFileIcon(fileName, size: hugeIconSize),
             ),
             SizedBox(width: 10),
             Expanded(
@@ -72,5 +71,29 @@ class FileDisplayBar extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildFileIcon(String fileName, {double? size}) {
+    if (fileName.endsWith(".pdf")) {
+      return Image.asset('assets/icons/pdf.png', width: size, height: size);
+    } else if (fileName.endsWith(".doc")) {
+      return Image.asset('assets/icons/doc.png', width: size, height: size);
+    } else if (fileName.endsWith(".dotx")) {
+      return Image.asset('assets/icons/dotx.png', width: size, height: size);
+    } else if (fileName.endsWith(".xlsx")) {
+      return Image.asset('assets/icons/xlsx.png', width: size, height: size);
+    } else if (fileName.endsWith(".xls")) {
+      return Image.asset('assets/icons/xls.png', width: size, height: size);
+    } else if (fileName.endsWith(".pptx") || fileName.endsWith(".ppt")) {
+      return Image.asset('assets/icons/ppt.png', width: size, height: size);
+    } else if (fileName.endsWith(".zip")) {
+      return Image.asset('assets/icons/zip.png', width: size, height: size);
+    } else if (fileName.endsWith(".rar")) {
+      return Image.asset('assets/icons/rar.png', width: size, height: size);
+    } else if (isImageFile(fileName)) {
+      return Icon(Icons.image, size: size, color: Colors.purple);
+    } else {
+      return Icon(Icons.description, size: size, color: Colors.grey);
+    }
   }
 }
