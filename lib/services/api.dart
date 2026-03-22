@@ -94,7 +94,7 @@ class ApiService {
     },
   );
   static getBaseUrl() async {
-    final response = await Dio().get(AppConfig.assetUrl);
+    final response = await Dio().get(AppConfig.serverUrl);
     final url = response.data;
     return url;
   }
