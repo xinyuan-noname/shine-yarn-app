@@ -7,6 +7,7 @@ import 'package:shine/pages/view_pdf_page.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
 import 'package:path/path.dart' as path;
+import 'package:shine/utils/uri_utils.dart';
 
 Future<Directory?> getExternalDirectory() async {
   Directory? directory;
@@ -121,11 +122,13 @@ Future gotoViewPdfUrl(
   String url, {
   bool downloadable = false,
   String? filename,
+  String? downloadUrl
 }) async {
   await globalNavigatorKey.currentState?.pushNamed(
     "/view/pdf",
     arguments: ViewPdfPageArgs(
-      url: "${ApiService.url}$url",
+      url: ensureUrl(url),
+      downloadUrl: downloadUrl,
       downloadable: downloadable,
       filename: filename,
     ),
@@ -142,6 +145,6 @@ Future gotoViewImageFile(String filepath) async {
 Future gotoViewImageUrl(String url) async {
   await globalNavigatorKey.currentState?.pushNamed(
     "/view/image",
-    arguments: ViewImagePageArgs(url: "${ApiService.url}$url"),
+    arguments: ViewImagePageArgs(url: ensureUrl(url)),
   );
 }

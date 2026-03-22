@@ -19,8 +19,10 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
   int _currentPage = 1;
   int _totalPages = 0;
   bool _isLoading = true;
+  bool _downloadable = false;
   String? _error;
   String? _url;
+  String? _downloadUrl;
   String? _filename;
 
   @override
@@ -54,6 +56,10 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
           if (args.filename is String) {
             _filename = args.filename;
           }
+          if (args.downloadUrl is String) {
+            _downloadUrl = args.downloadUrl;
+          }
+          _downloadable = args.downloadable;
           final fileData = await InternetFile.get(
             args.url!,
             headers: ApiService.headers.cast<String, String>(),
@@ -110,14 +116,13 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
       backgroundColor: deepColorPurple,
       foregroundColor: bgColorLight,
       actions: [
-        if (!_isLoading && _error == null)
+        if (!_isLoading && _error == null && _downloadable)
           IconButton(
             icon: const Icon(Icons.download),
             onPressed: () {
-              if (_url is String && _filename is String) {
-                Worker.startDownload(url: _url!, filename: _filename!);
-                print(_url);
-                print(_filename);
+              final String? downloadUrl = _downloadUrl ?? _url;
+              if (downloadUrl is String && _filename is String) {
+                Worker.startDownload(url: downloadUrl, filename: _filename!);
                 showToast(msg: "已开始下载$_filename");
               }
             },
@@ -274,12 +279,14 @@ class ViewPdfPageArgs {
   final String? filePath;
   final String? url;
   final bool downloadable;
+  final String? downloadUrl;
   final String? filename;
 
   const ViewPdfPageArgs({
     this.filePath,
     this.url,
     this.downloadable = false,
+    this.downloadUrl,
     this.filename,
   });
 }

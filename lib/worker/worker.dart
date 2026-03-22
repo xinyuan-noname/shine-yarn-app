@@ -28,6 +28,7 @@ import 'package:shine/utils/course.dart';
 import 'package:shine/services/download.dart';
 import 'package:shine/utils/message_utils.dart';
 import 'package:shine/utils/upload_utils.dart';
+import 'package:shine/utils/uri_utils.dart';
 
 class Worker {
   static Timer? _refreshTimer;
@@ -294,7 +295,7 @@ class Worker {
     final downloader = DownloadUtils();
     await downloader.init();
     downloader.startDownload(
-      url: '${ApiService.url}$url',
+      url: ensureUrl(url),
       headers: ApiService.headers.cast<String, String>(),
       filename: filename,
       onStatusChanged: (taskId, status) {
