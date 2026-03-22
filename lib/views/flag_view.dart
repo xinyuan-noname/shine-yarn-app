@@ -126,7 +126,7 @@ class FlagView extends StatelessWidget {
                                       item.source,
                                       style: const TextStyle(
                                         fontFamily: "SmileySans",
-                                        fontSize: 15,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.w500,
                                         color: bgColorLight,
                                         shadows: [deepPurpleShadow],
@@ -146,7 +146,7 @@ class FlagView extends StatelessWidget {
                                       ),
                                       style: const TextStyle(
                                         fontFamily: "SmileySans",
-                                        fontSize: 15,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.w500,
                                         color: bgColorLight,
                                         shadows: [deepPurpleShadow],
@@ -217,7 +217,7 @@ class FlagView extends StatelessWidget {
                                       item.source,
                                       style: const TextStyle(
                                         fontFamily: "SmileySans",
-                                        fontSize: 15,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.w500,
                                         color: bgColorLight,
                                         shadows: [deepPurpleShadow],
@@ -237,7 +237,7 @@ class FlagView extends StatelessWidget {
                                       ),
                                       style: const TextStyle(
                                         fontFamily: "SmileySans",
-                                        fontSize: 15,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.w500,
                                         color: bgColorLight,
                                         shadows: [deepPurpleShadow],

@@ -157,7 +157,11 @@ class _StaticHeaderExpansionState extends State<StaticHeaderExpansion>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [bottomLine, ...widget.children],
+                children: [
+                  bottomLine,
+                  SizedBox(height: 10),
+                  ...widget.children,
+                ],
               ),
             ),
           ),

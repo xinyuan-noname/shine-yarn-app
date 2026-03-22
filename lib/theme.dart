@@ -113,12 +113,12 @@ const listTitleStyle = TextStyle(
 );
 const expansionListTitleStyle = TextStyle(
   fontFamily: "SmileySans",
-  fontSize: 20,
+  fontSize: 18,
   fontWeight: FontWeight.w500,
 );
 const expansionListTitleLineThroughStyle = TextStyle(
   fontFamily: "SmileySans",
-  fontSize: 20,
+  fontSize: 18,
   color: mainColorGrey80,
   fontWeight: FontWeight.w500,
   decoration: TextDecoration.lineThrough,
