@@ -4,7 +4,6 @@ import 'package:internet_file/internet_file.dart';
 import 'package:shine/components/custom_back_handler.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/services/api.dart';
-import 'package:shine/services/download.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/worker/worker.dart';
 
@@ -117,6 +116,8 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
             onPressed: () {
               if (_url is String && _filename is String) {
                 Worker.startDownload(url: _url!, filename: _filename!);
+                print(_url);
+                print(_filename);
                 showToast(msg: "已开始下载$_filename");
               }
             },

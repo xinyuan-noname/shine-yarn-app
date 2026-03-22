@@ -5,7 +5,6 @@ import 'package:shine/components/file_display_bar.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/services/api_asset.dart';
-import 'package:shine/services/dio.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/debouncer_utils.dart';
 import 'package:shine/utils/file_utils.dart';
@@ -119,6 +118,7 @@ class _ToolConvertToPdfPageState extends State<ToolConvertToPdfPage> {
             _controller.text = '${file.name.substring(0, p)}.pdf';
           }
           _canConvert = true;
+          _downloadUrl = '';
           setState(() {});
         },
         child: Container(
