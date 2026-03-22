@@ -270,6 +270,7 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
               if (fileName!.endsWith(".pdf")) {
                 gotoViewPdfUrl(
                   "/task/upload/file/$taskId/${ApiService.userId}",
+                  downloadable: true
                 );
               } else if (isImageFile(fileName)) {
                 gotoViewImageUrl(
@@ -278,6 +279,8 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
               } else if (isDocument(fileName)) {
                 gotoViewPdfUrl(
                   "/task/upload/view/document/$taskId/${ApiService.userId}",
+                  downloadable: true,
+                  downloadUrl: "/task/upload/file/$taskId/${ApiService.userId}",
                 );
               } else {
                 showToast(msg: "暂不支持预览");

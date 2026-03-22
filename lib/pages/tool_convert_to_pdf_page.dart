@@ -9,6 +9,7 @@ import 'package:shine/theme.dart';
 import 'package:shine/utils/debouncer_utils.dart';
 import 'package:shine/utils/file_utils.dart';
 import 'package:shine/utils/message_utils.dart';
+import 'package:shine/utils/security_utils.dart';
 
 class ToolConvertToPdfPage extends StatefulWidget {
   const ToolConvertToPdfPage({super.key});
@@ -239,6 +240,12 @@ class _ToolConvertToPdfPageState extends State<ToolConvertToPdfPage> {
     final success = await sendRequestAndChangeMessage(
       _message,
       request: Future(() async {
+        final hash = convertToHash(_selectedFile!.bytes!);
+        final previousCheckResult = await ApiAsset.checkPdfExist(address: hash);
+        if (previousCheckResult == null) {
+          _canConvert = false;
+          _downloadUrl = '/asset/pdf/$address';
+        }
         final result = await ApiAsset.uploadDocumentConvertToPdf(
           data: _selectedFile!.bytes!,
           filename: _selectedFile!.name,

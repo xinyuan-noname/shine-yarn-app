@@ -42,7 +42,7 @@ class DownloadUtils {
     }
     _downloader.configureNotification(
       running: TaskNotification("正在下载", "正在下载文件..."),
-      complete: TaskNotification("下载完成", "文件已保存到"),
+      complete: TaskNotification("下载完成", "文件已保存，点击可跳转"),
       paused: TaskNotification("下载暂停", "点击可继续"),
       canceled: TaskNotification("下载取消", "下载已取消"),
       error: TaskNotification("下载失败", "请重新下载"),
