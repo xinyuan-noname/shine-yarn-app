@@ -95,9 +95,6 @@ class Worker {
         final url = await ApiService.getBaseUrl();
         if (url != ApiService.url) {
           ApiService.setBaseUrl(url);
-          if (!AppConfig.isProduction) {
-            showToast(msg: url);
-          }
         }
         Worker.scheduleUrl(defaultDuration);
       } on DioException catch (e) {
