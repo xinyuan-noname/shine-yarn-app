@@ -1,4 +1,3 @@
-// lib/utils/device_info_helper.dart
 import 'dart:io' show Platform;
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';

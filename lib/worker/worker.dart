@@ -3,10 +3,14 @@ import 'dart:convert';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:dio/dio.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shine/cache/user_cache.dart';
+import 'package:shine/components/dialog.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/models/to_do_item_data.dart';
+import 'package:shine/routes.dart';
 import 'package:shine/services/api_admin.dart';
+import 'package:shine/services/api_asset.dart';
 import 'package:shine/services/api_message.dart';
 import 'package:shine/services/api_schedule.dart';
 import 'package:shine/services/api_semesters.dart';
@@ -30,6 +34,7 @@ import 'package:shine/services/download.dart';
 import 'package:shine/utils/message_utils.dart';
 import 'package:shine/utils/upload_utils.dart';
 import 'package:shine/utils/uri_utils.dart';
+import 'package:version/version.dart';
 
 class Worker {
   static Timer? _refreshTimer;
@@ -88,15 +93,14 @@ class Worker {
       try {
         final url = await ApiService.getBaseUrl();
         if (url != ApiService.url) {
-          print("更换url为:$url");
           ApiService.setBaseUrl(url);
         }
         Worker.scheduleUrl(defaultDuration);
-      } on DioException {
-        showToast(msg: "服务未就绪，以离线模式进入");
+      } on DioException catch(e) {
+        showToast(msg: "服务未就绪，以离线模式进入，错误原因：$e");
         ApiService.openOfflineMode();
       } catch (e) {
-        showToast(msg: "服务未就绪，以离线模式进入");
+        showToast(msg: "服务未就绪，以离线模式进入，错误原因：$e");
         ApiService.openOfflineMode();
       }
     });
@@ -168,7 +172,7 @@ class Worker {
       }
       final result = await ApiGroup.getGlobalGroupData(nameKeyEnum);
       if (result is List) {
-        final storage = result.whereType<Map<String,dynamic>>().toList();
+        final storage = result.whereType<Map<String, dynamic>>().toList();
         await GroupStorage.saveGroupUserList(nameKeyEnum, storage);
         if (nameKeyEnum == GroupStorageKey.entire) {
           UserCache.setFromGroupDataList(storage);
@@ -333,6 +337,28 @@ class Worker {
         }
       },
     );
+  }
+
+  static Future checkAndUpdate() async {
+    final appInfoResult = await ApiAsset.checkIsNewest();
+    if (appInfoResult is Map) {
+      final bool forceUpdate = appInfoResult['forceUpdate'];
+      final String remoteAppVersionString = appInfoResult['version'];
+      final String localAppVersionString =
+          (await PackageInfo.fromPlatform()).version;
+      if (Version.parse(remoteAppVersionString) <
+          Version.parse(localAppVersionString)) {
+        return;
+      }
+      if (globalNavigatorKey.currentContext == null) return;
+      if (forceUpdate) {
+        final requestUpdate = await showConfrimDialog(
+          context: globalNavigatorKey.currentContext!,
+          title: "检测到新版本，本次为请立即更新！",
+          content: "",
+        );
+      }
+    }
   }
 
   static void dispose() {

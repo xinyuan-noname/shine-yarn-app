@@ -37,4 +37,18 @@ class ApiAsset {
       return "文件不存在";
     }
   }
+
+  static Future checkIsNewest() async {
+    if (!ApiService.isOk) return "服务未就绪";
+    try {
+      await Dio().get(
+        "https://loquacious-muffin-b1eed0.netlify.app/release.json",
+      );
+      return null;
+    } on DioException catch (e) {
+      return e.message ?? "获取应用信息失败";
+    } catch (e) {
+      return "获取应用信息失败";
+    }
+  }
 }

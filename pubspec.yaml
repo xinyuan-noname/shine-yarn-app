@@ -68,6 +68,7 @@ dependencies:
   background_downloader: ^9.5.4
   crypto: ^3.0.7
   open_file: ^3.5.11
+  version: ^3.0.2
 
 dev_dependencies:
   flutter_test:
