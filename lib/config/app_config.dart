@@ -6,13 +6,8 @@ class AppConfig {
   );
   static String get serverUrl {
     return isProduction
-        ? "https://gitee.com/xinyuanwm/asset/raw/prod/url.txt"
-        : "https://gitee.com/xinyuanwm/asset/raw/main/url.txt";
+        ? "https://shine-yarn-url-prod.netlify.app/url.txt"
+        : "https://shine-yarn-url.netlify.app/url.txt";
   }
 
-  static String get appInfoUrl {
-    return isProduction
-        ? "https://gitee.com/xinyuanwm/asset/raw/prod/version.json"
-        : "https://gitee.com/xinyuanwm/asset/raw/main/version.json";
-  }
 }

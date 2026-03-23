@@ -95,6 +95,9 @@ class ApiService {
   );
   static getBaseUrl() async {
     final response = await Dio().get(AppConfig.serverUrl);
+    if (!AppConfig.isProduction) {
+      showToast(msg:AppConfig.serverUrl);
+    }
     final url = response.data;
     return url;
   }

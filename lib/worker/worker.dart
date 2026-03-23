@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shine/cache/user_cache.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/toast.dart';
+import 'package:shine/config/app_config.dart';
 import 'package:shine/models/to_do_item_data.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api_admin.dart';
@@ -94,13 +95,22 @@ class Worker {
         final url = await ApiService.getBaseUrl();
         if (url != ApiService.url) {
           ApiService.setBaseUrl(url);
+          if (!AppConfig.isProduction) {
+            showToast(msg: url);
+          }
         }
         Worker.scheduleUrl(defaultDuration);
-      } on DioException catch(e) {
-        showToast(msg: "服务未就绪，以离线模式进入，错误原因：$e");
+      } on DioException catch (e) {
+        showToast(msg: "服务未就绪，以离线模式进入");
+        if (!AppConfig.isProduction) {
+          showToast(msg: "错误原因：$e");
+        }
         ApiService.openOfflineMode();
       } catch (e) {
-        showToast(msg: "服务未就绪，以离线模式进入，错误原因：$e");
+        showToast(msg: "服务未就绪，以离线模式进入");
+        if (!AppConfig.isProduction) {
+          showToast(msg: "错误原因：$e");
+        }
         ApiService.openOfflineMode();
       }
     });

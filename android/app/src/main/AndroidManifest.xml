@@ -13,7 +13,8 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-
+    <!-- 网络权限（Flutter 调试需要） -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:label="闪纺"
         android:name="${applicationName}"
