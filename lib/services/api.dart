@@ -94,6 +94,7 @@ class ApiService {
       handler.next(err);
     },
   );
+
   static getBaseUrl() async {
     if (AppConfig.stableGithubOrProxy.isNotEmpty) {
       try {
@@ -113,8 +114,8 @@ class ApiService {
         try {
           final response = await Dio(
             BaseOptions(
-              receiveTimeout: const Duration(seconds: 3),
-              connectTimeout: const Duration(seconds: 3),
+              receiveTimeout: const Duration(seconds: 2),
+              connectTimeout: const Duration(seconds: 2),
             ),
           ).get(url);
           AppConfig.setStableGithubOrProxy(response);

@@ -8,8 +8,8 @@ class AppConfig {
   );
 
   static const List<String> githubAndProxy = [
-    "https://raw.bgithub.xyz",
     "https://gh.llkk.cc/https://raw.githubusercontent.com",
+    "https://raw.bgithub.xyz",
     "https://raw.kkgithub.com",
     "https://raw.githubusercontent.com",
   ];
