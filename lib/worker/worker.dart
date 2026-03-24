@@ -37,6 +37,7 @@ import 'package:shine/services/download.dart';
 import 'package:shine/utils/message_utils.dart';
 import 'package:shine/utils/upload_utils.dart';
 import 'package:shine/utils/uri_utils.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
 
 class Worker {
@@ -360,7 +361,7 @@ class Worker {
       final String apkName = appInfoResult['apk'];
       final bool forceUpdate = appInfoResult['forceUpdate'];
       final String remoteAppVersionString = appInfoResult['version'];
-      final String updateInfo = appInfoResult['info'] ?? "";
+      final String updateInfo = appInfoResult['info'] ?? "暂无信息";
       final String localAppVersionString =
           (await PackageInfo.fromPlatform()).version;
       final remoteVersion = Version.parse(remoteAppVersionString);
@@ -376,7 +377,6 @@ class Worker {
           title: "检测到新版本，本次更新是必须的！本次进入将以离线模式进入！",
           content: "本次更新内容：$updateInfo",
         );
-        Worker.dispose();
         ApiService.openOfflineMode();
         showToast(msg: "进入离线模式");
       } else {
@@ -387,12 +387,15 @@ class Worker {
         );
       }
       if (requestUpdate) {
-        Worker.startDownload(
-          url: ApiUpdate.getUpdateUrl(apkName),
-          filename: 'shine.apk',
-        ).then((_) {
-          OpenFile.open('${BaseDirectory.temporary}/shine.apk');
-        });
+        final apkUrl = ApiUpdate.getUpdateUrl(apkName);
+        Worker.startDownload(url: apkUrl, filename: 'shine.apk')
+            .then((_) {
+              OpenFile.open('${BaseDirectory.temporary}/shine.apk');
+            })
+            .catchError((_) async {
+              await showToast(msg: "检测到下载失败，正在跳转至下载链接");
+              launchUrl(Uri.parse(apkUrl));
+            });
       }
     }
   }

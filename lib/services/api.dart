@@ -5,6 +5,7 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/config/app_config.dart';
 import 'package:shine/services/dio.dart';
+import 'package:shine/services/ws.dart';
 import 'package:shine/utils/device_info.dart';
 import 'package:shine/utils/routes_utils.dart';
 import 'package:shine/worker/worker.dart';
@@ -245,5 +246,7 @@ class ApiService {
   static openOfflineMode() {
     ApiService.setBaseUrl("");
     ApiService._offlineMode = true;
+    Worker.dispose();
+    WebSocketServer.dispose();
   }
 }
