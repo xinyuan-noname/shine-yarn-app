@@ -37,25 +37,4 @@ class ApiAsset {
       return "文件不存在";
     }
   }
-
-  static final assetDio = Dio(
-    BaseOptions(
-      baseUrl: "https://raw.githubusercontent.com/xinyuan-noname/asset/master",
-    ),
-  );
-
-  static Future checkIsNewest() async {
-    try {
-      await assetDio.get("/release.json");
-      return null;
-    } on DioException catch (e) {
-      return e.message ?? "获取应用信息失败";
-    } catch (e) {
-      return "获取应用信息失败";
-    }
-  }
-
-  static String getApkUrl(String path) {
-    return Uri.parse(assetDio.options.baseUrl).resolve(path).toString();
-  }
 }

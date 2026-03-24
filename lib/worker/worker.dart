@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:dio/dio.dart';
+import 'package:open_file/open_file.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shine/cache/user_cache.dart';
 import 'package:shine/components/dialog.dart';
@@ -12,13 +13,13 @@ import 'package:shine/config/app_config.dart';
 import 'package:shine/models/to_do_item_data.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api_admin.dart';
-import 'package:shine/services/api_asset.dart';
 import 'package:shine/services/api_message.dart';
 import 'package:shine/services/api_schedule.dart';
 import 'package:shine/services/api_semesters.dart';
 import 'package:shine/services/api_subjects.dart';
 import 'package:shine/services/api_task.dart';
 import 'package:shine/services/api_task_upload.dart';
+import 'package:shine/services/api_update.dart';
 import 'package:shine/services/notification.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/api_auth.dart';
@@ -317,7 +318,10 @@ class Worker {
     });
   }
 
-  static Future startDownload({required String url, required String filename}) async {
+  static Future startDownload({
+    required String url,
+    required String filename,
+  }) async {
     final downloader = DownloadUtils();
     await downloader.init();
     return await downloader.startDownload(
@@ -347,38 +351,48 @@ class Worker {
     );
   }
 
-  static Future checkAndUpdate() async {
+  static Future<void> checkAndUpdate(context) async {
     if (!Platform.isAndroid && !Platform.isWindows) {
-      return false;
+      return;
     }
-    final appInfoResult = await ApiAsset.checkIsNewest();
+    final appInfoResult = await ApiUpdate.checkIsNewest();
     if (appInfoResult is Map) {
+      final String apkName = appInfoResult['apk'];
       final bool forceUpdate = appInfoResult['forceUpdate'];
       final String remoteAppVersionString = appInfoResult['version'];
-      final String apkName = appInfoResult['apk'];
+      final String updateInfo = appInfoResult['info'] ?? "";
       final String localAppVersionString =
           (await PackageInfo.fromPlatform()).version;
-      if (Version.parse(remoteAppVersionString) <
-          Version.parse(localAppVersionString)) {
+      final remoteVersion = Version.parse(remoteAppVersionString);
+      final localVersion = Version.parse(localAppVersionString);
+
+      if (remoteVersion <= localVersion) {
         return;
       }
-      if (globalNavigatorKey.currentContext == null) return;
+      bool requestUpdate = false;
       if (forceUpdate) {
-        final requestUpdate = await showConfrimDialog(
+        requestUpdate = await showConfrimDialog(
+          context: globalNavigatorKey.currentContext!,
+          title: "检测到新版本，本次更新是必须的！本次进入将以离线模式进入！",
+          content: "本次更新内容：$updateInfo",
+        );
+        Worker.dispose();
+        ApiService.openOfflineMode();
+        showToast(msg: "进入离线模式");
+      } else {
+        requestUpdate = await showConfrimDialog(
           context: globalNavigatorKey.currentContext!,
           title: "检测到新版本，本次为请立即更新！",
-          content: "否则将进入离线模式",
+          content: "本次更新内容：$updateInfo",
         );
-        if (requestUpdate) {
-          Worker.startDownload(
-            url: ApiAsset.getApkUrl(apkName),
-            filename: 'shine.apk',
-          );
-        } else {
-          Worker.dispose();
-          ApiService.openOfflineMode();
-          showToast(msg: "进入离线模式");
-        }
+      }
+      if (requestUpdate) {
+        Worker.startDownload(
+          url: ApiUpdate.getUpdateUrl(apkName),
+          filename: 'shine.apk',
+        ).then((_) {
+          OpenFile.open('${BaseDirectory.temporary}/shine.apk');
+        });
       }
     }
   }

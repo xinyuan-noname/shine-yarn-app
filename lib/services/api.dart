@@ -94,9 +94,40 @@ class ApiService {
     },
   );
   static getBaseUrl() async {
-    final response = await Dio().get(AppConfig.serverUrl);
-    final url = response.data;
-    return url;
+    if (AppConfig.stableGithubOrProxy.isNotEmpty) {
+      try {
+        final response = await Dio(
+          BaseOptions(
+            receiveTimeout: const Duration(seconds: 3),
+            connectTimeout: const Duration(seconds: 3),
+          ),
+        ).get(AppConfig.stableGithubOrProxy);
+        return response.data;
+      } catch (error) {
+        AppConfig.stableGithubOrProxy = '';
+      }
+    }
+    if (AppConfig.stableGithubOrProxy.isEmpty) {
+      for (final url in AppConfig.serverUrlList) {
+        try {
+          final response = await Dio(
+            BaseOptions(
+              receiveTimeout: const Duration(seconds: 3),
+              connectTimeout: const Duration(seconds: 3),
+            ),
+          ).get(url);
+          AppConfig.setStableGithubOrProxy(response);
+          return response.data;
+        } catch (err) {
+          continue;
+        }
+      }
+      throw DioException(
+        requestOptions: RequestOptions(path: 'github_urls'),
+        type: DioExceptionType.unknown,
+        error: Exception('所有 GitHub 链接都无法访问，请检查网络连接或服务器状态'),
+      );
+    }
   }
 
   static bool get isOk {

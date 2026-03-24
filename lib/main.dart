@@ -10,6 +10,7 @@ import 'package:shine/services/api.dart';
 import 'package:shine/services/event.dart';
 import 'package:shine/storage/token_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/routes_utils.dart';
 import 'package:shine/worker/worker.dart';
 
 void main() async {
@@ -37,9 +38,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   _prepare() async {
-    Worker.checkAndUpdate();
     ApiService.init();
     await ApiService.waitOk();
+    await Worker.checkAndUpdate(context);
     final tokenFuture = TokenStorage.getAccessToken();
 
     String? accessToken;
@@ -52,9 +53,15 @@ class _MyAppState extends State<MyApp> {
     if (accessToken != null) {
       ApiService.setAccessToken(accessToken);
       Worker.scheduleRefreshNow();
-      globalNavigatorKey.currentState?.pushReplacementNamed("/home");
+      globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
+        '/home',
+        clearOldRouter,
+      );
     } else {
-      globalNavigatorKey.currentState?.pushReplacementNamed("/login");
+      globalNavigatorKey.currentState?.pushNamedAndRemoveUntil(
+        "/login",
+        clearOldRouter,
+      );
     }
   }
 
