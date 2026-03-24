@@ -37,6 +37,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   _prepare() async {
+    Worker.checkAndUpdate();
     ApiService.init();
     await ApiService.waitOk();
     final tokenFuture = TokenStorage.getAccessToken();
@@ -78,7 +79,7 @@ class _MyAppState extends State<MyApp> {
       localizationsDelegates: [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate, 
+        GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: [Locale('zh', 'CN')],
     );

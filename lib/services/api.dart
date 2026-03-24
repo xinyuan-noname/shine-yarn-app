@@ -212,6 +212,7 @@ class ApiService {
   }
 
   static openOfflineMode() {
+    ApiService.setBaseUrl("");
     ApiService._offlineMode = true;
   }
 }

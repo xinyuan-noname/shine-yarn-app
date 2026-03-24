@@ -6,8 +6,8 @@ class AppConfig {
   );
   static String get serverUrl {
     return isProduction
-        ? "https://shine-yarn-url-prod.netlify.app/url.txt"
-        : "https://shine-yarn-url.netlify.app/url.txt";
+        ? "https://raw.githubusercontent.com/xinyuan-noname/git-github.com-xinyuan-noname-asset/prod/url.txt"
+        : "https://raw.githubusercontent.com/xinyuan-noname/git-github.com-xinyuan-noname-asset/main/url.txt";
   }
 
 }

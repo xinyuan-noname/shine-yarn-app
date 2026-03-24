@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:dio/dio.dart';
@@ -316,10 +317,10 @@ class Worker {
     });
   }
 
-  static startDownload({required String url, required String filename}) async {
+  static Future startDownload({required String url, required String filename}) async {
     final downloader = DownloadUtils();
     await downloader.init();
-    downloader.startDownload(
+    return await downloader.startDownload(
       url: ensureUrl(url),
       headers: ApiService.headers.cast<String, String>(),
       filename: filename,
@@ -347,10 +348,14 @@ class Worker {
   }
 
   static Future checkAndUpdate() async {
+    if (!Platform.isAndroid && !Platform.isWindows) {
+      return false;
+    }
     final appInfoResult = await ApiAsset.checkIsNewest();
     if (appInfoResult is Map) {
       final bool forceUpdate = appInfoResult['forceUpdate'];
       final String remoteAppVersionString = appInfoResult['version'];
+      final String apkName = appInfoResult['apk'];
       final String localAppVersionString =
           (await PackageInfo.fromPlatform()).version;
       if (Version.parse(remoteAppVersionString) <
@@ -362,8 +367,18 @@ class Worker {
         final requestUpdate = await showConfrimDialog(
           context: globalNavigatorKey.currentContext!,
           title: "检测到新版本，本次为请立即更新！",
-          content: "",
+          content: "否则将进入离线模式",
         );
+        if (requestUpdate) {
+          Worker.startDownload(
+            url: ApiAsset.getApkUrl(apkName),
+            filename: 'shine.apk',
+          );
+        } else {
+          Worker.dispose();
+          ApiService.openOfflineMode();
+          showToast(msg: "进入离线模式");
+        }
       }
     }
   }
