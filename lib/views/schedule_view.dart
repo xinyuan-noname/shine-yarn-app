@@ -400,8 +400,14 @@ class ScheduleView extends StatelessWidget {
                     fontSize: 10,
                   ),
                 ),
-                Text(start.toString().substring(10, 15), style: _timeTextStyle),
-                Text(end.toString().substring(10, 15), style: _timeTextStyle),
+                Text(
+                  '${start.hour >= 10 ? start.hour : '0${start.hour}'}:${start.minute >= 10 ? start.minute : '0${start.minute}'}',
+                  style: _timeTextStyle,
+                ),
+                Text(
+                  '${end.hour >= 10 ? end.hour : '0${end.hour}'}:${end.minute >= 10 ? end.minute : '0${end.minute}'}',
+                  style: _timeTextStyle,
+                ),
               ],
             ),
           );

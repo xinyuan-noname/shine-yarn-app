@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:open_file/open_file.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shine/cache/user_cache.dart';
@@ -319,14 +320,28 @@ class Worker {
     });
   }
 
-  static Future startDownload({
+  static Future<String?> startDownload({
     required String url,
     required String filename,
+    bool fallbackToOpenUrl = false,
+    VoidCallback? onFailed,
+    VoidCallback? onSucceeded,
   }) async {
+    url = ensureUrl(url);
+    if (fallbackToOpenUrl) {
+      onFailed ??= () async {
+        await showToast(msg: "检测到下载失败，正在跳转至下载链接");
+        launchUrl(
+          Uri.parse(url),
+          mode: LaunchMode.externalApplication,
+          browserConfiguration: BrowserConfiguration(showTitle: true),
+        );
+      };
+    }
     final downloader = DownloadUtils();
     await downloader.init();
     return await downloader.startDownload(
-      url: ensureUrl(url),
+      url: url,
       headers: ApiService.headers.cast<String, String>(),
       filename: filename,
       onStatusChanged: (taskId, status) {
@@ -336,11 +351,13 @@ class Worker {
               msg: "“$filename”下载完成，请于系统消息栏跳转",
               duration: Duration(seconds: 5),
             );
+            onSucceeded?.call();
             break;
           case TaskStatus.notFound:
           case TaskStatus.failed:
           case TaskStatus.waitingToRetry:
             showToast(msg: "“$filename”下载失败，请重试下载");
+            onFailed?.call();
           case TaskStatus.canceled:
             showToast(msg: "“$filename”下载已取消");
           case TaskStatus.paused:
@@ -388,14 +405,15 @@ class Worker {
       }
       if (requestUpdate) {
         final apkUrl = ApiUpdate.getUpdateUrl(apkName);
-        Worker.startDownload(url: apkUrl, filename: 'shine.apk')
-            .then((_) {
-              OpenFile.open('${BaseDirectory.temporary}/shine.apk');
-            })
-            .catchError((_) async {
-              await showToast(msg: "检测到下载失败，正在跳转至下载链接");
-              launchUrl(Uri.parse(apkUrl));
-            });
+        final filename = "shine.apk";
+        Worker.startDownload(
+          url: apkUrl,
+          filename: filename,
+          fallbackToOpenUrl: true,
+          onSucceeded: () {
+            OpenFile.open('${BaseDirectory.temporary}/$filename');
+          },
+        );
       }
     }
   }

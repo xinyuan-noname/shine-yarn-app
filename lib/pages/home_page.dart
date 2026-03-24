@@ -26,6 +26,7 @@ import 'package:shine/views/user_view.dart';
 import 'package:shine/worker/worker.dart';
 
 const _userTypeStyleMap = {
+  "offline":("离线", Colors.grey, Color.fromRGBO(255, 255, 255, 0.5)),
   "guest": ("访客", Colors.grey, Color.fromRGBO(255, 255, 255, 0.5)),
   "user": ("用户", Colors.lightGreen, Color.fromRGBO(255, 255, 255, 0.8)),
   "admin": ("管理员", Colors.amber, Color.fromRGBO(255, 255, 255, 0.9)),
@@ -160,7 +161,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _updateMessageData() async {
-    await Future.wait([_updateLocalMessage(), _updateNotice(), _updateToDoList()]);
+    await Future.wait([
+      _updateLocalMessage(),
+      _updateNotice(),
+      _updateToDoList(),
+    ]);
   }
 
   Future<void> _updateLocalMessage() async {
@@ -399,7 +404,9 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildAccessSignal() {
     late (String, Color, Color) r;
-    if (_userTypeStyleMap.containsKey(ApiService.userType)) {
+    if (!ApiService.isOffline) {
+      r = _userTypeStyleMap["offline"]!;
+    } else if (_userTypeStyleMap.containsKey(ApiService.userType)) {
       r = _userTypeStyleMap[ApiService.userType]!;
     } else {
       r = _userTypeStyleMap["guest"]!;

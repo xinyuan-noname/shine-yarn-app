@@ -131,6 +131,10 @@ class ApiService {
     }
   }
 
+  static bool get isOffline {
+    return _offlineMode;
+  }
+
   static bool get isOk {
     return dio.options.baseUrl.isNotEmpty || _offlineMode;
   }
