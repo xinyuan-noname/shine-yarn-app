@@ -26,6 +26,7 @@ import 'package:shine/services/api_auth.dart';
 import 'package:shine/services/api_group.dart';
 import 'package:shine/services/api_profiles.dart';
 import 'package:shine/services/event.dart';
+import 'package:shine/services/ws.dart';
 import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/storage/profile_storage.dart';
@@ -100,6 +101,7 @@ class Worker {
           ApiService.setBaseUrl(url);
         }
         Worker.scheduleUrl(defaultDuration);
+        ApiService.closeOfflineMode();
       } on DioException catch (e) {
         showToast(msg: "服务未就绪，以离线模式进入");
         if (!AppConfig.isProduction) {
@@ -388,11 +390,11 @@ class Worker {
       if (forceUpdate) {
         requestUpdate = await showConfrimDialog(
           context: globalNavigatorKey.currentContext!,
-          title: "检测到新版本，本次更新是必须的！本次进入将以离线模式进入！",
+          title: "检测到新版本，本次更新是必须的！本次进入将以严格离线模式进入！",
           content: "本次更新内容：$updateInfo",
         );
-        ApiService.openOfflineMode();
-        showToast(msg: "进入离线模式");
+        ApiService.openStrictOfflineMode();
+        showToast(msg: "进入严格离线模式");
       } else {
         requestUpdate = await showConfrimDialog(
           context: globalNavigatorKey.currentContext!,

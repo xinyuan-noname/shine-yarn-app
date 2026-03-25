@@ -249,8 +249,16 @@ class ApiService {
   }
 
   static openOfflineMode() {
-    ApiService.setBaseUrl("");
     ApiService._offlineMode = true;
+  }
+
+  static closeOfflineMode() {
+    ApiService._offlineMode = false;
+  }
+
+  static openStrictOfflineMode() {
+    ApiService.openOfflineMode();
+    ApiService.setBaseUrl("");
     Worker.dispose();
     WebSocketServer.dispose();
   }
