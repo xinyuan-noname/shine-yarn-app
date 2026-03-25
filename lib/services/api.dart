@@ -137,7 +137,7 @@ class ApiService {
   }
 
   static bool get isOk {
-    return dio.options.baseUrl.isNotEmpty || _offlineMode;
+    return dio.options.baseUrl.isNotEmpty;
   }
 
   static bool get prepared {
@@ -233,8 +233,8 @@ class ApiService {
 
   static waitOk() async {
     await Future(() async {
-      while (!ApiService.isOk) {
-        await Future.delayed(Duration(milliseconds: 100));
+      while (!ApiService.isOk && !ApiService.isOffline) {
+        await Future.delayed(Duration(milliseconds: 50));
       }
     });
   }
