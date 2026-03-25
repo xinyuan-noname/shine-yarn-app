@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/dio.dart';
 import 'package:shine/storage/token_storage.dart';
@@ -13,13 +12,6 @@ class ApiAuth {
       final Map<String, dynamic> data = response.data;
       final String? accessToken = data['accessToken'];
       final String? refreshToken = data['refreshToken'];
-      if (kIsWeb) {
-        if (accessToken != null) {
-          ApiService.setAccessToken(accessToken);
-          TokenStorage.setAccessToken(accessToken);
-          return null;
-        }
-      }
       if (accessToken != null && refreshToken != null) {
         ApiService.setAccessToken(accessToken);
         TokenStorage.setAccessToken(accessToken);

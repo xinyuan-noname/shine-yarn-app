@@ -4,9 +4,6 @@ void initializeDatabase() {
   if (kIsWeb) {
     return;
   }
-  if (databaseFactory == databaseFactoryFfi) {
-    return;
-  }
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
 }

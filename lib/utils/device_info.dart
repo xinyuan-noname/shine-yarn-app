@@ -3,7 +3,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-bool get isNativePlatform => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+bool get isNativePlatform => !kIsWeb && (Platform.isAndroid || Platform.isWindows);
 
 Future<Map<String, String>> getDeviceHeadersForApi() async {
   if (!isNativePlatform) {
@@ -12,16 +12,17 @@ Future<Map<String, String>> getDeviceHeadersForApi() async {
 
   final headers = <String, String>{};
 
+  headers['X-Client-Type'] = 'flutter_app';
   try {
-    headers['X-Client-Type'] = 'flutter_app';
-
     String? deviceModel;
     if (Platform.isAndroid) {
       final androidInfo = await DeviceInfoPlugin().androidInfo;
       deviceModel = '${androidInfo.brand} ${androidInfo.model}'.trim();
-    } else if (Platform.isIOS) {
-      final iosInfo = await DeviceInfoPlugin().iosInfo;
-      deviceModel = iosInfo.model;
+    } else if (Platform.isWindows) {
+      final windowsInfo = await DeviceInfoPlugin().windowsInfo;
+      deviceModel =
+          'Windows ${windowsInfo.majorVersion}.${windowsInfo.minorVersion}'
+              .trim();
     }
     if (deviceModel != null && deviceModel.isNotEmpty) {
       headers['X-Device-Model'] = deviceModel;
@@ -33,10 +34,7 @@ Future<Map<String, String>> getDeviceHeadersForApi() async {
     }
 
     headers['X-App-Version'] = await getVersionInfo();
-  } catch (e) {
-    // 安静失败：不阻塞请求
-  }
-
+  } finally {}
   return headers;
 }
 

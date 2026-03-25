@@ -11,16 +11,24 @@ class NotificationService {
 
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('ic_stat_format_paint');
+    const WindowsInitializationSettings windowsInitializationSettings =
+        WindowsInitializationSettings(
+          appName: '闪纺',
+          appUserModelId: 'com.example.shine',
+          guid: '6548a3d3-236f-4651-8fe1-c1e537098058',
+        );
     await _notificationsPlugin.initialize(
       onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
-      settings: InitializationSettings(android: androidSettings),
+      settings: InitializationSettings(
+        android: androidSettings,
+        windows: windowsInitializationSettings,
+      ),
     );
 
     if (Platform.isAndroid) {
       await _requestAndroidPermission();
     }
   }
-
 
   static Future<void> _requestAndroidPermission() async {
     if (Platform.isAndroid) {
@@ -69,6 +77,7 @@ class NotificationService {
           presentBadge: true,
           presentSound: true,
         ),
+        windows: WindowsNotificationDetails(),
       ),
       payload: 'message_payload',
     );
