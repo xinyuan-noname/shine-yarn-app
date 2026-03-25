@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:dio/dio.dart';
@@ -374,6 +375,7 @@ class Worker {
     final appInfoResult = await ApiUpdate.checkIsNewest();
     if (appInfoResult is Map) {
       final String apkName = appInfoResult['apk'];
+      final String setupName = appInfoResult['setup'];
       final bool forceUpdate = appInfoResult['forceUpdate'];
       final String remoteAppVersionString = appInfoResult['version'];
       final String updateInfo = appInfoResult['info'] ?? "暂无信息";
@@ -402,10 +404,12 @@ class Worker {
         );
       }
       if (requestUpdate) {
-        final apkUrl = ApiUpdate.getUpdateUrl(apkName);
-        final filename = "shine.apk";
+        final fileUrl = ApiUpdate.getUpdateUrl(
+          Platform.isWindows ? setupName : apkName,
+        );
+        final filename = Platform.isWindows ? "setup.exe" : "shine.apk";
         Worker.startDownload(
-          url: apkUrl,
+          url: fileUrl,
           filename: filename,
           fallbackToOpenUrl: true,
           onSucceeded: () {

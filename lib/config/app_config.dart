@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 
 class AppConfig {
   // flutter run --dart-define=PRODUCTION=true
+  // flutter buil
+  // flutter run -d windows --dart-define=PRODUCTION=true
   static const bool isProduction = bool.fromEnvironment(
     'PRODUCTION',
     defaultValue: false,
