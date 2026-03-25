@@ -425,7 +425,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildAccessSignal() {
     late (String, Color, Color) r;
-    if (ApiService.isOffline) {
+    if (ApiService.isOffline && ApiService.url.isEmpty) {
       r = _userTypeStyleMap["offline"]!;
     } else if (_userTypeStyleMap.containsKey(ApiService.userType)) {
       r = _userTypeStyleMap[ApiService.userType]!;

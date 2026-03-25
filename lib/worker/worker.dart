@@ -26,7 +26,6 @@ import 'package:shine/services/api_auth.dart';
 import 'package:shine/services/api_group.dart';
 import 'package:shine/services/api_profiles.dart';
 import 'package:shine/services/event.dart';
-import 'package:shine/services/ws.dart';
 import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/storage/profile_storage.dart';
