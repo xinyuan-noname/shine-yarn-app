@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
@@ -143,25 +146,48 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
         resizeToAvoidBottomInset: false,
         appBar: _buildAppBar(),
         body: SafeArea(
-          child: Container(
-            height: 900,
-            padding: bodyPadding,
-            child: SizedBox.expand(
-              child: Container(
-                padding: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      spreadRadius: 1,
-                      blurRadius: 5,
-                      offset: Offset(0, 3),
-                    ),
-                  ],
-                  gradient: whiteLinearGradient,
+          child: DropTarget(
+            onDragDone: (detail) async {
+              if (detail.files.isEmpty) return;
+              final file = detail.files.first;
+              if (file.mimeType == _data!.mimetype || _data!.mimetype.isEmpty) {
+                final length = await file.length();
+                if (length > 5_000_000) {
+                  showToast(msg: "文件过大！");
+                  return;
+                }
+                showToast(msg: "接收到文件！");
+                _changeFile(PlatformFile(
+                  name: file.name,
+                  size: await file.length(),
+                  bytes: await file.readAsBytes(),
+                  readStream: File(file.path).openRead(),
+                  path: file.path,
+                ));
+              } else {
+                showToast(msg: "该文件不符合要求！");
+              }
+            },
+            child: Container(
+              height: 900,
+              padding: bodyPadding,
+              child: SizedBox.expand(
+                child: Container(
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey,
+                        spreadRadius: 1,
+                        blurRadius: 5,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                    gradient: whiteLinearGradient,
+                  ),
+                  child: _buildBodyContent(),
                 ),
-                child: _buildBodyContent(),
               ),
             ),
           ),
@@ -255,6 +281,7 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
         FileDisplayBar(
           fileName: fileName,
           fileSize: fileSize,
+          fileData: _selectedFile?.bytes,
           onPress: () async {
             if (_selectedFile is PlatformFile) {
               if (fileName!.endsWith(".pdf")) {
@@ -304,21 +331,7 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
                 : await pickFile(exts: exts);
             if (file == null || file.bytes == null) return;
             _selectedFile = file;
-            if (file.extension is String) {
-              if (_defaultFileName is String) {
-                final pp = _defaultFileName?.lastIndexOf(".");
-                if (pp != -1) {
-                  _defaultFileName =
-                      '${_defaultFileName?.substring(0, pp)}.${file.extension}';
-                }
-              }
-              final p = _controller.text.lastIndexOf('.');
-              if (p != -1) {
-                _controller.text =
-                    '${_controller.text.substring(0, p)}.${file.extension}';
-              }
-              setState(() {});
-            }
+            _changeFile(file);
           });
         },
         child: Container(
@@ -340,6 +353,25 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: children,
     );
+  }
+
+  void _changeFile(PlatformFile file) {
+    _selectedFile = file;
+    if (file.extension is String) {
+      if (_defaultFileName is String) {
+        final pp = _defaultFileName?.lastIndexOf(".");
+        if (pp != -1) {
+          _defaultFileName =
+              '${_defaultFileName?.substring(0, pp)}.${file.extension}';
+        }
+      }
+      final p = _controller.text.lastIndexOf('.');
+      if (p != -1) {
+        _controller.text =
+            '${_controller.text.substring(0, p)}.${file.extension}';
+      }
+      setState(() {});
+    }
   }
 
   PreferredSizeWidget _buildAppBar() {

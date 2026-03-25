@@ -70,6 +70,7 @@ dependencies:
   open_file: ^3.5.11
   version: ^3.0.2
   url_launcher: ^6.3.2
+  desktop_drop: ^0.7.0
 
 dev_dependencies:
   flutter_test:

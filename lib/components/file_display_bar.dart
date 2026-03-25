@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/file_utils.dart';
@@ -5,6 +7,7 @@ import 'package:shine/utils/file_utils.dart';
 class FileDisplayBar extends StatelessWidget {
   final String fileName;
   final int? fileSize;
+  final Uint8List? fileData;
   final int maxLines;
   final VoidCallback? onPress;
   // final TextStyle? fileNameStyle;
@@ -16,6 +19,7 @@ class FileDisplayBar extends StatelessWidget {
     this.fileSize,
     this.maxLines = 1,
     this.onPress,
+    this.fileData,
     // this.fileNameStyle,
     // this.fileSizeStyle,
   });
@@ -38,7 +42,11 @@ class FileDisplayBar extends StatelessWidget {
               decoration: BoxDecoration(
                 border: Border.all(color: mainColorGrey20),
               ),
-              child: _buildFileIcon(fileName, size: hugeIconSize),
+              child: _buildFileIcon(
+                fileName,
+                size: hugeIconSize,
+                fileData: fileData,
+              ),
             ),
             SizedBox(width: 10),
             Expanded(
@@ -73,7 +81,7 @@ class FileDisplayBar extends StatelessWidget {
     );
   }
 
-  Widget _buildFileIcon(String fileName, {double? size}) {
+  Widget _buildFileIcon(String fileName, {double? size, Uint8List? fileData}) {
     if (fileName.endsWith(".pdf")) {
       return Image.asset('assets/icons/pdf.png', width: size, height: size);
     } else if (fileName.endsWith(".doc")) {
@@ -91,6 +99,9 @@ class FileDisplayBar extends StatelessWidget {
     } else if (fileName.endsWith(".rar")) {
       return Image.asset('assets/icons/rar.png', width: size, height: size);
     } else if (isImageFile(fileName)) {
+      if (fileData != null) {
+        return Image.memory(fileData, width: size, height: size);
+      }
       return Icon(Icons.image, size: size, color: Colors.purple);
     } else {
       return Icon(Icons.description, size: size, color: Colors.grey);

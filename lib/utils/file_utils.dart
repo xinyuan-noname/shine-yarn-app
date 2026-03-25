@@ -41,6 +41,11 @@ bool isDocument(String filePath) {
   return documentExtensions.contains(ext);
 }
 
+bool isPdf(String filePath) {
+  final ext = path.extension(filePath).substring(1).toLowerCase();
+  return ext == "pdf";
+}
+
 Future<PlatformFile?> pickFile({List<String>? exts}) async {
   FilePickerResult? result = await FilePicker.platform.pickFiles(
     type: FileType.custom,

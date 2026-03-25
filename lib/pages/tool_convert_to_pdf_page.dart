@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
@@ -25,6 +28,7 @@ class _ToolConvertToPdfPageState extends State<ToolConvertToPdfPage> {
   final _controller = TextEditingController(text: "*.pdf");
   final _fileNameDebouncer = Debouncer();
   final ValueNotifier<String> _message = ValueNotifier("");
+  final _exts = documentExtensions.toList()..remove('pdf');
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -35,25 +39,50 @@ class _ToolConvertToPdfPageState extends State<ToolConvertToPdfPage> {
         resizeToAvoidBottomInset: false,
         appBar: _buildAppBar(),
         body: SafeArea(
-          child: Container(
-            height: 900,
-            padding: bodyPadding,
-            child: SizedBox.expand(
-              child: Container(
-                padding: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey,
-                      spreadRadius: 1,
-                      blurRadius: 5,
-                      offset: Offset(0, 3),
-                    ),
-                  ],
-                  gradient: whiteLinearGradient,
+          child: DropTarget(
+            onDragDone: (detail) async {
+              if (detail.files.isEmpty) return;
+              final file = detail.files.first;
+              if (isDocument(file.name) && !isPdf(file.name)) {
+                final length = await file.length();
+                if (length > 5_000_000) {
+                  showToast(msg: "文件过大！");
+                  return;
+                }
+                showToast(msg: "接收到文件！");
+                _changeFile(
+                  PlatformFile(
+                    name: file.name,
+                    size: await file.length(),
+                    bytes: await file.readAsBytes(),
+                    readStream: File(file.path).openRead(),
+                    path: file.path,
+                  ),
+                );
+              } else {
+                showToast(msg: "该文件不符合要求！必须为非pdf的文档文件");
+              }
+            },
+            child: Container(
+              height: 900,
+              padding: bodyPadding,
+              child: SizedBox.expand(
+                child: Container(
+                  padding: EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey,
+                        spreadRadius: 1,
+                        blurRadius: 5,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                    gradient: whiteLinearGradient,
+                  ),
+                  child: _buildBodyContent(),
                 ),
-                child: _buildBodyContent(),
               ),
             ),
           ),
@@ -110,17 +139,9 @@ class _ToolConvertToPdfPageState extends State<ToolConvertToPdfPage> {
     children.add(
       InkWell(
         onTap: () async {
-          final exts = documentExtensions.toList()..remove('pdf');
-          PlatformFile? file = await pickFile(exts: exts);
+          PlatformFile? file = await pickFile(exts: _exts);
           if (file == null || file.bytes == null) return;
-          _selectedFile = file;
-          final p = file.name.lastIndexOf('.');
-          if (p != -1) {
-            _controller.text = '${file.name.substring(0, p)}.pdf';
-          }
-          _canConvert = true;
-          _downloadUrl = '';
-          setState(() {});
+          _changeFile(file);
         },
         child: Container(
           height: 80,
@@ -141,6 +162,17 @@ class _ToolConvertToPdfPageState extends State<ToolConvertToPdfPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: children,
     );
+  }
+
+  void _changeFile(PlatformFile file) {
+    _selectedFile = file;
+    final p = file.name.lastIndexOf('.');
+    if (p != -1) {
+      _controller.text = '${file.name.substring(0, p)}.pdf';
+    }
+    _canConvert = true;
+    _downloadUrl = '';
+    setState(() {});
   }
 
   Widget _buildConvertedFilePart() {
