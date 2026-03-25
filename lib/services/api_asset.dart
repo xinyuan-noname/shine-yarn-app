@@ -9,7 +9,7 @@ class ApiAsset {
     required Uint8List data,
     required String filename,
   }) async {
-    if (!ApiService.isOk) return "服务未就绪";
+    if (!ApiService.prepared) return "服务未就绪";
     final formData = FormData.fromMap({
       'document': MultipartFile.fromBytes(data, filename: filename),
     });
@@ -27,7 +27,7 @@ class ApiAsset {
   }
 
   static Future<String?> checkPdfExist({required String address}) async {
-    if (!ApiService.isOk) return "服务未就绪";
+    if (!ApiService.prepared) return "服务未就绪";
     try {
       await uploadDio.head('/asset/pdf/$address');
       return null;

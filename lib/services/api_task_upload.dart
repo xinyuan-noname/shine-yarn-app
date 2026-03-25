@@ -11,7 +11,7 @@ class ApiTaskUpload {
     required String filename,
     required int taskId,
   }) async {
-    if (!ApiService.isOk) return "服务未就绪";
+    if (!ApiService.prepared) return "服务未就绪";
     final formData = FormData.fromMap({
       'upload': MultipartFile.fromBytes(bytes, filename: filename),
       'taskId': taskId,
@@ -30,7 +30,7 @@ class ApiTaskUpload {
   }
 
   static Future getUploadsByTaskId(int taskId) async {
-    if (!ApiService.isOk) return "服务未就绪";
+    if (!ApiService.prepared) return "服务未就绪";
     try {
       final response = await dio.get('/task/upload/list/$taskId');
       return response.data;
@@ -42,7 +42,7 @@ class ApiTaskUpload {
   }
 
   static Future getMyUploads() async {
-    if (!ApiService.isOk) return "服务未就绪";
+    if (!ApiService.prepared) return "服务未就绪";
     try {
       final response = await dio.get('/task/upload/my');
       return response.data;
@@ -57,7 +57,7 @@ class ApiTaskUpload {
     required int taskId,
     required String uploadId,
   }) async {
-    if (!ApiService.isOk) return "服务未就绪";
+    if (!ApiService.prepared) return "服务未就绪";
     try {
       await dio.delete('/task/upload/delete/$taskId/$uploadId');
       return null;

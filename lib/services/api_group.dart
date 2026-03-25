@@ -5,7 +5,7 @@ import 'package:shine/storage/group_storage.dart';
 
 class ApiGroup {
   static getGlobalGroupData(GroupStorageKey nameKeyEnum) async {
-    if (!ApiService.isOk) return "服务未就绪";
+    if (!ApiService.prepared) return "服务未就绪";
     try {
       final response = await dio.get('/group/${nameKeyEnum.name}');
       if (response.data is List) {
