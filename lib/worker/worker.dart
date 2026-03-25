@@ -387,7 +387,7 @@ class Worker {
       }
       bool requestUpdate = false;
       if (forceUpdate) {
-        requestUpdate = await showConfrimDialog(
+        requestUpdate = await showConfirmDialog(
           context: globalNavigatorKey.currentContext!,
           title: "检测到新版本，本次更新是必须的！本次进入将以严格离线模式进入！",
           content: "本次更新内容：$updateInfo",
@@ -395,7 +395,7 @@ class Worker {
         ApiService.openStrictOfflineMode();
         showToast(msg: "进入严格离线模式");
       } else {
-        requestUpdate = await showConfrimDialog(
+        requestUpdate = await showConfirmDialog(
           context: globalNavigatorKey.currentContext!,
           title: "检测到新版本，本次为请立即更新！",
           content: "本次更新内容：$updateInfo",

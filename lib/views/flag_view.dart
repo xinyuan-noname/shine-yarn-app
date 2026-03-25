@@ -409,7 +409,7 @@ class FlagView extends StatelessWidget {
       showToast(msg: "你无法操作其他人发布的代办项！");
       return;
     }
-    final result = await showConfrimDialog(
+    final result = await showConfirmDialog(
       context: context,
       title: "是否删除“${data.title}”代办项？",
       content: "此操作不可挽回！",

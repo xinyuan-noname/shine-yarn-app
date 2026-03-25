@@ -296,7 +296,7 @@ class _AdminPageState extends State<AdminPage> {
           onDelete: _batchMode
               ? null
               : () async {
-                  final result = await showConfrimDialog(
+                  final result = await showConfirmDialog(
                     context: context,
                     title: "确认删除$id($username)吗？",
                     content: "此操作无法撤回！",

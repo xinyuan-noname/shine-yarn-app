@@ -31,7 +31,7 @@ final dialogButtonStyle = TextButton.styleFrom(
 Future showMessageDialog(
   BuildContext context,
   ValueNotifier<String> message, {
-  bool barrierDismissible=false,
+  bool barrierDismissible = false,
 }) {
   return showDialog(
     context: context,
@@ -96,7 +96,7 @@ Future<void> showAlertDialog({
   );
 }
 
-Future<bool> showConfrimDialog({
+Future<bool> showConfirmDialog({
   required BuildContext context,
   required String title,
   required String content,
@@ -316,7 +316,7 @@ Future showAlertIsInDevelopmentDialog(BuildContext context) async {
 }
 
 Future showGotoAdminDialog(BuildContext context) async {
-  final result = await showConfrimDialog(
+  final result = await showConfirmDialog(
     context: context,
     title: '即将进入超级管理员界面!',
     content: '确定要进入吗？',
@@ -339,5 +339,56 @@ Future<String?> showUnfinishedTaskSaveDialog({
     min: min,
     max: max,
     initValue: '',
+  );
+}
+
+Future<void> showMyAboutDialog(BuildContext context) async {
+  return showAboutDialog(
+    context: context,
+    applicationName: '闪纺',
+    applicationVersion: '1.0.0',
+    applicationIcon: const FlutterLogo(size: 64),
+    children: [
+      Container(
+        padding: const EdgeInsets.only(top: 20.0),
+        child: const Text(
+          '闪纺是一个由Flutter构建的应用，仅供内部学习使用，无作者许可，不得外传！',
+          style: TextStyle(fontSize: 16, fontFamily: 'SmileySans'),
+        ),
+      ),
+      Container(
+        padding: const EdgeInsets.only(top: 20.0),
+        child: const Text(
+          'PC端：Flutter',
+          style: TextStyle(fontSize: 16, fontFamily: 'SmileySans'),
+        ),
+      ),
+      const Text(
+        '移动端：Flutter',
+        style: TextStyle(fontSize: 16, fontFamily: 'SmileySans'),
+      ),
+      Container(
+        padding: const EdgeInsets.only(top: 20.0),
+        child: const Text(
+          '服务器网络服务：Cloudflared Tunnel+Github',
+          style: TextStyle(fontSize: 16, fontFamily: 'SmileySans'),
+        ),
+      ),
+      const Text(
+        '服务器环境：Termux(proot-distro:Ubuntu)',
+        style: TextStyle(fontSize: 16, fontFamily: 'SmileySans'),
+      ),
+      const Text(
+        '服务器架构：Express+Redis+Sqlite3',
+        style: TextStyle(fontSize: 16, fontFamily: 'SmileySans'),
+      ),
+      Container(
+        padding: const EdgeInsets.only(top: 20.0),
+        child: const Text(
+          '开发相关：VS code+Git+SFTP',
+          style: TextStyle(fontSize: 16, fontFamily: 'SmileySans'),
+        ),
+      ),
+    ],
   );
 }

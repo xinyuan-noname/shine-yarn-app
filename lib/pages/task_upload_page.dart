@@ -968,7 +968,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
                   return;
                 }
                 if (_unfinishedUserList.isNotEmpty) {
-                  final result = await showConfrimDialog(
+                  final result = await showConfirmDialog(
                     context: context,
                     title: '确认要打包吗',
                     content: '还有${_unfinishedUserList.length}人未完成该任务',

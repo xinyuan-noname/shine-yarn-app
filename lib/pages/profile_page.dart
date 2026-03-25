@@ -20,6 +20,7 @@ import 'package:shine/utils/image_utils.dart';
 import 'package:shine/utils/routes_utils.dart';
 import 'package:shine/utils/message_utils.dart';
 import 'package:shine/worker/worker.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -35,6 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _isPaswRequired = false;
   String _version = "?";
   int _tapVersionCount = 0;
+  int _tapAuthorCount = 0;
   int _ts = 0;
   final _message = ValueNotifier("");
   @override
@@ -283,7 +285,9 @@ class _ProfilePageState extends State<ProfilePage> {
     return Ink(
       color: Colors.white,
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          showMyAboutDialog(context);
+        },
         child: Container(
           padding: bodyPadding,
           child: const Row(
@@ -302,7 +306,22 @@ class _ProfilePageState extends State<ProfilePage> {
     return Ink(
       color: Colors.white,
       child: InkWell(
-        onTap: () {},
+        onTap: () async {
+          _tapAuthorCount++;
+          if (_tapAuthorCount < 5) return;
+          final result = await showConfirmDialog(
+            context: context,
+            title: "别戳了，我带你去作者的B站空间。",
+            content: "点击“确认”跳转至其Bilibli空间。",
+          );
+          if (result) {
+            launchUrlString(
+              "https://space.bilibili.com/1364143458",
+              mode: LaunchMode.externalApplication,
+            );
+          }
+          _tapAuthorCount = 0;
+        },
         child: Container(
           padding: bodyPadding,
           child: const Row(
