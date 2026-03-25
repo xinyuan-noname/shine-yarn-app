@@ -351,6 +351,7 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
       title: Text("任务提交", style: titleTextStyle),
       centerTitle: true,
       bottom: bottomLine,
+      actions: [],
     );
   }
 

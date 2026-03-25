@@ -46,7 +46,7 @@ class _ToolConvertToPdfPageState extends State<ToolConvertToPdfPage> {
               if (isDocument(file.name) && !isPdf(file.name)) {
                 final length = await file.length();
                 if (length > 5_000_000) {
-                  showToast(msg: "文件过大！");
+                  showToast(msg: "文件过大！最大为5MB。");
                   return;
                 }
                 showToast(msg: "接收到文件！");
@@ -165,6 +165,10 @@ class _ToolConvertToPdfPageState extends State<ToolConvertToPdfPage> {
   }
 
   void _changeFile(PlatformFile file) {
+    if ((file.bytes?.length ?? 0) > 5_000_000) {
+      showToast(msg: "文件过大！请选择5MB以内的文件！");
+      return;
+    }
     _selectedFile = file;
     final p = file.name.lastIndexOf('.');
     if (p != -1) {

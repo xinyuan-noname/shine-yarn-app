@@ -153,17 +153,19 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
               if (file.mimeType == _data!.mimetype || _data!.mimetype.isEmpty) {
                 final length = await file.length();
                 if (length > 5_000_000) {
-                  showToast(msg: "文件过大！");
+                  showToast(msg: "文件过大！最大为5MB。");
                   return;
                 }
                 showToast(msg: "接收到文件！");
-                _changeFile(PlatformFile(
-                  name: file.name,
-                  size: await file.length(),
-                  bytes: await file.readAsBytes(),
-                  readStream: File(file.path).openRead(),
-                  path: file.path,
-                ));
+                _changeFile(
+                  PlatformFile(
+                    name: file.name,
+                    size: await file.length(),
+                    bytes: await file.readAsBytes(),
+                    readStream: File(file.path).openRead(),
+                    path: file.path,
+                  ),
+                );
               } else {
                 showToast(msg: "该文件不符合要求！");
               }
@@ -330,7 +332,6 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
                 ? await pickFileAny()
                 : await pickFile(exts: exts);
             if (file == null || file.bytes == null) return;
-            _selectedFile = file;
             _changeFile(file);
           });
         },
@@ -356,6 +357,10 @@ class _NoticeUploadPageState extends State<NoticeUploadPage> {
   }
 
   void _changeFile(PlatformFile file) {
+    if ((file.bytes?.length ?? 0) > 5_000_000) {
+      showToast(msg: "文件过大！请选择5MB以内的文件！");
+      return;
+    }
     _selectedFile = file;
     if (file.extension is String) {
       if (_defaultFileName is String) {

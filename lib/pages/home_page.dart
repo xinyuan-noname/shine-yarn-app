@@ -26,7 +26,7 @@ import 'package:shine/views/user_view.dart';
 import 'package:shine/worker/worker.dart';
 
 const _userTypeStyleMap = {
-  "offline":("离线", Colors.grey, Color.fromRGBO(255, 255, 255, 0.5)),
+  "offline": ("离线", Colors.grey, Color.fromRGBO(255, 255, 255, 0.5)),
   "guest": ("访客", Colors.grey, Color.fromRGBO(255, 255, 255, 0.5)),
   "user": ("用户", Colors.lightGreen, Color.fromRGBO(255, 255, 255, 0.8)),
   "admin": ("管理员", Colors.amber, Color.fromRGBO(255, 255, 255, 0.9)),
@@ -296,8 +296,8 @@ class _HomePageState extends State<HomePage> {
               subjectInfoList: _subjectInfo,
               scheduleDataList: _scheduleDataList,
               onRefresh: () async {
-                await _updateSemesterData();
-                await _updateScheduleData();
+                _updateSemesterData();
+                _updateScheduleData();
               },
               onChangeShowDate: (DateTime d) {
                 _showDate = d;
@@ -386,16 +386,37 @@ class _HomePageState extends State<HomePage> {
         IndexedStack(
           index: _currentIndex,
           children: [
-            SizedBox(),
+            IconButton(
+              onPressed: () {
+                _updateMessageData();
+              },
+              icon: Icon(Icons.refresh, size: 32),
+            ),
             IconButton(
               onPressed: () {
                 showTaskGridBottomSheet(context);
               },
               icon: Icon(Icons.add, size: 32),
             ),
-            SizedBox(),
-            SizedBox(),
-            SizedBox(),
+            IconButton(
+              onPressed: () {
+                _updateSemesterData();
+                _updateScheduleData();
+              },
+              icon: Icon(Icons.refresh, size: 32),
+            ),
+            IconButton(
+              onPressed: () {
+                _updateToDoList();
+              },
+              icon: Icon(Icons.refresh, size: 32),
+            ),
+            IconButton(
+              onPressed: () {
+                _updateUserInfo();
+              },
+              icon: Icon(Icons.refresh, size: 32),
+            ),
           ],
         ),
       ],

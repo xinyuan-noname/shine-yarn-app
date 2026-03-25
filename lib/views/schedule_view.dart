@@ -51,6 +51,27 @@ class ScheduleView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.of(context).size;
+    if (screenSize.height < 730) {
+      return Container(
+        alignment: Alignment.topCenter,
+        child: Text(
+          "高度不足以展示课表！",
+          style: viewEmptyTextStyle,
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+    if (screenSize.width < 360) {
+      return Container(
+        alignment: Alignment.topCenter,
+        child: Text(
+          "宽度不足以展示课表！",
+          style: viewEmptyTextStyle,
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
     return SizedBox.expand(
       child: Container(
         padding: bodyPadding,

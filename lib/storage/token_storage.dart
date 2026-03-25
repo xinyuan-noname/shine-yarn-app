@@ -1,7 +1,9 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
-final storage = const FlutterSecureStorage();
+final storage = const FlutterSecureStorage(
+  wOptions: WindowsOptions(useBackwardCompatibility: true),
+);
 
 class TokenStorage {
   static const _accessTokenKey = 'access_token';

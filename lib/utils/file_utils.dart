@@ -30,20 +30,29 @@ const imageExtensions = {
   'tif',
 };
 bool isImageFile(String filePath) {
-  final ext = path.extension(filePath).substring(1).toLowerCase();
-  return imageExtensions.contains(ext);
+  final ext = path.extension(filePath);
+  if (ext.length < 2) {
+    return false;
+  }
+  return imageExtensions.contains(ext.substring(1).toLowerCase());
 }
 
 const documentExtensions = {'xls', 'xlsx', 'doc', 'docx', 'ppt', 'pptx', 'pdf'};
 
 bool isDocument(String filePath) {
-  final ext = path.extension(filePath).substring(1).toLowerCase();
-  return documentExtensions.contains(ext);
+  final ext = path.extension(filePath);
+  if (ext.length < 2) {
+    return false;
+  }
+  return documentExtensions.contains(ext.substring(1).toLowerCase());
 }
 
 bool isPdf(String filePath) {
-  final ext = path.extension(filePath).substring(1).toLowerCase();
-  return ext == "pdf";
+  final ext = path.extension(filePath);
+  if (ext.length < 2) {
+    return false;
+  }
+  return ext.substring(1).toLowerCase() == "pdf";
 }
 
 Future<PlatformFile?> pickFile({List<String>? exts}) async {
