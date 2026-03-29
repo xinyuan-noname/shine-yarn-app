@@ -1,3 +1,5 @@
+#define AppName "shine"
+
 [Setup]
 AppName=shine
 AppVersion=1.0.0
