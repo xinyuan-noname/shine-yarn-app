@@ -1,5 +1,7 @@
 import 'package:drift/drift.dart';
+import 'package:drift/web.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:shine/storage/profile_storage.dart';
@@ -209,7 +211,11 @@ class DatabaseProvider {
   static Future init() async {
     if (initialized) await _instance.close();
     final id = await ProfileStorage.getId();
-    _instance = AppDatabase(_openConnection(id));
+    if (kIsWeb) {
+      _instance = AppDatabase(WebDatabase('shine_yarn_db_$id'));
+    } else {
+      _instance = AppDatabase(_openConnection(id));
+    }
     initialized = true;
   }
 }

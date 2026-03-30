@@ -10,10 +10,11 @@ class AppConfig {
   );
 
   static const List<String> githubAndProxy = [
-    "https://gh.llkk.cc/https://raw.githubusercontent.com",
-    "https://raw.bgithub.xyz",
-    "https://raw.kkgithub.com",
-    "https://raw.githubusercontent.com",
+    "https://gitee.com/xinyuanwm",
+    "https://gh.llkk.cc/https://raw.githubusercontent.com/xinyuan-noname",
+    "https://raw.bgithub.xyz/xinyuan-noname",
+    "https://raw.kkgithub.com/xinyuan-noname",
+    "https://raw.githubusercontent.com/xinyuan-noname",
   ];
 
   static List<String> get serverUrlList {
@@ -24,7 +25,7 @@ class AppConfig {
     if (githubOrProxy.isEmpty) return '';
     final String branch = isProduction ? 'prod' : 'main';
     final String repoPath =
-        'xinyuan-noname/git-github.com-xinyuan-noname-asset/$branch/url.txt';
+        'git-github.com-xinyuan-noname-asset/$branch/url.txt';
     return '$githubOrProxy/$repoPath';
   }
 

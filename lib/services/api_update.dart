@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:shine/config/app_config.dart';
 
 class ApiUpdate {
-  static final String baseUrl = "${AppConfig.stableGithubOrProxy}/xinyuan-noname/asset/master/";
+  static final String baseUrl = "${AppConfig.stableGithubOrProxy}/asset/master/";
   static Future checkIsNewest() async {
     if (AppConfig.stableServerUrl.isEmpty) return '暂无可用的应用信息源';
     try {
