@@ -42,9 +42,7 @@ class NotificationService {
                 >();
         final bool? granted = await androidImplementation
             ?.requestNotificationsPermission();
-        print('Android 通知权限授予: $granted');
       } else {
-        print('Android 版本低于13，无需请求通知权限');
       }
     }
   }
@@ -89,11 +87,9 @@ class NotificationService {
     String? body,
     String? payload,
   ) {
-    print('前台收到通知: $title - $body');
   }
 
   static void onDidReceiveNotificationResponse(NotificationResponse response) {
     final payload = response.payload;
-    print('用户点击了通知，payload: $payload');
   }
 }

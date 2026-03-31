@@ -52,16 +52,6 @@ class ScheduleView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
-    if (screenSize.height < 730) {
-      return Container(
-        alignment: Alignment.topCenter,
-        child: Text(
-          "高度不足以展示课表！",
-          style: viewEmptyTextStyle,
-          textAlign: TextAlign.center,
-        ),
-      );
-    }
     if (screenSize.width < 360) {
       return Container(
         alignment: Alignment.topCenter,
@@ -173,7 +163,7 @@ class ScheduleView extends StatelessWidget {
                       ),
                       bottomLineSmall,
                       SizedBox(
-                        height: 460,
+                        height: screenSize.height * 0.630136986301369,
                         child: RefreshIndicator(
                           onRefresh: onRefresh,
                           child: SingleChildScrollView(

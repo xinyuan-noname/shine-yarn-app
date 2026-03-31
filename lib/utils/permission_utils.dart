@@ -31,7 +31,6 @@ class PermissionUtils {
       
       return true;
     } catch (e) {
-      print('请求存储权限失败：$e');
       return false;
     }
   }
@@ -51,7 +50,6 @@ class PermissionUtils {
       
       return true;
     } catch (e) {
-      print('检查存储权限失败：$e');
       return false;
     }
   }
@@ -75,7 +73,6 @@ class PermissionUtils {
       
       return true;
     } catch (e) {
-      print('请求相机权限失败：$e');
       return false;
     }
   }
@@ -99,7 +96,6 @@ class PermissionUtils {
       
       return true;
     } catch (e) {
-      print('请求相册权限失败：$e');
       return false;
     }
   }
@@ -116,7 +112,6 @@ class PermissionUtils {
       
       return status.isGranted;
     } catch (e) {
-      print('请求通知权限失败：$e');
       return false;
     }
   }
@@ -125,7 +120,6 @@ class PermissionUtils {
     try {
       return await openAppSettings();
     } catch (e) {
-      print('打开应用设置失败：$e');
       return false;
     }
   }
