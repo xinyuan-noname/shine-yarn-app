@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:shine/components/bottom_sheet.dart';
 import 'package:shine/components/line.dart';
@@ -163,7 +165,7 @@ class ScheduleView extends StatelessWidget {
                       ),
                       bottomLineSmall,
                       SizedBox(
-                        height: screenSize.height * 0.630136986301369,
+                        height: min(screenSize.height * 0.630136986301369, 460),
                         child: RefreshIndicator(
                           onRefresh: onRefresh,
                           child: SingleChildScrollView(

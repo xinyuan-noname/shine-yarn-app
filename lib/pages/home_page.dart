@@ -95,6 +95,10 @@ class _HomePageState extends State<HomePage> {
       if (!mounted) return;
       _updateMessageData();
     };
+    HomePageRefreshNotifier._pageGoto = (int i) {
+      _currentIndex = i;
+      setState(() {});
+    };
     _subscription = EventBus.stream.listen((event) {
       _messageEventUpdateDebouncer.run(() {
         _updateMessageData();
@@ -507,7 +511,7 @@ class _HomePageState extends State<HomePage> {
 class HomePageRefreshNotifier {
   static VoidCallback? _refreshTask;
   static VoidCallback? _refreshMessage;
-
+  static void Function(int)? _pageGoto;
   static void refreshTask() {
     _refreshTask ??= () {};
     _refreshTask!();
@@ -516,6 +520,11 @@ class HomePageRefreshNotifier {
   static void refreshMessage() {
     _refreshMessage ??= () {};
     _refreshMessage!();
+  }
+
+  static void pageGoto(int i) {
+    _pageGoto ??= (int j) {};
+    _pageGoto!(i);
   }
 
   static void clear() {
