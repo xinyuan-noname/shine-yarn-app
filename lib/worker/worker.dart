@@ -292,6 +292,8 @@ class Worker {
     if (result is List) {
       final list = result.whereType<Map<String, dynamic>>();
       return list.map((e) => ToDoItemData.fromMap(e)).toList();
+    } else if (result is String) {
+      return await Worker.syncToDoList();
     }
     return null;
   }
