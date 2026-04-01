@@ -32,7 +32,6 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   String _username = "???";
   String? _gender;
-  String _id = "??????????";
   bool _isPaswRequired = false;
   String _version = "?";
   int _tapVersionCount = 0;
@@ -54,7 +53,7 @@ class _ProfilePageState extends State<ProfilePage> {
           width: 100,
           height: 100,
           child: Center(
-            child: NetworkAvatar(id: _id, ts: _ts, radius: 50),
+            child: NetworkAvatar(id: ApiService.userId, ts: _ts, radius: 50),
           ),
         ),
         Positioned(
@@ -136,7 +135,7 @@ class _ProfilePageState extends State<ProfilePage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text("学号", style: profileKeyTextStyle),
-              Text(_id, style: profileValueTextStyle),
+              Text(ApiService.userId, style: profileValueTextStyle),
             ],
           ),
         ),
@@ -426,7 +425,6 @@ class _ProfilePageState extends State<ProfilePage> {
   Future _refreshMyProfile() async {
     _username = await ProfileStorage.getName();
     _gender = await ProfileStorage.getGender();
-    _id = await ProfileStorage.getId();
     _isPaswRequired = await ProfileStorage.getPasswordRequired();
     _ts = await ProfileStorage.getAvatarTs();
     _version = await getVersionInfo();
