@@ -40,7 +40,7 @@ class NotificationService {
                 .resolvePlatformSpecificImplementation<
                   AndroidFlutterLocalNotificationsPlugin
                 >();
-        final bool? granted = await androidImplementation
+        await androidImplementation
             ?.requestNotificationsPermission();
       } else {
       }
@@ -90,6 +90,5 @@ class NotificationService {
   }
 
   static void onDidReceiveNotificationResponse(NotificationResponse response) {
-    final payload = response.payload;
   }
 }

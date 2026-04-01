@@ -83,5 +83,10 @@
             <category android:name="android.intent.category.BROWSABLE" />
             <data android:scheme="https" />
         </intent>
+
+        <package android:name="com.tencent.mobileqq" />
+        <package android:name="com.tencent.qqlite" />
+        <package android:name="com.tencent.mm" />
+        <package android:name="tv.danmaku.bili" />
     </queries>
 </manifest>

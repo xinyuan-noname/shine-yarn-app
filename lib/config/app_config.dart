@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 
 class AppConfig {
   // flutter run --dart-define=PRODUCTION=true
-  // flutter buil
+  // $env:CMAKE_TLS_VERIFY=0          
   // flutter run -d windows --dart-define=PRODUCTION=true
   static const bool isProduction = bool.fromEnvironment(
     'PRODUCTION',
