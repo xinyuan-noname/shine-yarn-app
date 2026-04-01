@@ -52,7 +52,6 @@ class _HomePageState extends State<HomePage> {
   StreamSubscription<MessageEvent>? _subscription;
   int _ts = 0;
   String _username = "???";
-  String _id = "??????????";
   int _currentIndex = 0;
   final ValueNotifier<String> _message = ValueNotifier("");
   final _bottomItemOptions = [
@@ -134,7 +133,6 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadMine() async {
     if (!mounted) return;
     _username = await ProfileStorage.getName();
-    _id = await ProfileStorage.getId();
     _ts = await ProfileStorage.getAvatarTs();
     if (!mounted) return;
     setState(() {});
@@ -346,7 +344,11 @@ class _HomePageState extends State<HomePage> {
                     _loadMine();
                   }
                 },
-                child: NetworkAvatar(id: _id, ts: _ts, radius: 25),
+                child: NetworkAvatar(
+                  id: ApiService.userId,
+                  ts: _ts,
+                  radius: 25,
+                ),
               ),
               SizedBox(width: 5),
               Column(
@@ -365,7 +367,7 @@ class _HomePageState extends State<HomePage> {
                       _buildAccessSignal(),
                       const SizedBox(width: 3),
                       Text(
-                        _id,
+                        ApiService.userId,
                         style: TextStyle(
                           fontFamily: "SmileySans",
                           color: Colors.grey,
