@@ -62,7 +62,6 @@ dependencies:
   week_of_year: ^2.2.0
   flutter_typeahead: ^5.2.0
   collection: ^1.19.1
-  pdfx: ^2.9.2
   internet_file: ^1.0.0
   permission_handler: ^11.4.0
   background_downloader: ^9.5.4
@@ -71,7 +70,7 @@ dependencies:
   version: ^3.0.2
   url_launcher: ^6.3.2
   desktop_drop: ^0.7.0
-  pdfrx: ^2.2.24
+  pdfx: ^2.9.2
 
 dev_dependencies:
   flutter_test:
