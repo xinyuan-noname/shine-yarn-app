@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pdfx/pdfx.dart';
+import 'package:pdfrx/pdfrx.dart';
 import 'package:internet_file/internet_file.dart';
 import 'package:shine/components/custom_back_handler.dart';
 import 'package:shine/components/toast.dart';
@@ -15,7 +15,9 @@ class ViewPdfPage extends StatefulWidget {
 }
 
 class _ViewPdfPageState extends State<ViewPdfPage> {
-  PdfController? _pdfController;
+  PdfDocumentRef? _ref;
+  PdfViewerController? _pdfController;
+  PdfDocument? _pdfDocument;
   int _currentPage = 1;
   int _totalPages = 0;
   bool _isLoading = true;
@@ -28,6 +30,10 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
   @override
   void initState() {
     super.initState();
+    _init();
+  }
+
+  _init() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _loadPdf();
@@ -36,7 +42,7 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
 
   Future<void> _loadPdf() async {
     try {
-      final args = ModalRoute.of(context)?.settings.arguments;
+      final args = ModalRoute.of(this.context)?.settings.arguments;
 
       if (args is ViewPdfPageArgs) {
         setState(() {
@@ -44,11 +50,13 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
         });
 
         if (args.filePath != null) {
+          // 从本地文件加载
           final document = await PdfDocument.openFile(args.filePath!);
-          _pdfController = PdfController(document: Future.value(document));
-
+          _pdfDocument = document;
+          _pdfController = PdfViewerController();
+          _ref = PdfDocumentRefFile(args.filePath!);
           setState(() {
-            _totalPages = document.pagesCount;
+            _totalPages = _pdfController!.pageCount;
             _isLoading = false;
           });
         } else if (args.url != null) {
@@ -65,10 +73,12 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
             headers: ApiService.headers.cast<String, String>(),
           );
           final document = await PdfDocument.openData(fileData);
-          _pdfController = PdfController(document: Future.value(document));
+          _pdfDocument = document;
+          _pdfController = PdfViewerController();
+          _ref = PdfDocumentRefUri(Uri.parse(_url!));
 
           setState(() {
-            _totalPages = document.pagesCount;
+            _totalPages = _pdfController!.pageCount;
             _isLoading = false;
           });
         } else {
@@ -95,7 +105,7 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
   Widget build(BuildContext context) {
     return CustomBackHandler(
       onWillPop: () async {
-        _pdfController?.dispose();
+        _pdfDocument?.dispose();
         return true;
       },
       child: Scaffold(
@@ -194,14 +204,19 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
       );
     }
 
-    return PdfView(
-      controller: _pdfController!,
-      onPageChanged: (page) {
-        setState(() {
-          _currentPage = page;
-        });
-      },
-    );
+    // 监听页面变化
+    _pdfController!.addListener(_onPageChanged);
+
+    return PdfViewer(_ref!, controller: _pdfController!);
+  }
+
+  void _onPageChanged() {
+    final newPage = _pdfController?.pageNumber ?? 1;
+    if (newPage != _currentPage) {
+      setState(() {
+        _currentPage = newPage;
+      });
+    }
   }
 
   Widget _buildBottomBar() {
@@ -238,10 +253,8 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
                   icon: const Icon(Icons.skip_previous),
                   onPressed: _currentPage > 1
                       ? () {
-                          _pdfController!.animateToPage(
-                            _currentPage - 1,
-                            duration: const Duration(milliseconds: 250),
-                            curve: Curves.ease,
+                          _pdfController!.goToPage(
+                            pageNumber: _currentPage - 1,
                           );
                         }
                       : null,
@@ -251,10 +264,8 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
                   icon: const Icon(Icons.skip_next),
                   onPressed: _currentPage < _totalPages
                       ? () {
-                          _pdfController!.animateToPage(
-                            _currentPage + 1,
-                            duration: const Duration(milliseconds: 250),
-                            curve: Curves.ease,
+                          _pdfController!.goToPage(
+                            pageNumber: _currentPage + 1,
                           );
                         }
                       : null,
@@ -270,7 +281,8 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
 
   @override
   void dispose() {
-    _pdfController?.dispose();
+    _pdfController?.removeListener(_onPageChanged);
+    _pdfDocument?.dispose();
     super.dispose();
   }
 }
