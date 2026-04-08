@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
+import 'package:shine/components/floating_action_button_widget.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/static_header_expansion.dart';
 import 'package:shine/components/toast.dart';
@@ -260,7 +261,7 @@ class FlagView extends StatelessWidget {
           Positioned(
             right: 0,
             bottom: 20,
-            child: GestureDetector(
+            child: FloatingActionButtonWidget(
               onTap: () async {
                 if (ApiService.position == null) {
                   showToast(msg: "没有职务的同学不能创建事项");
@@ -268,27 +269,6 @@ class FlagView extends StatelessWidget {
                 }
                 await globalNavigatorKey.currentState?.pushNamed('/to_do');
               },
-              child: Container(
-                margin: EdgeInsets.all(10),
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: blueLinearGradient,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.white,
-                      spreadRadius: 1,
-                      blurRadius: 10,
-                    ),
-                  ],
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.add,
-                  color: mainColorPurple,
-                  size: largeIconSize,
-                  shadows: [Shadow(color: Colors.white, blurRadius: 5)],
-                ),
-              ),
             ),
           ),
         ],

@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:shine/components/avatar.dart';
-import 'package:shine/components/bottom_sheet.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/database/database.dart';
 import 'package:shine/models/to_do_item_data.dart';
@@ -400,9 +399,9 @@ class _HomePageState extends State<HomePage> {
             ),
             IconButton(
               onPressed: () {
-                showTaskGridBottomSheet(context);
+                _updateTaskData();
               },
-              icon: Icon(Icons.add, size: 32),
+              icon: Icon(Icons.refresh, size: 32),
             ),
             IconButton(
               onPressed: () {

@@ -140,7 +140,8 @@ class _ToDoPageState extends State<ToDoPage> {
     );
   }
 
-  Widget _buildBottomBar() {
+  Widget? _buildBottomBar() {
+    if (ApiService.position == null) return null;
     return BottomAppBar(
       height: 60,
       padding: EdgeInsets.symmetric(horizontal: 30, vertical: 5),
