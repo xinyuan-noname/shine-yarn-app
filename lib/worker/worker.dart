@@ -399,7 +399,7 @@ class Worker {
       } else {
         requestUpdate = await showConfirmDialog(
           context: globalNavigatorKey.currentContext!,
-          title: "检测到新版本，本次为请立即更新！",
+          title: "检测到新版本，请立即更新！",
           content: "本次更新内容：$updateInfo",
         );
       }

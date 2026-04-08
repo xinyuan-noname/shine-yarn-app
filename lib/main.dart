@@ -41,7 +41,6 @@ class _MyAppState extends State<MyApp> {
   _prepare() async {
     ApiService.init();
     await ApiService.waitOk();
-    await Worker.checkAndUpdate(context);
     final tokenFuture = TokenStorage.getAccessToken();
 
     String? accessToken;

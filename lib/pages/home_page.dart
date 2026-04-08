@@ -83,6 +83,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _init();
+    Worker.checkAndUpdate(context);
   }
 
   Future<void> _init() async {
