@@ -38,7 +38,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   List<TaskStorageData> get _taskList =>
       _remoteTaskList.toList()..addAll(_localTaskList);
   final List<TaskStorageData> _localTaskList = [];
@@ -50,6 +51,7 @@ class _HomePageState extends State<HomePage> {
   final Debouncer _messageEventUpdateDebouncer = Debouncer();
   final Debouncer _toDoListDebouncer = Debouncer(delay: Duration(seconds: 1));
   final Debouncer _noticeDebouncer = Debouncer(delay: Duration(seconds: 1));
+  late TabController _flagViewTabController;
   StreamSubscription<MessageEvent>? _subscription;
   int _ts = 0;
   String _username = "???";
@@ -85,7 +87,15 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _init();
+    _initFlagViewTab();
     Worker.checkAndUpdate(context);
+  }
+
+  void _initFlagViewTab() {
+    _flagViewTabController = TabController(length: 3, vsync: this);
+    HomePageRefreshNotifier._flagViewGoto = (int i) {
+      _flagViewTabController.animateTo(i);
+    };
   }
 
   Future<void> _init() async {
@@ -97,7 +107,7 @@ class _HomePageState extends State<HomePage> {
       if (!mounted) return;
       _updateMessageData();
     };
-    HomePageRefreshNotifier._pageGoto = (int i) {
+    HomePageRefreshNotifier._viewGoto = (int i) {
       _currentIndex = i;
       setState(() {});
     };
@@ -326,6 +336,7 @@ class _HomePageState extends State<HomePage> {
               updateFinishedStatus: () async {
                 await _updateToDoListFinishedStatus();
               },
+              tabController: _flagViewTabController,
             ),
             UserView(
               userInfoList: _userInfoList,
@@ -514,6 +525,7 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     HomePageRefreshNotifier.clear();
     _subscription?.cancel();
+    _flagViewTabController.dispose();
     super.dispose();
   }
 }
@@ -521,7 +533,8 @@ class _HomePageState extends State<HomePage> {
 class HomePageRefreshNotifier {
   static VoidCallback? _refreshTask;
   static VoidCallback? _refreshMessage;
-  static void Function(int)? _pageGoto;
+  static void Function(int)? _viewGoto;
+  static void Function(int)? _flagViewGoto;
   static void refreshTask() {
     _refreshTask ??= () {};
     _refreshTask!();
@@ -532,9 +545,14 @@ class HomePageRefreshNotifier {
     _refreshMessage!();
   }
 
-  static void pageGoto(int i) {
-    _pageGoto ??= (int j) {};
-    _pageGoto!(i);
+  static void viewGoto(int i) {
+    _viewGoto ??= (int j) {};
+    _viewGoto!(i);
+  }
+
+  static void flagViewGoto(int i) {
+    _flagViewGoto ??= (int j) {};
+    _flagViewGoto!(i);
   }
 
   static void clear() {

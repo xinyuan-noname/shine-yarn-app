@@ -45,7 +45,8 @@ class MessageCard extends StatelessWidget {
         await MessageStorage.addMessageReaded(messageData.id);
         HomePageRefreshNotifier.refreshMessage();
         if (messageData.content.contains("待办事项")) {
-          HomePageRefreshNotifier.pageGoto(3);
+          HomePageRefreshNotifier.flagViewGoto(0);
+          HomePageRefreshNotifier.viewGoto(3);
         }
       },
     };

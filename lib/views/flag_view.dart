@@ -20,33 +20,38 @@ class FlagView extends StatelessWidget {
   final List<ToDoItemData> finishedItemList;
   final RefreshCallback onRefresh;
   final VoidCallback updateFinishedStatus;
+  final TabController tabController;
   const FlagView({
     super.key,
     required this.unfinishedItemList,
     required this.finishedItemList,
     required this.onRefresh,
     required this.updateFinishedStatus,
+    required this.tabController,
   });
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: SafeArea(
-        child: Column(
-          children: [
-            TabBar(
-              tabs: [Text("事项表"), Text("工具箱")],
-              labelStyle: tabLabelStyle,
-              padding: const EdgeInsets.only(top: 2),
+    return SafeArea(
+      child: Column(
+        children: [
+          TabBar(
+            tabs: [const Text("事项表"), const Text("资源站"), const Text("工具箱")],
+            labelStyle: tabLabelStyle,
+            padding: const EdgeInsets.only(top: 2),
+            controller: tabController,
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: tabController,
+              children: [
+                _buildToDoListWidget(),
+                Container(),
+                _buildToolBoxWidget(),
+              ],
             ),
-            Expanded(
-              child: TabBarView(
-                children: [_buildToDoListWidget(), _buildToolBoxWidget()],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

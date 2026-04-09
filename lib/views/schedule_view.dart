@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:shine/components/bottom_sheet.dart';
+import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/extensions/list.dart';
 import 'package:shine/theme.dart';
@@ -174,7 +175,7 @@ class ScheduleView extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 _genPhaseList(),
-                                ..._genCourseColumn(),
+                                ..._genCourseColumn(context),
                               ],
                             ),
                           ),
@@ -244,7 +245,7 @@ class ScheduleView extends StatelessWidget {
     return result;
   }
 
-  List<Widget> _genCourseColumn() {
+  List<Widget> _genCourseColumn(BuildContext context) {
     final courseList = _getshowSubjectInfoList();
     final scheduleDataList = _getShowScheduleDataList();
     return getWeekDates(showDate).map((d) {
@@ -255,6 +256,7 @@ class ScheduleView extends StatelessWidget {
         width: _cellWidth,
         child: Column(
           children: _genCourseRow(
+            context: context,
             courseList: courseList,
             date: d,
             scheduleDataList: scheduleDataList,
@@ -308,6 +310,7 @@ class ScheduleView extends StatelessWidget {
     required List<(CourseBasicInfo, CourseSchedule)> courseList,
     required DateTime date,
     required List<ScheduleData> scheduleDataList,
+    required BuildContext context,
   }) {
     final List<Widget> children = [];
     final index = date.weekday - 1;
@@ -325,8 +328,20 @@ class ScheduleView extends StatelessWidget {
             currentScheduleData?.periodStart == i) {
           mappedScheduleData = scheduleDataList.safeRemoveAt(0);
         }
+        String courseName = _getCourseName(scheduleItem, mappedScheduleData);
+        String location = _getLocation(scheduleItem, mappedScheduleData);
         children.add(
           InkWell(
+            onTap: () {
+              showScheduleDialog(
+                context: context,
+                courseName: courseName,
+                location:location,
+                courseInfo: scheduleItem.$1,
+                courseSchedule: scheduleItem.$2,
+                scheduleData: mappedScheduleData,
+              );
+            },
             child: Container(
               height: _courseHeight * scheduleItem.$2.periodLength,
               decoration: BoxDecoration(
@@ -346,14 +361,14 @@ class ScheduleView extends StatelessWidget {
                     child: Wrap(
                       children: [
                         Text(
-                          _getCourseName(scheduleItem, mappedScheduleData),
+                          courseName,
                           style: const TextStyle(
                             fontFamily: "SmileySans",
                             fontSize: 10,
                           ),
                         ),
                         Text(
-                          _getLocation(scheduleItem, mappedScheduleData),
+                          location,
                           style: const TextStyle(
                             fontFamily: "SmileySans",
                             fontSize: 10,

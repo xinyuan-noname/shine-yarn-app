@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shine/components/input.dart';
+import 'package:shine/models/course_data.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/theme.dart';
@@ -15,6 +16,11 @@ const dialogTitleStyle = TextStyle(
 );
 const dialogContentStyle = TextStyle(
   fontSize: 16,
+  fontFamily: 'SmileySans',
+  color: bgColorLight60,
+);
+const dialogContentSmallStyle = TextStyle(
+  fontSize: 11,
   fontFamily: 'SmileySans',
   color: bgColorLight60,
 );
@@ -84,6 +90,49 @@ Future<void> showAlertDialog({
         backgroundColor: mainColorPurple,
         title: Text(title, style: dialogTitleStyle),
         content: Text(content, style: dialogContentStyle),
+        actions: [
+          TextButton(
+            style: dialogButtonStyle,
+            onPressed: onYes ?? () => Navigator.of(context).pop(),
+            child: Text(confirmText),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+Future<void> showScheduleDialog({
+  required BuildContext context,
+  required String courseName,
+  required String location,
+  required CourseBasicInfo courseInfo,
+  required CourseSchedule courseSchedule,
+  ScheduleData? scheduleData,
+  VoidCallback? onYes,
+  String confirmText = '确定',
+}) async {
+  final courseAllName = courseInfo.subjectName.replaceAll("实验", "");
+  final teachers = courseInfo.teachers.join("，");
+  return await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: mainColorPurple,
+        title: Text(courseName, style: dialogTitleStyle),
+        content: Container(
+          padding: EdgeInsets.all(0),
+          child: Wrap(
+            direction: Axis.vertical,
+            children: [
+              Text("科目：$courseAllName", style: dialogContentSmallStyle),
+              SizedBox(height: 11),
+              Text("教师：$teachers", style: dialogContentSmallStyle),
+              SizedBox(height: 11),
+              Text("上课地点：$location", style: dialogContentSmallStyle),
+            ],
+          ),
+        ),
         actions: [
           TextButton(
             style: dialogButtonStyle,
