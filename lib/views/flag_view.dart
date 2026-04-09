@@ -21,6 +21,7 @@ class FlagView extends StatelessWidget {
   final RefreshCallback onRefresh;
   final VoidCallback updateFinishedStatus;
   final TabController tabController;
+  final List<String> subjectsList;
   const FlagView({
     super.key,
     required this.unfinishedItemList,
@@ -28,6 +29,7 @@ class FlagView extends StatelessWidget {
     required this.onRefresh,
     required this.updateFinishedStatus,
     required this.tabController,
+    required this.subjectsList,
   });
 
   @override
@@ -46,12 +48,77 @@ class FlagView extends StatelessWidget {
               controller: tabController,
               children: [
                 _buildToDoListWidget(),
-                Container(),
+                _buildResourceWidget(),
                 _buildToolBoxWidget(),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildResourceWidget() {
+    return Container(
+      padding: bodyPadding,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey,
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: Offset(0, 3),
+            ),
+          ],
+          gradient: whiteLinearGradient,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              flex: 1,
+              child: ListView.builder(
+                itemCount: subjectsList.length,
+                itemBuilder: (context, index) {
+                  if (subjectsList.isEmpty) return null;
+                  final subjectName = subjectsList[index];
+                  return Container(
+                    width: 50,
+                    height: 50,
+                    alignment: Alignment.center,
+                    padding: EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      gradient: purpleLinearGradientReversed,
+                    ),
+                    margin: EdgeInsets.symmetric(vertical: 2),
+                    child: Text(
+                      subjectName,
+                      style: const TextStyle(
+                        fontFamily: "SmileySans",
+                        fontSize: 14,
+                        color: bgColorLight,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(width: 8),
+            Container(width: 2, color: mainColorGrey20),
+            Expanded(
+              flex: 4,
+              child: ListView.builder(
+                itemCount: max(1, 1),
+                itemBuilder: (context, index) {},
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -10,7 +10,6 @@ class AppConfig {
   );
 
   static const List<String> githubAndProxy = [
-    "https://gitee.com/xinyuanwm",
     "https://gh.llkk.cc/https://raw.githubusercontent.com/xinyuan-noname",
     "https://raw.bgithub.xyz/xinyuan-noname",
     "https://raw.kkgithub.com/xinyuan-noname",

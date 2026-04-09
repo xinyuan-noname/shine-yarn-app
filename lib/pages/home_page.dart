@@ -7,6 +7,7 @@ import 'package:shine/database/database.dart';
 import 'package:shine/models/to_do_item_data.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
+import 'package:shine/services/api_resource.dart';
 import 'package:shine/services/event.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/message_storage.dart';
@@ -51,6 +52,7 @@ class _HomePageState extends State<HomePage>
   final Debouncer _messageEventUpdateDebouncer = Debouncer();
   final Debouncer _toDoListDebouncer = Debouncer(delay: Duration(seconds: 1));
   final Debouncer _noticeDebouncer = Debouncer(delay: Duration(seconds: 1));
+  final Map<String, List<String>> _resourceSubjectMap = {};
   late TabController _flagViewTabController;
   StreamSubscription<MessageEvent>? _subscription;
   int _ts = 0;
@@ -287,6 +289,16 @@ class _HomePageState extends State<HomePage>
     await _updateScheduleData();
     await _updateMine();
     await _updateUserInfo();
+    await _updateResource();
+  }
+
+  Future<void> _updateResource() async {
+    final result = await ApiResource.getResourceDirecotry();
+    if (result is Map<String, List<String>>) {
+      _resourceSubjectMap.clear();
+      _resourceSubjectMap.addAll(result);
+      setState(() {});
+    }
   }
 
   @override
@@ -337,6 +349,7 @@ class _HomePageState extends State<HomePage>
                 await _updateToDoListFinishedStatus();
               },
               tabController: _flagViewTabController,
+              subjectsList: _resourceSubjectMap.keys.toList(),
             ),
             UserView(
               userInfoList: _userInfoList,
