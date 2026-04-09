@@ -48,6 +48,8 @@ class _HomePageState extends State<HomePage> {
   final List<MessageStorageData> _messageList = [];
   final List _userInfoList = [];
   final Debouncer _messageEventUpdateDebouncer = Debouncer();
+  final Debouncer _toDoListDebouncer = Debouncer(delay: Duration(seconds: 1));
+  final Debouncer _noticeDebouncer = Debouncer(delay: Duration(seconds: 1));
   StreamSubscription<MessageEvent>? _subscription;
   int _ts = 0;
   String _username = "???";
@@ -191,6 +193,10 @@ class _HomePageState extends State<HomePage> {
       _taskNoticeList.addAll(taskNoticeResult);
       if (!mounted) return;
       setState(() {});
+    } else {
+      _noticeDebouncer.run(() {
+        _updateNotice();
+      });
     }
   }
 
@@ -200,6 +206,10 @@ class _HomePageState extends State<HomePage> {
       _allToDoList.clear();
       _allToDoList.addAll(toDoListResult);
       _updateToDoListFinishedStatus();
+    } else {
+      _toDoListDebouncer.run(() {
+        _updateToDoList();
+      });
     }
   }
 
