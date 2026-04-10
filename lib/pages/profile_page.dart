@@ -11,6 +11,7 @@ import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/api_auth.dart';
 import 'package:shine/services/api_profiles.dart';
+import 'package:shine/services/api_update.dart';
 import 'package:shine/services/ws.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/token_storage.dart';
@@ -335,6 +336,40 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Widget _buildGotoDownload() {
+    return Ink(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () async {
+          if (ApiUpdate.downloadUrl.isEmpty) {
+            showAlertDialog(context: context, title: "暂无更新", content: "暂无更新包");
+          }
+          final result = await showConfirmDialog(
+            context: context,
+            title: "跳转更新",
+            content: "点击“确认”跳转更新。",
+          );
+          if (result) {
+            launchUrlString(
+              ApiUpdate.downloadUrl,
+              mode: LaunchMode.externalApplication,
+            );
+          }
+        },
+        child: Container(
+          padding: bodyPadding,
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("跳转更新", style: profileKeyTextStyle),
+              Text("跳转更新", style: profileValueTextStyle),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildListTitle(String txt) {
     return Container(
       alignment: Alignment.centerLeft,
@@ -379,6 +414,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   _buildFrame(),
                   bottomLineSmall,
                   _buildDeveloper(),
+                  bottomLineSmall,
+                  _buildGotoDownload(),
                   const SizedBox(height: 35),
                 ],
               ),

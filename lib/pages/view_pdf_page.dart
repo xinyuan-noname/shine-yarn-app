@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:internet_file/internet_file.dart';
@@ -5,6 +7,7 @@ import 'package:shine/components/custom_back_handler.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/share_utils.dart';
 import 'package:shine/worker/worker.dart';
 
 class ViewPdfPage extends StatefulWidget {
@@ -24,6 +27,7 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
   String? _url;
   String? _downloadUrl;
   String? _filename;
+  Uint8List? _fileData;
 
   @override
   void initState() {
@@ -66,6 +70,7 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
                 ? ApiService.headers.cast<String, String>()
                 : null,
           );
+          _fileData = fileData;
           final document = await PdfDocument.openData(fileData);
           _pdfController = PdfController(document: Future.value(document));
 
@@ -128,7 +133,17 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
                 showToast(msg: "已开始下载$_filename");
               }
             },
-            tooltip: '下载pdf',
+            tooltip: '下载文档',
+          ),
+        if (!_isLoading &&
+            _error == null &&
+            _fileData != null &&
+            _filename is String)
+          IconButton(
+            onPressed: () {
+              sharePdf(data: _fileData!, name: _filename!);
+            },
+            icon: const Icon(Icons.share),
           ),
       ],
     );

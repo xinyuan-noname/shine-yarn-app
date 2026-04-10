@@ -6,6 +6,21 @@ Future sharePswdKey({required String id, required String passwordKey}) async {
   await SharePlus.instance.share(ShareParams(text: pswdToken));
 }
 
+Future<void> sharePdf({
+  required Uint8List data,
+  required String name,
+  String? title,
+}) async {
+  final file = XFile.fromData(
+    data,
+    name: name,
+    mimeType: "application/pdf",
+  );
+  await SharePlus.instance.share(
+    ShareParams(text: title ?? name, files: [file]),
+  );
+}
+
 Future shareImage({
   required Uint8List image,
   String name = "share.png",
@@ -19,18 +34,14 @@ Future shareImage({
     ),
   );
 }
+
 Future shareImageByXFile({
   required XFile image,
   String name = "share.png",
   String mimeType = "image/png",
   String? title,
 }) async {
-  SharePlus.instance.share(
-    ShareParams(
-      text: title,
-      files: [image],
-    ),
-  );
+  SharePlus.instance.share(ShareParams(text: title, files: [image]));
 }
 
 Map<String, String>? extractIdAndPassword(String text) {

@@ -383,7 +383,10 @@ class Worker {
           (await PackageInfo.fromPlatform()).version;
       final remoteVersion = Version.parse(remoteAppVersionString);
       final localVersion = Version.parse(localAppVersionString);
-
+      final fileUrl = ApiUpdate.getUpdateUrl(
+        Platform.isWindows ? setupName : apkName,
+      );
+      ApiUpdate.downloadUrl = fileUrl;
       if (remoteVersion <= localVersion) {
         return;
       }
@@ -404,9 +407,6 @@ class Worker {
         );
       }
       if (requestUpdate) {
-        final fileUrl = ApiUpdate.getUpdateUrl(
-          Platform.isWindows ? setupName : apkName,
-        );
         final filename = Platform.isWindows ? "setup.exe" : "shine.apk";
         Worker.startDownload(
           url: fileUrl,
