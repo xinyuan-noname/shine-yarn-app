@@ -22,6 +22,9 @@ class FlagView extends StatelessWidget {
   final VoidCallback updateFinishedStatus;
   final TabController tabController;
   final List<String> subjectsList;
+  final String currentSubject;
+  final Function(String) onChangeSubject;
+  final List<String> resourceList;
   const FlagView({
     super.key,
     required this.unfinishedItemList,
@@ -30,6 +33,9 @@ class FlagView extends StatelessWidget {
     required this.updateFinishedStatus,
     required this.tabController,
     required this.subjectsList,
+    required this.currentSubject,
+    required this.onChangeSubject,
+    required this.resourceList,
   });
 
   @override
@@ -85,24 +91,35 @@ class FlagView extends StatelessWidget {
                 itemBuilder: (context, index) {
                   if (subjectsList.isEmpty) return null;
                   final subjectName = subjectsList[index];
-                  return Container(
-                    width: 50,
-                    height: 50,
-                    alignment: Alignment.center,
-                    padding: EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      gradient: purpleLinearGradientReversed,
-                    ),
-                    margin: EdgeInsets.symmetric(vertical: 2),
-                    child: Text(
-                      subjectName,
-                      style: const TextStyle(
-                        fontFamily: "SmileySans",
-                        fontSize: 14,
-                        color: bgColorLight,
+                  return GestureDetector(
+                    onTap: () {
+                      onChangeSubject(subjectName);
+                    },
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      alignment: Alignment.center,
+                      padding: EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: purpleLinearGradientReversed,
                       ),
-                      textAlign: TextAlign.center,
+                      margin: EdgeInsets.symmetric(vertical: 2),
+                      child: Text(
+                        subjectName,
+                        style: currentSubject == subjectName
+                            ? const TextStyle(
+                                fontFamily: "SmileySans",
+                                fontSize: 16,
+                                color: bgColorLight,
+                              )
+                            : const TextStyle(
+                                fontFamily: "SmileySans",
+                                fontSize: 14,
+                                color: bgColorLight,
+                              ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   );
                 },

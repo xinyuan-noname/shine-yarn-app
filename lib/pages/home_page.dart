@@ -55,6 +55,7 @@ class _HomePageState extends State<HomePage>
   final Map<String, List<String>> _resourceSubjectMap = {};
   late TabController _flagViewTabController;
   StreamSubscription<MessageEvent>? _subscription;
+  String _currentResourceSubject = '';
   int _ts = 0;
   String _username = "???";
   int _currentIndex = 0;
@@ -297,6 +298,7 @@ class _HomePageState extends State<HomePage>
     if (result is Map<String, List<String>>) {
       _resourceSubjectMap.clear();
       _resourceSubjectMap.addAll(result);
+      _currentResourceSubject = _resourceSubjectMap.keys.firstOrNull ?? "";
       setState(() {});
     }
   }
@@ -350,6 +352,11 @@ class _HomePageState extends State<HomePage>
               },
               tabController: _flagViewTabController,
               subjectsList: _resourceSubjectMap.keys.toList(),
+              currentSubject: _currentResourceSubject,
+              onChangeSubject: (s) {
+                _currentResourceSubject = s;
+              },
+              resourceList: _resourceSubjectMap[_currentResourceSubject] ?? [],
             ),
             UserView(
               userInfoList: _userInfoList,
