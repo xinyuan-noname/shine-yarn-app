@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
+import 'package:shine/components/file_display_bar.dart';
 import 'package:shine/components/floating_action_button_widget.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/static_header_expansion.dart';
@@ -11,8 +12,10 @@ import 'package:shine/pages/to_do_page.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/api_message.dart';
+import 'package:shine/services/api_resource.dart';
 import 'package:shine/storage/message_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/file_utils.dart';
 import 'package:shine/utils/time_utils.dart';
 
 class FlagView extends StatelessWidget {
@@ -110,8 +113,8 @@ class FlagView extends StatelessWidget {
                         style: currentSubject == subjectName
                             ? const TextStyle(
                                 fontFamily: "SmileySans",
-                                fontSize: 16,
-                                color: bgColorLight,
+                                fontSize: 14.2,
+                                color: mainColorGreenBlue,
                               )
                             : const TextStyle(
                                 fontFamily: "SmileySans",
@@ -130,8 +133,30 @@ class FlagView extends StatelessWidget {
             Expanded(
               flex: 4,
               child: ListView.builder(
-                itemCount: max(1, 1),
-                itemBuilder: (context, index) {},
+                itemCount: max(1, resourceList.length),
+                itemBuilder: (context, index) {
+                  if (resourceList.isEmpty) {
+                    return Text(
+                      "暂无相关资源",
+                      style: viewEmptyTextStyle,
+                      textAlign: TextAlign.center,
+                    );
+                  }
+                  final fileName = resourceList[index];
+                  return FileDisplayBar(
+                    fileName: fileName,
+                    maxLines: 2,
+                    onPress: () async {
+                      final url = '${ApiResource.baseUrl}/${Uri.encodeComponent(currentSubject)}/${Uri.encodeComponent(fileName)}';
+                      gotoViewPdfUrl(
+                        url,
+                        filename: fileName,
+                        downloadUrl: url,
+                        downloadable: true,
+                      );
+                    },
+                  );
+                },
               ),
             ),
           ],

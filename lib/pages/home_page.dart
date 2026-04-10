@@ -50,8 +50,13 @@ class _HomePageState extends State<HomePage>
   final List<MessageStorageData> _messageList = [];
   final List _userInfoList = [];
   final Debouncer _messageEventUpdateDebouncer = Debouncer();
-  final Debouncer _toDoListDebouncer = Debouncer(delay: Duration(seconds: 1));
-  final Debouncer _noticeDebouncer = Debouncer(delay: Duration(seconds: 1));
+  final Debouncer _toDoListDebouncer = Debouncer(
+    delay: Duration(milliseconds: 500),
+  );
+  final Debouncer _noticeDebouncer = Debouncer(
+    delay: Duration(milliseconds: 500),
+  );
+  final Debouncer _resourceDebouncer = Debouncer();
   final Map<String, List<String>> _resourceSubjectMap = {};
   late TabController _flagViewTabController;
   StreamSubscription<MessageEvent>? _subscription;
@@ -112,6 +117,10 @@ class _HomePageState extends State<HomePage>
     };
     HomePageRefreshNotifier._viewGoto = (int i) {
       _currentIndex = i;
+      setState(() {});
+    };
+    HomePageRefreshNotifier._changeCurrentResource = (s) {
+      _currentResourceSubject = s;
       setState(() {});
     };
     _subscription = EventBus.stream.listen((event) {
@@ -286,11 +295,11 @@ class _HomePageState extends State<HomePage>
   Future<void> _updateAllData() async {
     _updateTaskData();
     _updateMessageData();
+    _updateResource();
     await _updateSemesterData();
     await _updateScheduleData();
     await _updateMine();
     await _updateUserInfo();
-    await _updateResource();
   }
 
   Future<void> _updateResource() async {
@@ -300,6 +309,10 @@ class _HomePageState extends State<HomePage>
       _resourceSubjectMap.addAll(result);
       _currentResourceSubject = _resourceSubjectMap.keys.firstOrNull ?? "";
       setState(() {});
+    } else {
+      _resourceDebouncer.run(() {
+        _updateResource();
+      });
     }
   }
 
@@ -355,6 +368,7 @@ class _HomePageState extends State<HomePage>
               currentSubject: _currentResourceSubject,
               onChangeSubject: (s) {
                 _currentResourceSubject = s;
+                setState(() {});
               },
               resourceList: _resourceSubjectMap[_currentResourceSubject] ?? [],
             ),
@@ -555,6 +569,7 @@ class HomePageRefreshNotifier {
   static VoidCallback? _refreshMessage;
   static void Function(int)? _viewGoto;
   static void Function(int)? _flagViewGoto;
+  static void Function(String)? _changeCurrentResource;
   static void refreshTask() {
     _refreshTask ??= () {};
     _refreshTask!();
@@ -573,6 +588,11 @@ class HomePageRefreshNotifier {
   static void flagViewGoto(int i) {
     _flagViewGoto ??= (int j) {};
     _flagViewGoto!(i);
+  }
+
+  static void changeResource(String r) {
+    _changeCurrentResource ??= (String r) {};
+    _changeCurrentResource!(r);
   }
 
   static void clear() {

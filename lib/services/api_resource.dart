@@ -4,10 +4,10 @@ import 'package:dio/dio.dart';
 import 'package:shine/config/app_config.dart';
 
 class ApiResource {
-  static String get direcotryUrl =>
-      "${AppConfig.stableGithubOrProxy}/resource/main/directory.json";
+  static String get baseUrl =>
+      "${AppConfig.stableGithubOrProxy.isEmpty ? AppConfig.stableGithubOrProxy : AppConfig.githubAndProxy[0]}/resource/main";
+  static String get direcotryUrl => "$baseUrl/directory.json";
   static Future getResourceDirecotry() async {
-    if (AppConfig.stableGithubOrProxy.isEmpty) return '暂无可用的资源信息源';
     try {
       final response = await Dio(
         BaseOptions(

@@ -52,7 +52,7 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
             _isLoading = false;
           });
         } else if (args.url != null) {
-          _url = args.url;
+          _url = args.url!;
           if (args.filename is String) {
             _filename = args.filename;
           }
@@ -61,8 +61,10 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
           }
           _downloadable = args.downloadable;
           final fileData = await InternetFile.get(
-            args.url!,
-            headers: ApiService.headers.cast<String, String>(),
+            _url!,
+            headers: _url!.startsWith(ApiService.url)
+                ? ApiService.headers.cast<String, String>()
+                : null,
           );
           final document = await PdfDocument.openData(fileData);
           _pdfController = PdfController(document: Future.value(document));

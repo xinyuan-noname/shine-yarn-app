@@ -5,6 +5,7 @@ import 'package:shine/components/bottom_sheet.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/extensions/list.dart';
+import 'package:shine/pages/home_page.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/models/course_data.dart';
 import 'package:shine/utils/time_utils.dart';
@@ -336,10 +337,15 @@ class ScheduleView extends StatelessWidget {
               showScheduleDialog(
                 context: context,
                 courseName: courseName,
-                location:location,
+                location: location,
                 courseInfo: scheduleItem.$1,
                 courseSchedule: scheduleItem.$2,
                 scheduleData: mappedScheduleData,
+                onJump: (name) {
+                  HomePageRefreshNotifier.viewGoto(3);
+                  HomePageRefreshNotifier.flagViewGoto(1);
+                  HomePageRefreshNotifier.changeResource(name);
+                },
               );
             },
             child: Container(
