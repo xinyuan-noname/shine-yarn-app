@@ -208,7 +208,7 @@ class _ToDoPageState extends State<ToDoPage> {
     if (success) {
       Navigator.of(context).pop();
       WsTask.sendRemind(
-        msg: "收到由「${ApiService.position}」创建的待办事项",
+        msg: "收到由「${ApiService.position}」创建的待办事项「$title」。\n$content",
         targetList: UserCache.getIdList(),
       );
     }

@@ -9,7 +9,7 @@ class AppConfig {
     defaultValue: false,
   );
 
-  static const List<String> githubAndProxy = [
+  static const List<String> githubAndProxy = [ 
     "https://gh.llkk.cc/https://raw.githubusercontent.com/xinyuan-noname",
     "https://raw.bgithub.xyz/xinyuan-noname",
     "https://raw.kkgithub.com/xinyuan-noname",
