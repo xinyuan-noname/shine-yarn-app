@@ -5,7 +5,7 @@ import 'package:shine/config/app_config.dart';
 
 class ApiResource {
   static String get baseUrl =>
-      "${AppConfig.stableGithubOrProxy.isEmpty ? AppConfig.stableGithubOrProxy : AppConfig.githubAndProxy[0]}/resource/main";
+      "${AppConfig.stableGithubOrProxy.isEmpty ? AppConfig.githubAndProxy[0] : AppConfig.stableGithubOrProxy}/resource/main";
   static String get direcotryUrl => "$baseUrl/directory.json";
   static Future getResourceDirecotry() async {
     try {

@@ -71,6 +71,7 @@ dependencies:
   url_launcher: ^6.3.2
   desktop_drop: ^0.7.0
   pdfx: ^2.9.2
+  flutter_cache_manager: ^3.4.1
 
 dev_dependencies:
   flutter_test:

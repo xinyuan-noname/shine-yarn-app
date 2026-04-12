@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/dio.dart';
 import 'package:shine/storage/token_storage.dart';
@@ -27,6 +28,7 @@ class ApiAuth {
   }
 
   static refresh() async {
+    if (kIsWeb) return;
     if (!ApiService.isOk) return "服务未就绪";
     final refreshToken = await TokenStorage.getRefreshToken();
     try {

@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:internet_file/internet_file.dart';
 import 'package:shine/components/custom_back_handler.dart';
@@ -64,12 +65,13 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
             _downloadUrl = args.downloadUrl;
           }
           _downloadable = args.downloadable;
-          final fileData = await InternetFile.get(
+          final file = await DefaultCacheManager().getSingleFile(
             _url!,
             headers: _url!.startsWith(ApiService.url)
                 ? ApiService.headers.cast<String, String>()
                 : null,
           );
+          final fileData = await file.readAsBytes();
           _fileData = fileData;
           final document = await PdfDocument.openData(fileData);
           _pdfController = PdfController(document: Future.value(document));
@@ -129,7 +131,11 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
             onPressed: () {
               final String? downloadUrl = _downloadUrl ?? _url;
               if (downloadUrl is String && _filename is String) {
-                Worker.startDownload(url: downloadUrl, filename: _filename!);
+                Worker.startDownload(
+                  url: downloadUrl,
+                  filename: _filename!,
+                  fallbackToOpenUrl: true,
+                );
                 showToast(msg: "已开始下载$_filename");
               }
             },

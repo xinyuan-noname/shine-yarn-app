@@ -4,6 +4,7 @@ class AppConfig {
   // flutter run --dart-define=PRODUCTION=true
   // $env:CMAKE_TLS_VERIFY=0          
   // flutter run -d windows --dart-define=PRODUCTION=true
+  //flutter build web --release --dart-define=PRODUCTION=true
   static const bool isProduction = bool.fromEnvironment(
     'PRODUCTION',
     defaultValue: false,
