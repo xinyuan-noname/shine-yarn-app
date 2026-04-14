@@ -1,11 +1,13 @@
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:shine/components/bottom_sheet.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/extensions/list.dart';
 import 'package:shine/pages/home_page.dart';
+import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/models/course_data.dart';
 import 'package:shine/utils/time_utils.dart';
@@ -267,12 +269,43 @@ class ScheduleView extends StatelessWidget {
     }).toList();
   }
 
-  Widget _genEmptyCourse() {
-    return Container(
-      height: _courseHeight,
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: mainColorGrey20)),
+  Widget _genEmptyCourse(
+    BuildContext context, {
+    required int weekday,
+    required int startPeriod,
+  }) {
+    return GestureDetector(
+      child: Container(
+        height: _courseHeight,
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: mainColorGrey20)),
+        ),
       ),
+      onLongPress: () async {
+        final data = await showCourseDataEditDialog(
+          context: context,
+          courseData: CourseData(
+            basicInfo: CourseBasicInfo(
+              subjectName: '',
+              courseType: '选修课',
+              credit: 0.0,
+              semester: semesterName,
+            ),
+            schedule: [
+              CourseSchedule(
+                weekday: weekday,
+                period: [startPeriod, startPeriod + 1],
+                weeks: [_getWeek(showDate)],
+                location: '',
+              ),
+            ],
+          ),
+        );
+        if (data != null) {
+          await SubjectStorage.addCurrentDiySubjectInfo(data);
+          HomePageRefreshNotifier.refreshSchedule();
+        }
+      },
     );
   }
 
@@ -318,8 +351,18 @@ class ScheduleView extends StatelessWidget {
     for (int i = 1; i <= semesterPhaseList.length; i++) {
       ScheduleData? currentScheduleData = scheduleDataList.elementAtOrNull(0);
       final scheduleItem = courseList.elementAtOrNull(0);
+      for (final item in courseList) {
+        if (item == scheduleItem) continue;
+        if (item.$2.weekday == date.weekday && item.$2.start == i) {
+          courseList.remove(item);
+        } else {
+          break;
+        }
+      }
       if (scheduleItem == null) {
-        children.add(_genEmptyCourse());
+        children.add(
+          _genEmptyCourse(context, weekday: date.weekday, startPeriod: i),
+        );
         continue;
       }
       if (scheduleItem.$2.weekday == date.weekday &&
@@ -347,6 +390,24 @@ class ScheduleView extends StatelessWidget {
                   HomePageRefreshNotifier.changeResource(name);
                 },
               );
+            },
+            onLongPress: () async {
+              if (scheduleItem.$1.courseType.contains("选修") ||
+                  scheduleItem.$1.courseType.contains("任修")) {
+                final data = await showCourseDataEditDialog(
+                  context: context,
+                  courseData: subjectInfoList.firstWhere(
+                    (data) => data.subjectName == scheduleItem.$1.subjectName,
+                  ),
+                );
+                if (data != null) {
+                  await SubjectStorage.removeCurrentDiySubjectInfo(
+                    scheduleItem.$1.subjectName,
+                  );
+                  await SubjectStorage.addCurrentDiySubjectInfo(data);
+                  HomePageRefreshNotifier.refreshSchedule();
+                }
+              }
             },
             child: Container(
               height: _courseHeight * scheduleItem.$2.periodLength,
@@ -410,7 +471,9 @@ class ScheduleView extends StatelessWidget {
         courseList.remove(scheduleItem);
         continue;
       }
-      children.add(_genEmptyCourse());
+      children.add(
+        _genEmptyCourse(context, weekday: date.weekday, startPeriod: i),
+      );
     }
     return children;
   }

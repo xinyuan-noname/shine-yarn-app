@@ -376,6 +376,7 @@ class Worker {
 
   static Future<void> checkAndUpdate(context) async {
     if (kIsWeb) return;
+    if (!AppConfig.isProduction) return;
     final appInfoResult = await ApiUpdate.checkIsNewest();
     if (appInfoResult is Map) {
       final String apkName = appInfoResult['apk'];

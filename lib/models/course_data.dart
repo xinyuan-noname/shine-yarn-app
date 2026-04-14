@@ -1,4 +1,3 @@
-
 class CourseSchedule {
   final int weekday;
   final List<int> period;
@@ -23,6 +22,15 @@ class CourseSchedule {
       location: json['location'] ?? '',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'weekday': weekday,
+      'period': period,
+      'weeks': weeks,
+      'location': location,
+    };
+  }
 }
 
 class CourseBasicInfo {
@@ -36,7 +44,7 @@ class CourseBasicInfo {
   CourseBasicInfo({
     required this.subjectName,
     required this.courseType,
-    required this.teachers,
+    this.teachers = const [],
     this.credit,
     this.alias,
     this.semester,
@@ -53,6 +61,17 @@ class CourseBasicInfo {
       alias: json['alias'],
       semester: json['semester'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'subjectName': subjectName,
+      'courseType': courseType,
+      'teachers': teachers,
+      'credit': credit,
+      'alias': alias,
+      'semester': semester,
+    };
   }
 }
 
@@ -71,6 +90,13 @@ class CourseData {
               .toList() ??
           [],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      ...basicInfo.toJson(),
+      'schedule': schedule.map((s) => s.toJson()).toList(),
+    };
   }
 
   List<CourseSchedule>? findScheduleByWeek(int week) {

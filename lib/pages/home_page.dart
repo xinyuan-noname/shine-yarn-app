@@ -123,6 +123,9 @@ class _HomePageState extends State<HomePage>
       _currentResourceSubject = s;
       setState(() {});
     };
+    HomePageRefreshNotifier._refreshSchedule = () {
+      _updateScheduleData();
+    };
     _subscription = EventBus.stream.listen((event) {
       _messageEventUpdateDebouncer.run(() {
         _updateMessageData();
@@ -282,6 +285,8 @@ class _HomePageState extends State<HomePage>
     if (subjectInfoResult is List<CourseData>) {
       _subjectInfo.clear();
       _subjectInfo.addAll(subjectInfoResult);
+      print(await SubjectStorage.getCurrentDiySubjectInfo());
+      _subjectInfo.addAll(await SubjectStorage.getCurrentDiySubjectInfo());
     }
     final scheduleResult = await Worker.syncSchedule();
     if (scheduleResult is List<ScheduleData>) {
@@ -320,6 +325,7 @@ class _HomePageState extends State<HomePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: IndexedStack(
           index: _currentIndex,
@@ -567,12 +573,18 @@ class _HomePageState extends State<HomePage>
 class HomePageRefreshNotifier {
   static VoidCallback? _refreshTask;
   static VoidCallback? _refreshMessage;
+  static VoidCallback? _refreshSchedule;
   static void Function(int)? _viewGoto;
   static void Function(int)? _flagViewGoto;
   static void Function(String)? _changeCurrentResource;
   static void refreshTask() {
     _refreshTask ??= () {};
     _refreshTask!();
+  }
+
+  static void refreshSchedule() {
+    _refreshSchedule ??= () {};
+    _refreshSchedule!();
   }
 
   static void refreshMessage() {
