@@ -7,6 +7,7 @@ import 'package:shine/models/course_data.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/debouncer_utils.dart';
 import 'package:shine/utils/message_utils.dart';
 
 const dialogTitleStyle = TextStyle(
@@ -486,6 +487,8 @@ Future<CourseData?> showCourseDataEditDialog({
     context: context,
     barrierDismissible: false,
     builder: (BuildContext context) {
+      final debouncer = Debouncer(delay: Duration(milliseconds: 200));
+
       return StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
           return AlertDialog(
@@ -573,7 +576,9 @@ Future<CourseData?> showCourseDataEditDialog({
                         borderSide: BorderSide(width: 1.0, color: Colors.grey),
                       ),
                       color: mainColorPurple90,
-                      keyboardType: TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                     ),
                     SizedBox(height: 12),
                     Input(
@@ -612,7 +617,11 @@ Future<CourseData?> showCourseDataEditDialog({
                           ),
                         ),
                         TextButton.icon(
-                          icon: Icon(Icons.add, size: 18, color: bgColorLight80),
+                          icon: Icon(
+                            Icons.add,
+                            size: 18,
+                            color: bgColorLight80,
+                          ),
                           label: Text('添加', style: dialogActionStyle),
                           style: dialogButtonStyle,
                           onPressed: () {
@@ -632,10 +641,7 @@ Future<CourseData?> showCourseDataEditDialog({
                     ),
                     SizedBox(height: 8),
                     if (scheduleList.isEmpty)
-                      Text(
-                        '暂无时间安排',
-                        style: dialogContentSmallStyle,
-                      )
+                      Text('暂无时间安排', style: dialogContentSmallStyle)
                     else
                       ...scheduleList.asMap().entries.map((entry) {
                         final index = entry.key;
@@ -649,7 +655,8 @@ Future<CourseData?> showCourseDataEditDialog({
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
                                       '时间段 ${index + 1}',
@@ -658,7 +665,11 @@ Future<CourseData?> showCourseDataEditDialog({
                                       ),
                                     ),
                                     IconButton(
-                                      icon: Icon(Icons.delete, size: 18, color: Colors.red),
+                                      icon: Icon(
+                                        Icons.delete,
+                                        size: 18,
+                                        color: Colors.red,
+                                      ),
                                       onPressed: () {
                                         setState(() {
                                           scheduleList.removeAt(index);
@@ -668,95 +679,107 @@ Future<CourseData?> showCourseDataEditDialog({
                                   ],
                                 ),
                                 SizedBox(height: 8),
-                                _buildScheduleField(
+                                _buildScheduleFieldWithDebounce(
                                   label: '星期',
                                   initialValue: schedule.weekday.toString(),
                                   onChanged: (value) {
-                                    final weekday = int.tryParse(value);
-                                    if (weekday != null && weekday >= 1 && weekday <= 7) {
-                                      setState(() {
-                                        scheduleList[index] = CourseSchedule(
-                                          weekday: weekday,
-                                          period: schedule.period,
-                                          weeks: schedule.weeks,
-                                          location: schedule.location,
-                                        );
-                                      });
-                                    }
+                                    debouncer.run(() {
+                                      final weekday = int.tryParse(value);
+                                      if (weekday != null &&
+                                          weekday >= 1 &&
+                                          weekday <= 7) {
+                                        setState(() {
+                                          scheduleList[index] = CourseSchedule(
+                                            weekday: weekday,
+                                            period: schedule.period,
+                                            weeks: schedule.weeks,
+                                            location: schedule.location,
+                                          );
+                                        });
+                                      }
+                                    });
                                   },
                                   isNumber: true,
                                 ),
                                 SizedBox(height: 6),
-                                _buildScheduleField(
+                                _buildScheduleFieldWithDebounce(
                                   label: '节次（如：1,2）',
-                                  initialValue: schedule.period.join(','),
+                                  initialValue: '${schedule.period.join(',')},',
                                   onChanged: (value) {
-                                    final periods = value
-                                        .split(',')
-                                        .map((e) => int.tryParse(e.trim()))
-                                        .where((e) => e != null)
-                                        .cast<int>()
-                                        .toList();
-                                    if (periods.isNotEmpty) {
-                                      setState(() {
-                                        scheduleList[index] = CourseSchedule(
-                                          weekday: schedule.weekday,
-                                          period: periods..sort(),
-                                          weeks: schedule.weeks,
-                                          location: schedule.location,
-                                        );
-                                      });
-                                    }
+                                    debouncer.run(() {
+                                      final periods = value
+                                          .split(',')
+                                          .map((e) => int.tryParse(e.trim()))
+                                          .where((e) => e != null)
+                                          .cast<int>()
+                                          .toList();
+                                      if (periods.isNotEmpty) {
+                                        setState(() {
+                                          scheduleList[index] = CourseSchedule(
+                                            weekday: schedule.weekday,
+                                            period: periods..sort(),
+                                            weeks: schedule.weeks,
+                                            location: schedule.location,
+                                          );
+                                        });
+                                      }
+                                    });
                                   },
                                 ),
                                 SizedBox(height: 6),
-                                _buildScheduleField(
+                                _buildScheduleFieldWithDebounce(
                                   label: '周次（如：1,2,3-8）',
-                                  initialValue: schedule.weeks.join(','),
+                                  initialValue: '${schedule.weeks.join(',')},',
                                   onChanged: (value) {
-                                    final weeks = <int>[];
-                                    for (final part in value.split(',')) {
-                                      final trimmed = part.trim();
-                                      if (trimmed.contains('-')) {
-                                        final range = trimmed.split('-');
-                                        final start = int.tryParse(range[0]);
-                                        final end = int.tryParse(range[1]);
-                                        if (start != null && end != null && start <= end) {
-                                          for (int i = start; i <= end; i++) {
-                                            weeks.add(i);
+                                    debouncer.run(() {
+                                      final weeks = <int>[];
+                                      for (final part in value.split(',')) {
+                                        final trimmed = part.trim();
+                                        if (trimmed.contains('-')) {
+                                          final range = trimmed.split('-');
+                                          final start = int.tryParse(range[0]);
+                                          final end = int.tryParse(range[1]);
+                                          if (start != null &&
+                                              end != null &&
+                                              start <= end) {
+                                            for (int i = start; i <= end; i++) {
+                                              weeks.add(i);
+                                            }
+                                          }
+                                        } else {
+                                          final week = int.tryParse(trimmed);
+                                          if (week != null&&weeks.contains(week)) {
+                                            weeks.add(week);
                                           }
                                         }
-                                      } else {
-                                        final week = int.tryParse(trimmed);
-                                        if (week != null) {
-                                          weeks.add(week);
-                                        }
                                       }
-                                    }
-                                    if (weeks.isNotEmpty) {
+                                      if (weeks.isNotEmpty) {
+                                        setState(() {
+                                          scheduleList[index] = CourseSchedule(
+                                            weekday: schedule.weekday,
+                                            period: schedule.period,
+                                            weeks: weeks..sort(),
+                                            location: schedule.location,
+                                          );
+                                        });
+                                      }
+                                    });
+                                  },
+                                ),
+                                SizedBox(height: 6),
+                                _buildScheduleFieldWithDebounce(
+                                  label: '地点',
+                                  initialValue: schedule.location,
+                                  onChanged: (value) {
+                                    debouncer.run(() {
                                       setState(() {
                                         scheduleList[index] = CourseSchedule(
                                           weekday: schedule.weekday,
                                           period: schedule.period,
-                                          weeks: weeks..sort(),
-                                          location: schedule.location,
+                                          weeks: schedule.weeks,
+                                          location: value,
                                         );
                                       });
-                                    }
-                                  },
-                                ),
-                                SizedBox(height: 6),
-                                _buildScheduleField(
-                                  label: '地点',
-                                  initialValue: schedule.location,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      scheduleList[index] = CourseSchedule(
-                                        weekday: schedule.weekday,
-                                        period: schedule.period,
-                                        weeks: schedule.weeks,
-                                        location: value,
-                                      );
                                     });
                                   },
                                 ),
@@ -764,7 +787,7 @@ Future<CourseData?> showCourseDataEditDialog({
                             ),
                           ),
                         );
-                      }).toList(),
+                      }),
                   ],
                 ),
               ),
@@ -773,6 +796,7 @@ Future<CourseData?> showCourseDataEditDialog({
               TextButton(
                 style: dialogButtonStyle,
                 onPressed: () {
+                  debouncer.dispose();
                   Navigator.of(context).pop();
                   completer.complete(null);
                 },
@@ -781,6 +805,7 @@ Future<CourseData?> showCourseDataEditDialog({
               TextButton(
                 style: dialogButtonStyle,
                 onPressed: () {
+                  debouncer.dispose();
                   if (formKey.currentState!.validate()) {
                     // 解析教师列表
                     final teachers = teachersController.text
@@ -836,14 +861,24 @@ Future<CourseData?> showCourseDataEditDialog({
   return completer.future;
 }
 
-// 辅助函数：构建时间安排字段
-Widget _buildScheduleField({
+// 辅助函数：构建带防抖的时间安排字段
+Widget _buildScheduleFieldWithDebounce({
   required String label,
   required String initialValue,
   required Function(String) onChanged,
   bool isNumber = false,
 }) {
   final controller = TextEditingController(text: initialValue);
+
+  // 将光标移动到文本末尾
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (controller.text.isNotEmpty) {
+      controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: controller.text.length),
+      );
+    }
+  });
+
   return TextField(
     controller: controller,
     style: dialogContentSmallStyle.copyWith(color: bgColorLight80),

@@ -57,129 +57,84 @@ class ScheduleView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Size screenSize = MediaQuery.of(context).size;
-    if (screenSize.width < 360) {
-      return Container(
-        alignment: Alignment.topCenter,
-        child: Text(
-          "宽度不足以展示课表！",
-          style: viewEmptyTextStyle,
-          textAlign: TextAlign.center,
-        ),
-      );
-    }
-    return SizedBox.expand(
-      child: Container(
-        padding: bodyPadding,
-        child: Container(
-          padding: EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey,
-                spreadRadius: 1,
-                blurRadius: 5,
-                offset: Offset(0, 3),
-              ),
-            ],
-            gradient: whiteLinearGradient,
+    try {
+      Size screenSize = MediaQuery.of(context).size;
+      if (screenSize.width < 360) {
+        return Container(
+          alignment: Alignment.topCenter,
+          child: Text(
+            "宽度不足以展示课表！",
+            style: viewEmptyTextStyle,
+            textAlign: TextAlign.center,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "${semesterName ?? "未知学期"}(第${_getCurrentWeek()}周)",
-                style: labelStyle,
-              ),
-              bottomLine,
-              SizedBox(
-                child: Row(
-                  children: [
-                    InkWell(
-                      onTap: () async {
-                        if (semesterStartedAt == null) return;
-                        final result = await showWeekBottomSheet(
-                          context,
-                          startedAt: semesterStartedAt!,
-                          selectedDate: showDate,
-                        );
-                        if (result != null) {
-                          onChangeShowDate(result);
-                        }
-                      },
-                      child: Container(
-                        padding: EdgeInsets.only(
-                          top: 1,
-                          bottom: 1,
-                          left: 20,
-                          right: 18,
-                        ),
-                        margin: EdgeInsets.symmetric(vertical: 3),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          color: mainColorGreenBlue,
-                          boxShadow: [
-                            BoxShadow(
-                              blurRadius: 10,
-                              color: mainColorGrey20,
-                              offset: Offset(0, 1),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          '第${_getShowTimeWeek()}周▼',
-                          style: const TextStyle(
-                            fontFamily: "SmileySans",
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+        );
+      }
+      return SizedBox.expand(
+        child: Container(
+          padding: bodyPadding,
+          child: Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey,
+                  spreadRadius: 1,
+                  blurRadius: 5,
+                  offset: Offset(0, 3),
                 ),
-              ),
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: bgColorLight,
-                  borderRadius: BorderRadius.all(Radius.circular(5)),
+              ],
+              gradient: whiteLinearGradient,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "${semesterName ?? "未知学期"}(第${_getCurrentWeek()}周)",
+                  style: labelStyle,
                 ),
-                child: SizedBox(
-                  width: 245,
-                  child: Column(
+                bottomLine,
+                SizedBox(
+                  child: Row(
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            width: _cellWidth,
-                            child: Container(
-                              alignment: Alignment.center,
-                              child: Text(
-                                '${showDate.month}月',
-                                style: _titleTextStyle,
-                              ),
-                            ),
+                      InkWell(
+                        onTap: () async {
+                          if (semesterStartedAt == null) return;
+                          final result = await showWeekBottomSheet(
+                            context,
+                            startedAt: semesterStartedAt!,
+                            selectedDate: showDate,
+                          );
+                          if (result != null) {
+                            onChangeShowDate(result);
+                          }
+                        },
+                        child: Container(
+                          padding: EdgeInsets.only(
+                            top: 1,
+                            bottom: 1,
+                            left: 20,
+                            right: 18,
                           ),
-                          ..._genTableTitleList(),
-                        ],
-                      ),
-                      bottomLineSmall,
-                      SizedBox(
-                        height: min(screenSize.height * 0.630136986301369, 460),
-                        child: RefreshIndicator(
-                          onRefresh: onRefresh,
-                          child: SingleChildScrollView(
-                            padding: EdgeInsets.all(0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                _genPhaseList(),
-                                ..._genCourseColumn(context),
-                              ],
+                          margin: EdgeInsets.symmetric(vertical: 3),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: mainColorGreenBlue,
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 10,
+                                color: mainColorGrey20,
+                                offset: Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            '第${_getShowTimeWeek()}周▼',
+                            style: const TextStyle(
+                              fontFamily: "SmileySans",
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
                             ),
                           ),
                         ),
@@ -187,12 +142,66 @@ class ScheduleView extends StatelessWidget {
                     ],
                   ),
                 ),
-              ),
-            ],
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: bgColorLight,
+                    borderRadius: BorderRadius.all(Radius.circular(5)),
+                  ),
+                  child: SizedBox(
+                    width: 245,
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: _cellWidth,
+                              child: Container(
+                                alignment: Alignment.center,
+                                child: Text(
+                                  '${showDate.month}月',
+                                  style: _titleTextStyle,
+                                ),
+                              ),
+                            ),
+                            ..._genTableTitleList(),
+                          ],
+                        ),
+                        bottomLineSmall,
+                        SizedBox(
+                          height: min(
+                            screenSize.height * 0.630136986301369,
+                            460,
+                          ),
+                          child: RefreshIndicator(
+                            onRefresh: onRefresh,
+                            child: SingleChildScrollView(
+                              padding: EdgeInsets.all(0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  _genPhaseList(),
+                                  ..._genCourseColumn(context),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
+      );
+    } finally {
+      SubjectStorage.delCurrentDiySubjectInfo().then((_) {
+        HomePageRefreshNotifier.refreshSchedule();
+      });
+    }
   }
 
   List<Widget> _genTableTitleList() {

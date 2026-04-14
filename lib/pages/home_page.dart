@@ -285,7 +285,6 @@ class _HomePageState extends State<HomePage>
     if (subjectInfoResult is List<CourseData>) {
       _subjectInfo.clear();
       _subjectInfo.addAll(subjectInfoResult);
-      print(await SubjectStorage.getCurrentDiySubjectInfo());
       _subjectInfo.addAll(await SubjectStorage.getCurrentDiySubjectInfo());
     }
     final scheduleResult = await Worker.syncSchedule();
