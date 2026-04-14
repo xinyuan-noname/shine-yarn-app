@@ -712,6 +712,7 @@ Future<CourseData?> showCourseDataEditDialog({
                                           .map((e) => int.tryParse(e.trim()))
                                           .where((e) => e != null)
                                           .cast<int>()
+                                          .where((e) => e <= 10 && e >= 0)
                                           .toList();
                                       if (periods.isNotEmpty) {
                                         setState(() {
@@ -748,7 +749,8 @@ Future<CourseData?> showCourseDataEditDialog({
                                           }
                                         } else {
                                           final week = int.tryParse(trimmed);
-                                          if (week != null&&weeks.contains(week)) {
+                                          if (week != null &&
+                                              weeks.contains(week)) {
                                             weeks.add(week);
                                           }
                                         }
