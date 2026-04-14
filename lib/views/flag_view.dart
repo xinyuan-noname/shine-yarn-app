@@ -145,7 +145,7 @@ class FlagView extends StatelessWidget {
                   final fileName = resourceList[index];
                   return FileDisplayBar(
                     fileName: fileName,
-                    maxLines: 2,
+                    maxLines: 3,
                     onPress: () async {
                       final url = '${ApiResource.baseUrl}/${Uri.encodeComponent(currentSubject)}/${Uri.encodeComponent(fileName)}';
                       gotoViewPdfUrl(

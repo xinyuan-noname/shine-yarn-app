@@ -3,11 +3,11 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:pdfx/pdfx.dart';
-import 'package:internet_file/internet_file.dart';
 import 'package:shine/components/custom_back_handler.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/theme.dart';
+import 'package:shine/utils/debouncer_utils.dart';
 import 'package:shine/utils/share_utils.dart';
 import 'package:shine/worker/worker.dart';
 
@@ -51,7 +51,6 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
         if (args.filePath != null) {
           final document = await PdfDocument.openFile(args.filePath!);
           _pdfController = PdfController(document: Future.value(document));
-
           setState(() {
             _totalPages = document.pagesCount;
             _isLoading = false;
@@ -65,12 +64,19 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
             _downloadUrl = args.downloadUrl;
           }
           _downloadable = args.downloadable;
-          final file = await DefaultCacheManager().getSingleFile(
-            _url!,
-            headers: _url!.startsWith(ApiService.url)
-                ? ApiService.headers.cast<String, String>()
-                : null,
-          );
+          final file =
+              await CacheManager(
+                Config(
+                  "pdf_cache",
+                  stalePeriod: Duration(days: 90),
+                  maxNrOfCacheObjects: 200,
+                ),
+              ).getSingleFile(
+                _url!,
+                headers: _url!.startsWith(ApiService.url)
+                    ? ApiService.headers.cast<String, String>()
+                    : null,
+              );
           final fileData = await file.readAsBytes();
           _fileData = fileData;
           final document = await PdfDocument.openData(fileData);
@@ -94,7 +100,24 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
       }
     } catch (e) {
       setState(() {
-        _error = '加载 PDF 失败：${e.toString()}';
+        String errorMessage = '加载 PDF 失败';
+        if (e.toString().contains('429')) {
+          errorMessage = '请求次数过多，请稍后重试';
+        } else if (e.toString().contains('404')) {
+          errorMessage = '文档不存在';
+        } else if (e.toString().contains('401') ||
+            e.toString().contains('403')) {
+          errorMessage = '无权访问该文档';
+        } else if (e.toString().contains('timeout') ||
+            e.toString().contains('TimeoutException')) {
+          errorMessage = '加载超时，请检查网络连接';
+        } else if (e.toString().contains('SocketException') ||
+            e.toString().contains('Network')) {
+          errorMessage = '网络连接失败';
+        } else {
+          errorMessage = '加载 PDF 失败：${e.toString()}';
+        }
+        _error = errorMessage;
         _isLoading = false;
       });
     }
@@ -171,7 +194,6 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
         ),
       );
     }
-
     if (_error != null) {
       return Center(
         child: Column(
@@ -232,19 +254,20 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
       return const SizedBox.shrink();
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: bgColorLight,
-        boxShadow: [
-          BoxShadow(
-            color: const Color.fromRGBO(0, 0, 0, 0.1),
-            blurRadius: 4,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
+    return BottomAppBar(
+      padding: EdgeInsets.all(0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: bgColorLight,
+          boxShadow: [
+            BoxShadow(
+              color: const Color.fromRGBO(0, 0, 0, 0.1),
+              blurRadius: 4,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -253,6 +276,22 @@ class _ViewPdfPageState extends State<ViewPdfPage> {
               style: textFieldStyle.copyWith(
                 fontSize: 14,
                 color: Colors.grey[700],
+              ),
+            ),
+            Expanded(
+              child: Slider(
+                value: _currentPage.toDouble(),
+                min: 1,
+                max: _totalPages.toDouble(),
+                divisions: _totalPages,
+                label: _currentPage.round().toString(),
+                onChanged: (double newValue) {
+                  _pdfController!.animateToPage(
+                    newValue.toInt(),
+                    duration: const Duration(milliseconds: 50),
+                    curve: Curves.ease,
+                  );
+                },
               ),
             ),
             Row(

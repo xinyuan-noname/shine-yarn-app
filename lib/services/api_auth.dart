@@ -28,7 +28,7 @@ class ApiAuth {
   }
 
   static refresh() async {
-    if (kIsWeb) return;
+    if (kIsWeb) return true;
     if (!ApiService.isOk) return "服务未就绪";
     final refreshToken = await TokenStorage.getRefreshToken();
     try {
