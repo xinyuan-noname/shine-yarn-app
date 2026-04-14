@@ -339,35 +339,39 @@ class Worker {
         );
       };
     }
-    final downloader = DownloadUtils();
-    await downloader.init();
-    return await downloader.startDownload(
-      url: url,
-      headers: ApiService.headers.cast<String, String>(),
-      filename: filename,
-      onStatusChanged: (taskId, status) {
-        switch (status) {
-          case TaskStatus.complete:
-            showToast(
-              msg: "“$filename”下载完成，请于系统消息栏跳转",
-              duration: Duration(seconds: 5),
-            );
-            onSucceeded?.call();
-            break;
-          case TaskStatus.notFound:
-          case TaskStatus.failed:
-          case TaskStatus.waitingToRetry:
-            showToast(msg: "“$filename”下载失败，请重试下载");
-            onFailed?.call();
-          case TaskStatus.canceled:
-            showToast(msg: "“$filename”下载已取消");
-          case TaskStatus.paused:
-            showToast(msg: "“$filename”下载暂停");
-          default:
-            break;
-        }
-      },
-    );
+    try {
+      final downloader = DownloadUtils();
+      await downloader.init();
+      return await downloader.startDownload(
+        url: url,
+        headers: ApiService.headers.cast<String, String>(),
+        filename: filename,
+        onStatusChanged: (taskId, status) {
+          switch (status) {
+            case TaskStatus.complete:
+              showToast(
+                msg: "“$filename”下载完成，请于系统消息栏跳转",
+                duration: Duration(seconds: 5),
+              );
+              onSucceeded?.call();
+              break;
+            case TaskStatus.notFound:
+            case TaskStatus.failed:
+            case TaskStatus.waitingToRetry:
+              showToast(msg: "“$filename”下载失败，请重试下载");
+              onFailed?.call();
+            case TaskStatus.canceled:
+              showToast(msg: "“$filename”下载已取消");
+            case TaskStatus.paused:
+              showToast(msg: "“$filename”下载暂停");
+            default:
+              break;
+          }
+        },
+      );
+    } finally {
+      onFailed?.call();
+    }
   }
 
   static Future<void> checkAndUpdate(context) async {
