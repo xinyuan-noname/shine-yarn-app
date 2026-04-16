@@ -25,23 +25,22 @@ class SubjectStorage {
     } else {
       infoJson = [data.toJson()];
     }
-    await prefs.setString(
-      _currentDiySubjectInfoListKey,
-      jsonEncode(infoJson),
-    );
+    await prefs.setString(_currentDiySubjectInfoListKey, jsonEncode(infoJson));
   }
 
   static Future<void> removeCurrentDiySubjectInfo(String subjectName) async {
     final prefs = await SharedPreferences.getInstance();
     final result = prefs.getString(_currentDiySubjectInfoListKey);
     if (result == null) return;
-    
+
     final infoJson = jsonDecode(result);
     if (infoJson is List) {
-      final filteredList = infoJson.whereType<Map<String, dynamic>>().where((e) {
+      final filteredList = infoJson.whereType<Map<String, dynamic>>().where((
+        e,
+      ) {
         return e['subjectName'] != subjectName;
       }).toList();
-      
+
       if (filteredList.isEmpty) {
         await prefs.remove(_currentDiySubjectInfoListKey);
       } else {
@@ -59,8 +58,11 @@ class SubjectStorage {
     if (result == null) return [];
     final infoJson = jsonDecode(result);
     if (infoJson is List) {
+      diySubjectNameList.clear();
       return infoJson.whereType<Map<String, dynamic>>().map((e) {
-        return CourseData.fromJson(e);
+        final courseData = CourseData.fromJson(e);
+        diySubjectNameList.add(courseData.subjectName);
+        return courseData;
       }).toList();
     }
     return [];
@@ -73,8 +75,13 @@ class SubjectStorage {
 
   static Future<List<String>> getCurrentDiySubjectName() async {
     final result = await SubjectStorage.getCurrentDiySubjectInfo();
-    return result.map((info) => info.subjectName).toList();
+    final list = result.map((info) => info.subjectName).toList();
+    diySubjectNameList.clear();
+    diySubjectNameList.addAll(list);
+    return list;
   }
+
+  static final List<String> diySubjectNameList = [];
 
   // --- 日程信息 ---
   static Future<void> setCurrentScheduleInfo(String scheduleList) async {

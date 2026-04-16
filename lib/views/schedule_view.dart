@@ -402,13 +402,16 @@ class ScheduleView extends StatelessWidget {
                   HomePageRefreshNotifier.flagViewGoto(1);
                   HomePageRefreshNotifier.changeResource(name);
                 },
+                isDiy: SubjectStorage.diySubjectNameList.contains(
+                  scheduleItem.$1.subjectName,
+                ),
                 courseData: courseData,
               );
             },
             onLongPress: () async {
-              final diyubjectNameList =
-                  await SubjectStorage.getCurrentDiySubjectName();
-              if (diyubjectNameList.contains(scheduleItem.$1.subjectName)) {
+              if (SubjectStorage.diySubjectNameList.contains(
+                scheduleItem.$1.subjectName,
+              )) {
                 final data = await showCourseDataEditDialog(
                   context: context,
                   courseData: courseData,
