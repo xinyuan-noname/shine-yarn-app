@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shine/components/input.dart';
 import 'package:shine/models/course_data.dart';
+import 'package:shine/pages/home_page.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/storage/group_storage.dart';
+import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/message_utils.dart';
 
@@ -156,12 +158,19 @@ Future<void> showScheduleDialog({
           if (isDiy && courseData != null)
             TextButton(
               style: dialogButtonStyle,
-              onPressed: () {
+              onPressed: () async {
                 Navigator.of(context).pop();
-                showCourseDataEditDialog(
+                final newCourseData = await showCourseDataEditDialog(
                   context: context,
                   courseData: courseData,
                 );
+                if (newCourseData != null) {
+                  await SubjectStorage.removeCurrentDiySubjectInfo(
+                    courseAllName,
+                  );
+                  await SubjectStorage.addCurrentDiySubjectInfo(newCourseData);
+                  HomePageRefreshNotifier.refreshSchedule();
+                }
               },
               child: Text("编辑课程"),
             ),

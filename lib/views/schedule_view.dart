@@ -291,7 +291,7 @@ class ScheduleView extends StatelessWidget {
           border: Border(bottom: BorderSide(color: mainColorGrey20)),
         ),
       ),
-      onLongPress: () async {
+      onTap: () async {
         final data = await showCourseDataEditDialog(
           context: context,
           courseData: CourseData(
