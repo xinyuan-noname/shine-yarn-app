@@ -402,8 +402,9 @@ class ScheduleView extends StatelessWidget {
               );
             },
             onLongPress: () async {
-              if (scheduleItem.$1.courseType.contains("选修") ||
-                  scheduleItem.$1.courseType.contains("任修")) {
+              final diyubjectNameList =
+                  await SubjectStorage.getCurrentDiySubjectName();
+              if (diyubjectNameList.contains(scheduleItem.$1.subjectName)) {
                 final data = await showCourseDataEditDialog(
                   context: context,
                   courseData: subjectInfoList.firstWhere(

@@ -7,7 +7,6 @@ import 'package:shine/models/course_data.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/storage/group_storage.dart';
 import 'package:shine/theme.dart';
-import 'package:shine/utils/debouncer_utils.dart';
 import 'package:shine/utils/message_utils.dart';
 
 const dialogTitleStyle = TextStyle(
@@ -132,6 +131,8 @@ Future<void> showScheduleDialog({
               Text("教师：$teachers", style: dialogContentSmallStyle),
               SizedBox(height: 11),
               Text("上课地点：$location", style: dialogContentSmallStyle),
+              SizedBox(height: 11),
+              Text("学分：${courseInfo.credit}", style: dialogContentSmallStyle),
             ],
           ),
         ),
@@ -480,7 +481,7 @@ Future<CourseData?> showCourseDataEditDialog({
 
   // 时间安排列表（可变副本）
   final scheduleList = List<CourseSchedule>.from(courseData.schedule);
-  
+
   // 用于存储每个时间安排的控制器
   final weekdayControllers = <TextEditingController>[];
   final periodControllers = <TextEditingController>[];
@@ -489,8 +490,12 @@ Future<CourseData?> showCourseDataEditDialog({
 
   // 初始化控制器
   for (final schedule in scheduleList) {
-    weekdayControllers.add(TextEditingController(text: schedule.weekday.toString()));
-    periodControllers.add(TextEditingController(text: schedule.period.join(',')));
+    weekdayControllers.add(
+      TextEditingController(text: schedule.weekday.toString()),
+    );
+    periodControllers.add(
+      TextEditingController(text: schedule.period.join(',')),
+    );
     weeksControllers.add(TextEditingController(text: schedule.weeks.join(',')));
     locationControllers.add(TextEditingController(text: schedule.location));
   }
@@ -646,10 +651,18 @@ Future<CourseData?> showCourseDataEditDialog({
                                   location: '',
                                 ),
                               );
-                              weekdayControllers.add(TextEditingController(text: '1'));
-                              periodControllers.add(TextEditingController(text: '1'));
-                              weeksControllers.add(TextEditingController(text: '1'));
-                              locationControllers.add(TextEditingController(text: ''));
+                              weekdayControllers.add(
+                                TextEditingController(text: '1'),
+                              );
+                              periodControllers.add(
+                                TextEditingController(text: '1'),
+                              );
+                              weeksControllers.add(
+                                TextEditingController(text: '1'),
+                              );
+                              locationControllers.add(
+                                TextEditingController(text: ''),
+                              );
                             });
                           },
                         ),
@@ -688,10 +701,18 @@ Future<CourseData?> showCourseDataEditDialog({
                                       onPressed: () {
                                         setState(() {
                                           scheduleList.removeAt(index);
-                                          weekdayControllers.removeAt(index).dispose();
-                                          periodControllers.removeAt(index).dispose();
-                                          weeksControllers.removeAt(index).dispose();
-                                          locationControllers.removeAt(index).dispose();
+                                          weekdayControllers
+                                              .removeAt(index)
+                                              .dispose();
+                                          periodControllers
+                                              .removeAt(index)
+                                              .dispose();
+                                          weeksControllers
+                                              .removeAt(index)
+                                              .dispose();
+                                          locationControllers
+                                              .removeAt(index)
+                                              .dispose();
                                         });
                                       },
                                     ),
@@ -757,9 +778,11 @@ Future<CourseData?> showCourseDataEditDialog({
                     // 解析时间安排
                     final parsedSchedules = <CourseSchedule>[];
                     bool hasError = false;
-                    
+
                     for (int i = 0; i < scheduleList.length; i++) {
-                      final weekday = int.tryParse(weekdayControllers[i].text.trim());
+                      final weekday = int.tryParse(
+                        weekdayControllers[i].text.trim(),
+                      );
                       if (weekday == null || weekday < 1 || weekday > 7) {
                         hasError = true;
                         break;
@@ -802,12 +825,14 @@ Future<CourseData?> showCourseDataEditDialog({
                       }
                       weeks.sort();
 
-                      parsedSchedules.add(CourseSchedule(
-                        weekday: weekday,
-                        period: periods,
-                        weeks: weeks,
-                        location: locationControllers[i].text.trim(),
-                      ));
+                      parsedSchedules.add(
+                        CourseSchedule(
+                          weekday: weekday,
+                          period: periods,
+                          weeks: weeks,
+                          location: locationControllers[i].text.trim(),
+                        ),
+                      );
                     }
 
                     if (hasError) return;
