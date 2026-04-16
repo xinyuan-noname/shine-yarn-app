@@ -369,9 +369,10 @@ class Worker {
           }
         },
       );
-    } finally {
+    } catch(e) {
       onFailed?.call();
     }
+    return null;
   }
 
   static Future<void> checkAndUpdate(context) async {

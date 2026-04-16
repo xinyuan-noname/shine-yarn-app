@@ -480,6 +480,20 @@ Future<CourseData?> showCourseDataEditDialog({
 
   // 时间安排列表（可变副本）
   final scheduleList = List<CourseSchedule>.from(courseData.schedule);
+  
+  // 用于存储每个时间安排的控制器
+  final weekdayControllers = <TextEditingController>[];
+  final periodControllers = <TextEditingController>[];
+  final weeksControllers = <TextEditingController>[];
+  final locationControllers = <TextEditingController>[];
+
+  // 初始化控制器
+  for (final schedule in scheduleList) {
+    weekdayControllers.add(TextEditingController(text: schedule.weekday.toString()));
+    periodControllers.add(TextEditingController(text: schedule.period.join(',')));
+    weeksControllers.add(TextEditingController(text: schedule.weeks.join(',')));
+    locationControllers.add(TextEditingController(text: schedule.location));
+  }
 
   final completer = Completer<CourseData?>();
 
@@ -487,8 +501,6 @@ Future<CourseData?> showCourseDataEditDialog({
     context: context,
     barrierDismissible: false,
     builder: (BuildContext context) {
-      final debouncer = Debouncer(delay: Duration(milliseconds: 200));
-
       return StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
           return AlertDialog(
@@ -634,6 +646,10 @@ Future<CourseData?> showCourseDataEditDialog({
                                   location: '',
                                 ),
                               );
+                              weekdayControllers.add(TextEditingController(text: '1'));
+                              periodControllers.add(TextEditingController(text: '1'));
+                              weeksControllers.add(TextEditingController(text: '1'));
+                              locationControllers.add(TextEditingController(text: ''));
                             });
                           },
                         ),
@@ -645,7 +661,6 @@ Future<CourseData?> showCourseDataEditDialog({
                     else
                       ...scheduleList.asMap().entries.map((entry) {
                         final index = entry.key;
-                        final schedule = entry.value;
                         return Card(
                           color: mainColorPurple80,
                           margin: EdgeInsets.only(bottom: 8),
@@ -673,117 +688,35 @@ Future<CourseData?> showCourseDataEditDialog({
                                       onPressed: () {
                                         setState(() {
                                           scheduleList.removeAt(index);
+                                          weekdayControllers.removeAt(index).dispose();
+                                          periodControllers.removeAt(index).dispose();
+                                          weeksControllers.removeAt(index).dispose();
+                                          locationControllers.removeAt(index).dispose();
                                         });
                                       },
                                     ),
                                   ],
                                 ),
                                 SizedBox(height: 8),
-                                _buildScheduleFieldWithDebounce(
+                                _buildScheduleField(
                                   label: '星期',
-                                  initialValue: schedule.weekday.toString(),
-                                  onChanged: (value) {
-                                    debouncer.run(() {
-                                      final weekday = int.tryParse(value);
-                                      if (weekday != null &&
-                                          weekday >= 1 &&
-                                          weekday <= 7) {
-                                        setState(() {
-                                          scheduleList[index] = CourseSchedule(
-                                            weekday: weekday,
-                                            period: schedule.period,
-                                            weeks: schedule.weeks,
-                                            location: schedule.location,
-                                          );
-                                        });
-                                      }
-                                    });
-                                  },
+                                  controller: weekdayControllers[index],
                                   isNumber: true,
                                 ),
                                 SizedBox(height: 6),
-                                _buildScheduleFieldWithDebounce(
+                                _buildScheduleField(
                                   label: '节次（如：1,2）',
-                                  initialValue: '${schedule.period.join(',')},',
-                                  onChanged: (value) {
-                                    debouncer.run(() {
-                                      final periods = value
-                                          .split(',')
-                                          .map((e) => int.tryParse(e.trim()))
-                                          .where((e) => e != null)
-                                          .cast<int>()
-                                          .where((e) => e <= 10 && e >= 0)
-                                          .toList();
-                                      if (periods.isNotEmpty) {
-                                        setState(() {
-                                          scheduleList[index] = CourseSchedule(
-                                            weekday: schedule.weekday,
-                                            period: periods..sort(),
-                                            weeks: schedule.weeks,
-                                            location: schedule.location,
-                                          );
-                                        });
-                                      }
-                                    });
-                                  },
+                                  controller: periodControllers[index],
                                 ),
                                 SizedBox(height: 6),
-                                _buildScheduleFieldWithDebounce(
+                                _buildScheduleField(
                                   label: '周次（如：1,2,3-8）',
-                                  initialValue: '${schedule.weeks.join(',')},',
-                                  onChanged: (value) {
-                                    debouncer.run(() {
-                                      final weeks = <int>[];
-                                      for (final part in value.split(',')) {
-                                        final trimmed = part.trim();
-                                        if (trimmed.contains('-')) {
-                                          final range = trimmed.split('-');
-                                          final start = int.tryParse(range[0]);
-                                          final end = int.tryParse(range[1]);
-                                          if (start != null &&
-                                              end != null &&
-                                              start <= end) {
-                                            for (int i = start; i <= end; i++) {
-                                              weeks.add(i);
-                                            }
-                                          }
-                                        } else {
-                                          final week = int.tryParse(trimmed);
-                                          if (week != null &&
-                                              weeks.contains(week)) {
-                                            weeks.add(week);
-                                          }
-                                        }
-                                      }
-                                      if (weeks.isNotEmpty) {
-                                        setState(() {
-                                          scheduleList[index] = CourseSchedule(
-                                            weekday: schedule.weekday,
-                                            period: schedule.period,
-                                            weeks: weeks..sort(),
-                                            location: schedule.location,
-                                          );
-                                        });
-                                      }
-                                    });
-                                  },
+                                  controller: weeksControllers[index],
                                 ),
                                 SizedBox(height: 6),
-                                _buildScheduleFieldWithDebounce(
+                                _buildScheduleField(
                                   label: '地点',
-                                  initialValue: schedule.location,
-                                  onChanged: (value) {
-                                    debouncer.run(() {
-                                      setState(() {
-                                        scheduleList[index] = CourseSchedule(
-                                          weekday: schedule.weekday,
-                                          period: schedule.period,
-                                          weeks: schedule.weeks,
-                                          location: value,
-                                        );
-                                      });
-                                    });
-                                  },
+                                  controller: locationControllers[index],
                                 ),
                               ],
                             ),
@@ -797,8 +730,7 @@ Future<CourseData?> showCourseDataEditDialog({
             actions: [
               TextButton(
                 style: dialogButtonStyle,
-                onPressed: () {
-                  debouncer.dispose();
+                onPressed: () async {
                   Navigator.of(context).pop();
                   completer.complete(null);
                 },
@@ -806,8 +738,8 @@ Future<CourseData?> showCourseDataEditDialog({
               ),
               TextButton(
                 style: dialogButtonStyle,
-                onPressed: () {
-                  debouncer.dispose();
+                onPressed: () async {
+                  await Future.delayed(Duration(milliseconds: 300));
                   if (formKey.currentState!.validate()) {
                     // 解析教师列表
                     final teachers = teachersController.text
@@ -821,6 +753,64 @@ Future<CourseData?> showCourseDataEditDialog({
                     if (creditController.text.isNotEmpty) {
                       credit = double.tryParse(creditController.text);
                     }
+
+                    // 解析时间安排
+                    final parsedSchedules = <CourseSchedule>[];
+                    bool hasError = false;
+                    
+                    for (int i = 0; i < scheduleList.length; i++) {
+                      final weekday = int.tryParse(weekdayControllers[i].text.trim());
+                      if (weekday == null || weekday < 1 || weekday > 7) {
+                        hasError = true;
+                        break;
+                      }
+
+                      final periods = periodControllers[i].text
+                          .split(',')
+                          .map((e) => int.tryParse(e.trim()))
+                          .where((e) => e != null && e >= 0 && e <= 10)
+                          .cast<int>()
+                          .toList();
+                      if (periods.isEmpty) {
+                        hasError = true;
+                        break;
+                      }
+                      periods.sort();
+
+                      final weeks = <int>[];
+                      for (final part in weeksControllers[i].text.split(',')) {
+                        final trimmed = part.trim();
+                        if (trimmed.contains('-')) {
+                          final range = trimmed.split('-');
+                          final start = int.tryParse(range[0]);
+                          final end = int.tryParse(range[1]);
+                          if (start != null && end != null && start <= end) {
+                            for (int j = start; j <= end; j++) {
+                              weeks.add(j);
+                            }
+                          }
+                        } else {
+                          final week = int.tryParse(trimmed);
+                          if (week != null) {
+                            weeks.add(week);
+                          }
+                        }
+                      }
+                      if (weeks.isEmpty) {
+                        hasError = true;
+                        break;
+                      }
+                      weeks.sort();
+
+                      parsedSchedules.add(CourseSchedule(
+                        weekday: weekday,
+                        period: periods,
+                        weeks: weeks,
+                        location: locationControllers[i].text.trim(),
+                      ));
+                    }
+
+                    if (hasError) return;
 
                     // 创建更新后的基本信息
                     final updatedBasicInfo = CourseBasicInfo(
@@ -836,10 +826,10 @@ Future<CourseData?> showCourseDataEditDialog({
                           : semesterController.text.trim(),
                     );
 
-                    // 创建新的 CourseData，使用更新后的 schedule
+                    // 创建新的 CourseData
                     final updatedCourseData = CourseData(
                       basicInfo: updatedBasicInfo,
-                      schedule: scheduleList,
+                      schedule: parsedSchedules,
                     );
 
                     Navigator.of(context).pop();
@@ -864,14 +854,11 @@ Future<CourseData?> showCourseDataEditDialog({
 }
 
 // 辅助函数：构建带防抖的时间安排字段
-Widget _buildScheduleFieldWithDebounce({
+Widget _buildScheduleField({
   required String label,
-  required String initialValue,
-  required Function(String) onChanged,
+  required TextEditingController controller,
   bool isNumber = false,
 }) {
-  final controller = TextEditingController(text: initialValue);
-
   // 将光标移动到文本末尾
   WidgetsBinding.instance.addPostFrameCallback((_) {
     if (controller.text.isNotEmpty) {
@@ -896,6 +883,5 @@ Widget _buildScheduleFieldWithDebounce({
     ),
     keyboardType: isNumber ? TextInputType.number : TextInputType.text,
     inputFormatters: isNumber ? [FilteringTextInputFormatter.digitsOnly] : [],
-    onChanged: onChanged,
   );
 }

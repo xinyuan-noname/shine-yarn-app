@@ -197,10 +197,11 @@ class ScheduleView extends StatelessWidget {
           ),
         ),
       );
-    } finally {
+    } catch (e) {
       SubjectStorage.delCurrentDiySubjectInfo().then((_) {
         HomePageRefreshNotifier.refreshSchedule();
       });
+      return const Text("数据出错", style: viewEmptyTextStyle);
     }
   }
 
