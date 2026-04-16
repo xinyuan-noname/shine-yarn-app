@@ -111,6 +111,8 @@ Future<void> showScheduleDialog({
   ScheduleData? scheduleData,
   VoidCallback? onYes,
   String confirmText = '确定',
+  bool isDiy = false,
+  CourseData? courseData,
   required Function(String) onJump,
 }) async {
   final courseAllName = courseInfo.subjectName.replaceAll("实验", "");
@@ -142,14 +144,27 @@ Future<void> showScheduleDialog({
             onPressed: onYes ?? () => Navigator.of(context).pop(),
             child: Text("关闭"),
           ),
-          TextButton(
-            style: dialogButtonStyle,
-            onPressed: () {
-              Navigator.of(context).pop();
-              onJump(courseName);
-            },
-            child: Text("查看资源"),
-          ),
+          if (!isDiy)
+            TextButton(
+              style: dialogButtonStyle,
+              onPressed: () {
+                Navigator.of(context).pop();
+                onJump(courseName);
+              },
+              child: Text("查看资源"),
+            ),
+          if (isDiy && courseData != null)
+            TextButton(
+              style: dialogButtonStyle,
+              onPressed: () {
+                Navigator.of(context).pop();
+                showCourseDataEditDialog(
+                  context: context,
+                  courseData: courseData,
+                );
+              },
+              child: Text("编辑课程"),
+            ),
         ],
       );
     },

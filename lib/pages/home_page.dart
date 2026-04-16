@@ -124,6 +124,7 @@ class _HomePageState extends State<HomePage>
       setState(() {});
     };
     HomePageRefreshNotifier._refreshSchedule = () {
+      _loadScheduleData();
       _updateScheduleData();
     };
     _subscription = EventBus.stream.listen((event) {
@@ -275,6 +276,7 @@ class _HomePageState extends State<HomePage>
   Future<void> _loadScheduleData() async {
     _subjectInfo.clear();
     _subjectInfo.addAll(await SubjectStorage.getCurrentSubjectInfo());
+    _subjectInfo.addAll(await SubjectStorage.getCurrentDiySubjectInfo());
     _scheduleDataList.clear();
     _scheduleDataList.addAll(await SubjectStorage.getCurrentScheduleInfo());
   }

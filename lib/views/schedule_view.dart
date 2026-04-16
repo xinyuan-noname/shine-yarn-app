@@ -384,6 +384,9 @@ class ScheduleView extends StatelessWidget {
         }
         String courseName = _getCourseName(scheduleItem, mappedScheduleData);
         String location = _getLocation(scheduleItem, mappedScheduleData);
+        CourseData courseData = subjectInfoList.firstWhere(
+          (data) => data.subjectName == scheduleItem.$1.subjectName,
+        );
         children.add(
           InkWell(
             onTap: () {
@@ -399,6 +402,7 @@ class ScheduleView extends StatelessWidget {
                   HomePageRefreshNotifier.flagViewGoto(1);
                   HomePageRefreshNotifier.changeResource(name);
                 },
+                courseData: courseData,
               );
             },
             onLongPress: () async {
@@ -407,9 +411,7 @@ class ScheduleView extends StatelessWidget {
               if (diyubjectNameList.contains(scheduleItem.$1.subjectName)) {
                 final data = await showCourseDataEditDialog(
                   context: context,
-                  courseData: subjectInfoList.firstWhere(
-                    (data) => data.subjectName == scheduleItem.$1.subjectName,
-                  ),
+                  courseData: courseData,
                 );
                 if (data != null) {
                   await SubjectStorage.removeCurrentDiySubjectInfo(
