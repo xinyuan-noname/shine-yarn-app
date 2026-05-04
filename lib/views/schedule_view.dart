@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import 'package:shine/components/bottom_sheet.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
@@ -165,7 +166,7 @@ class ScheduleView extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            ..._genTableTitleList(),
+                            ..._genTableTitleList(context),
                           ],
                         ),
                         bottomLineSmall,
@@ -205,24 +206,29 @@ class ScheduleView extends StatelessWidget {
     }
   }
 
-  List<Widget> _genTableTitleList() {
+  List<Widget> _genTableTitleList(BuildContext context) {
     return getWeekDates(showDate)
         .map(
-          (d) => Container(
-            width: _cellWidth,
-            color: isToday(d) ? mainColorGreenBlue : Colors.transparent,
-            child: Column(
-              children: [
-                Text(getCnWeekDayName(d), style: _titleTextStyle),
-                Text(
-                  d.day.toString(),
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontFamily: "SmileySans",
-                    fontSize: 10,
+          (d) => GestureDetector(
+            onLongPress: () {
+              showSchedulePointDialog(context: context);
+            },
+            child: Container(
+              width: _cellWidth,
+              color: isToday(d) ? mainColorGreenBlue : Colors.transparent,
+              child: Column(
+                children: [
+                  Text(getCnWeekDayName(d), style: _titleTextStyle),
+                  Text(
+                    d.day.toString(),
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontFamily: "SmileySans",
+                      fontSize: 10,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         )

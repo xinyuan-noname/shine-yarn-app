@@ -5,6 +5,7 @@ class AppConfig {
   // $env:CMAKE_TLS_VERIFY=0          
   // flutter run -d windows --dart-define=PRODUCTION=true
   //flutter build web --release --dart-define=PRODUCTION=true
+  //flutter build web --release --dart-define=PRODUCTION=true --dart-define=FLUTTER_WEB_CANVASKIT_URL=https://cdn.jsdelivr.net/npm/canvaskit-wasm@0.28.1/bin/
   static const bool isProduction = bool.fromEnvironment(
     'PRODUCTION',
     defaultValue: false,

@@ -1,12 +1,15 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shine/components/input.dart';
 import 'package:shine/models/course_data.dart';
+import 'package:shine/models/schedule_point_data.dart';
 import 'package:shine/pages/home_page.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/storage/group_storage.dart';
+import 'package:shine/storage/schedule_point_storage.dart';
 import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/message_utils.dart';
@@ -388,6 +391,354 @@ Future<GroupStorageKey?> showGroupStorageKeySelectionDialog({
       (GroupStorageKey.admin, "所有管理员"),
     ],
     initialValue: initialValue,
+  );
+}
+
+Future<SchedulePointData?> showSchedulePointDialog({
+  required BuildContext context,
+}) async {
+  // 获取现有数据或初始化空数据
+  SchedulePointData? existingData = await SchedulePointStorage.getSchedulePointData();
+  
+  final bonusItems = existingData?.bonusItems.toList() ?? <SchedulePointItem>[];
+  final deductionItems = existingData?.deductionItems.toList() ?? <SchedulePointItem>[];
+
+
+  final completer = Completer<SchedulePointData?>();
+
+  final future = showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          return AlertDialog(
+            backgroundColor: mainColorPurple,
+            title: Text('评分项管理', style: dialogTitleStyle),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 加分项部分
+                    _buildSection(
+                      title: '加分项',
+                      items: bonusItems,
+                      isBonus: true,
+                      onAdd: () => _showAddItemDialog(
+                        context: context,
+                        setState: setState,
+                        items: bonusItems,
+                        isBonus: true,
+                        commonItems: [],
+                      ),
+                      onDelete: (index) {
+                        setState(() {
+                          bonusItems.removeAt(index);
+                        });
+                      },
+                      onReorder: (oldIndex, newIndex) {
+                        setState(() {
+                          if (newIndex > oldIndex) {
+                            newIndex -= 1;
+                          }
+                          final item = bonusItems.removeAt(oldIndex);
+                          bonusItems.insert(newIndex, item);
+                        });
+                      },
+                    ),
+                    SizedBox(height: 16),
+                    // 扣分项部分
+                    _buildSection(
+                      title: '扣分项（填写占比%）',
+                      items: deductionItems,
+                      isBonus: false,
+                      onAdd: () => _showAddItemDialog(
+                        context: context,
+                        setState: setState,
+                        items: deductionItems,
+                        isBonus: false,
+                        commonItems: [],
+                      ),
+                      onDelete: (index) {
+                        setState(() {
+                          deductionItems.removeAt(index);
+                        });
+                      },
+                      onReorder: (oldIndex, newIndex) {
+                        setState(() {
+                          if (newIndex > oldIndex) {
+                            newIndex -= 1;
+                          }
+                          final item = deductionItems.removeAt(oldIndex);
+                          deductionItems.insert(newIndex, item);
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  completer.complete(null);
+                },
+                child: Text('取消'),
+              ),
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () async {
+                  final data = SchedulePointData(
+                    bonusItems: bonusItems,
+                    deductionItems: deductionItems,
+                  );
+                  await SchedulePointStorage.saveSchedulePointData(data);
+                  Navigator.of(context).pop();
+                  completer.complete(data);
+                },
+                child: Text('保存'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+
+  future.then((_) {
+    if (completer.isCompleted) return;
+    completer.complete(null);
+  });
+
+  return completer.future;
+}
+
+/// 构建评分项区域
+Widget _buildSection({
+  required String title,
+  required List<SchedulePointItem> items,
+  required bool isBonus,
+  required VoidCallback onAdd,
+  required Function(int) onDelete,
+  required Function(int, int) onReorder,
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: dialogContentStyle.copyWith(fontWeight: FontWeight.bold)),
+          IconButton(
+            icon: Icon(Icons.add, size: 20, color: bgColorLight80),
+            onPressed: onAdd,
+            tooltip: '添加评分项',
+          ),
+        ],
+      ),
+      SizedBox(height: 8),
+      if (items.isEmpty)
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Text('暂无评分项', style: dialogContentSmallStyle),
+        )
+      else
+        ReorderableListView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: items.length,
+          onReorder: onReorder,
+          itemBuilder: (context, index) {
+            final item = items[index];
+            return Card(
+              key: ValueKey(item.id),
+              color: mainColorPurple80,
+              margin: EdgeInsets.only(bottom: 8),
+              child: ListTile(
+                leading: Icon(
+                  Icons.drag_indicator,
+                  color: bgColorLight60,
+                ),
+                title: Text(
+                  item.name,
+                  style: dialogContentSmallStyle.copyWith(color: bgColorLight80),
+                ),
+                subtitle: Text(
+                  isBonus 
+                    ? '权重: ${item.weight.toStringAsFixed(1)}'
+                    : '占比: ${item.weight.toStringAsFixed(1)}%',
+                  style: dialogContentSmallStyle.copyWith(color: bgColorLight60),
+                ),
+                trailing: IconButton(
+                  icon: Icon(Icons.delete, size: 18, color: Colors.red),
+                  onPressed: () => onDelete(index),
+                ),
+              ),
+            );
+          },
+        ),
+    ],
+  );
+}
+
+/// 显示添加评分项对话框
+void _showAddItemDialog({
+  required BuildContext context,
+  required StateSetter setState,
+  required List<SchedulePointItem> items,
+  required bool isBonus,
+  required List<String> commonItems,
+}) {
+  final nameController = TextEditingController();
+  final weightController = TextEditingController();
+  final formKey = GlobalKey<FormState>();
+  List<String> filteredSuggestions = [];
+  bool showSuggestions = false;
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter dialogSetState) {
+          return AlertDialog(
+            backgroundColor: mainColorPurple,
+            title: Text(isBonus ? '添加加分项' : '添加扣分项', style: dialogTitleStyle),
+            content: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 名称输入框（带自动补全）
+                  TextFormField(
+                    controller: nameController,
+                    style: dialogContentSmallStyle.copyWith(color: bgColorLight80),
+                    decoration: InputDecoration(
+                      labelText: '评分项名称',
+                      labelStyle: dialogContentSmallStyle,
+                      filled: true,
+                      fillColor: mainColorPurple90,
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(width: 1.0, color: Colors.grey),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      dialogSetState(() {
+                        if (value.isEmpty) {
+                          showSuggestions = false;
+                          filteredSuggestions = [];
+                        } else {
+                          filteredSuggestions = commonItems
+                              .where((item) => item.contains(value))
+                              .toList();
+                          showSuggestions = filteredSuggestions.isNotEmpty;
+                        }
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return '请输入评分项名称';
+                      }
+                      return null;
+                    },
+                  ),
+                  // 自动补全下拉列表
+                  if (showSuggestions)
+                    Container(
+                      constraints: BoxConstraints(maxHeight: 150),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: filteredSuggestions.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            title: Text(
+                              filteredSuggestions[index],
+                              style: dialogContentSmallStyle,
+                            ),
+                            onTap: () {
+                              nameController.text = filteredSuggestions[index];
+                              dialogSetState(() {
+                                showSuggestions = false;
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  SizedBox(height: 12),
+                  // 权重/占比输入框
+                  TextFormField(
+                    controller: weightController,
+                    style: dialogContentSmallStyle.copyWith(color: bgColorLight80),
+                    decoration: InputDecoration(
+                      labelText: isBonus ? '权重' : '占比(%)',
+                      labelStyle: dialogContentSmallStyle,
+                      filled: true,
+                      fillColor: mainColorPurple90,
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(width: 1.0, color: Colors.grey),
+                      ),
+                      suffixText: isBonus ? '' : '%',
+                    ),
+                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
+                    ],
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return isBonus ? '请输入权重' : '请输入占比';
+                      }
+                      final weight = double.tryParse(value);
+                      if (weight == null || weight <= 0) {
+                        return '请输入有效的数值';
+                      }
+                      if (!isBonus && weight > 100) {
+                        return '占比不能超过100%';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('取消'),
+              ),
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () {
+                  if (formKey.currentState!.validate()) {
+                    final name = nameController.text.trim();
+                    final weight = double.parse(weightController.text.trim());
+                    
+                    setState(() {
+                      items.add(SchedulePointItem(
+                        id: DateTime.now().millisecondsSinceEpoch.toString(),
+                        name: name,
+                        isBonus: isBonus,
+                        weight: weight,
+                      ));
+                    });
+                    
+                    Navigator.of(context).pop();
+                  }
+                },
+                child: Text('确定'),
+              ),
+            ],
+          );
+        },
+      );
+    },
   );
 }
 
