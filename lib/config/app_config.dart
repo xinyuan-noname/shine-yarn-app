@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 class AppConfig {
+  // flutter build apk --dart-define=PRODUCTION=true --release --target-platform android-arm64    
   // flutter run --dart-define=PRODUCTION=true
   // $env:CMAKE_TLS_VERIFY=0          
   // flutter run -d windows --dart-define=PRODUCTION=true
