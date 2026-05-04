@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart';
 import 'package:shine/components/bottom_sheet.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
@@ -212,6 +211,13 @@ class ScheduleView extends StatelessWidget {
           (d) => GestureDetector(
             onLongPress: () {
               showSchedulePointDialog(context: context);
+            },
+            onDoubleTap: () {
+              showDailySchedulePointDialog(
+                context: context,
+                date: d,
+                weekday: d.weekday,
+              );
             },
             child: Container(
               width: _cellWidth,

@@ -64,36 +64,40 @@ class SchedulePointItem {
   }
 }
 
-/// 某一天的评分数据（包含完成状态和得分）
+/// 某一天的评分数据（包含每个评分项的完成状态和总得分）
 class DailySchedulePoint {
-  final bool isCompleted; // 是否完成
-  final double score; // 得分
+  // 每个评分项的完成状态（key为评分项ID）
+  final Map<String, bool> itemCompletionStatus;
+  final double score; // 总得分
 
   const DailySchedulePoint({
-    this.isCompleted = false,
+    this.itemCompletionStatus = const {},
     this.score = 0.0,
   });
 
   factory DailySchedulePoint.fromMap(Map<String, dynamic> json) {
+    final statusMap = json['itemCompletionStatus'] as Map<String, dynamic>? ?? {};
     return DailySchedulePoint(
-      isCompleted: json['isCompleted'] as bool? ?? false,
+      itemCompletionStatus: statusMap.map(
+        (key, value) => MapEntry(key, value as bool),
+      ),
       score: (json['score'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'isCompleted': isCompleted,
+      'itemCompletionStatus': itemCompletionStatus,
       'score': score,
     };
   }
 
   DailySchedulePoint copyWith({
-    bool? isCompleted,
+    Map<String, bool>? itemCompletionStatus,
     double? score,
   }) {
     return DailySchedulePoint(
-      isCompleted: isCompleted ?? this.isCompleted,
+      itemCompletionStatus: itemCompletionStatus ?? this.itemCompletionStatus,
       score: score ?? this.score,
     );
   }

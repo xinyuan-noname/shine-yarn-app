@@ -1451,8 +1451,9 @@ Widget _buildScheduleField({
 /// 显示每日评分对话框（用于切换完成状态和查看得分）
 Future<bool?> showDailySchedulePointDialog({
   required BuildContext context,
-  required String dateKey, // 日期key，格式: "YYYY-MM-DD"
+  required DateTime date, // 日期
   required int weekday, // 星期几 (1-7)
+  double baseScore = 10.0, // 基准分，默认10分
 }) async {
   // 获取评分规则和数据
   SchedulePointData? existingData =
@@ -1464,10 +1465,16 @@ Future<bool?> showDailySchedulePointDialog({
   }
 
   final rule = existingData.weekRules[weekday - 1];
+  // 使用日期字符串作为Map的key（格式: YYYY-MM-DD）
+  final dateKey =
+      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   final dailyRecord =
       existingData.dailyRecords[dateKey] ?? DailySchedulePoint();
 
-  bool isCompleted = dailyRecord.isCompleted;
+  // 复制完成状态Map以便修改
+  Map<String, bool> itemCompletionStatus = Map<String, bool>.from(
+    dailyRecord.itemCompletionStatus,
+  );
   double score = dailyRecord.score;
 
   const weekNames = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
@@ -1493,45 +1500,6 @@ Future<bool?> showDailySchedulePointDialog({
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 完成状态切换
-                    Card(
-                      color: isCompleted
-                          ? mainColorGreenBlue30
-                          : mainColorPurple80,
-                      child: ListTile(
-                        leading: Icon(
-                          isCompleted
-                              ? Icons.check_circle
-                              : Icons.circle_outlined,
-                          color: isCompleted
-                              ? mainColorGreenBlue
-                              : bgColorLight60,
-                          size: 32,
-                        ),
-                        title: Text(
-                          '完成状态',
-                          style: dialogContentStyle.copyWith(
-                            color: bgColorLight80,
-                          ),
-                        ),
-                        subtitle: Text(
-                          isCompleted ? '已完成' : '未完成',
-                          style: dialogContentSmallStyle.copyWith(
-                            color: bgColorLight60,
-                          ),
-                        ),
-                        trailing: Switch(
-                          value: isCompleted,
-                          activeColor: mainColorGreenBlue,
-                          onChanged: (value) {
-                            setState(() {
-                              isCompleted = value;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 12),
                     // 得分显示
                     Card(
                       color: mainColorPurple80,
@@ -1541,7 +1509,7 @@ Future<bool?> showDailySchedulePointDialog({
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              '得分',
+                              '总得分',
                               style: dialogContentStyle.copyWith(
                                 color: bgColorLight80,
                               ),
@@ -1569,15 +1537,25 @@ Future<bool?> showDailySchedulePointDialog({
                         ),
                       ),
                       SizedBox(height: 8),
-                      ...rule.bonusItems
-                          .map(
-                            (item) => _buildPointItemCard(
-                              item: item,
-                              isBonus: true,
-                              isCompleted: isCompleted,
-                            ),
-                          )
-                          .toList(),
+                      ...rule.bonusItems.map(
+                        (item) => _buildPointItemCard(
+                          item: item,
+                          isBonus: true,
+                          isCompleted: itemCompletionStatus[item.id] ?? false,
+                          onToggle: () {
+                            setState(() {
+                              itemCompletionStatus[item.id] =
+                                  !(itemCompletionStatus[item.id] ?? false);
+                              // 重新计算得分
+                              score = _calculateScore(
+                                rule,
+                                itemCompletionStatus,
+                                baseScore,
+                              );
+                            });
+                          },
+                        ),
+                      ),
                       SizedBox(height: 12),
                     ],
                     // 扣分项列表
@@ -1590,15 +1568,25 @@ Future<bool?> showDailySchedulePointDialog({
                         ),
                       ),
                       SizedBox(height: 8),
-                      ...rule.deductionItems
-                          .map(
-                            (item) => _buildPointItemCard(
-                              item: item,
-                              isBonus: false,
-                              isCompleted: isCompleted,
-                            ),
-                          )
-                          .toList(),
+                      ...rule.deductionItems.map(
+                        (item) => _buildPointItemCard(
+                          item: item,
+                          isBonus: false,
+                          isCompleted: itemCompletionStatus[item.id] ?? false,
+                          onToggle: () {
+                            setState(() {
+                              itemCompletionStatus[item.id] =
+                                  !(itemCompletionStatus[item.id] ?? false);
+                              // 重新计算得分
+                              score = _calculateScore(
+                                rule,
+                                itemCompletionStatus,
+                                baseScore,
+                              );
+                            });
+                          },
+                        ),
+                      ),
                     ],
                   ],
                 ),
@@ -1623,13 +1611,13 @@ Future<bool?> showDailySchedulePointDialog({
                             existingData.dailyRecords,
                           )
                           ..[dateKey] = DailySchedulePoint(
-                            isCompleted: isCompleted,
+                            itemCompletionStatus: itemCompletionStatus,
                             score: score,
                           ),
                   );
                   await SchedulePointStorage.saveSchedulePointData(updatedData);
                   Navigator.of(context).pop();
-                  completer.complete(isCompleted);
+                  completer.complete(true);
                 },
                 child: Text('保存'),
               ),
@@ -1643,51 +1631,99 @@ Future<bool?> showDailySchedulePointDialog({
   return completer.future;
 }
 
+/// 计算得分（基准分可配置，加分项按权重比例分配基准分，扣分项按百分比扣除）
+double _calculateScore(
+  SchedulePointRule rule,
+  Map<String, bool> itemCompletionStatus,
+  double baseScore,
+) {
+  double totalScore = baseScore; // 使用传入的基准分
+
+  // 计算加分项总权重
+  double totalBonusWeight = rule.bonusItems.fold(
+    0.0,
+    (sum, item) => sum + item.weight,
+  );
+
+  // 计算加分项得分（按权重比例分配基准分）
+  if (totalBonusWeight > 0) {
+    for (final item in rule.bonusItems) {
+      if (itemCompletionStatus[item.id] ?? false) {
+        // 该项得分 = (该项权重 / 总权重) × 基准分
+        totalScore += (item.weight / totalBonusWeight) * baseScore;
+      }
+    }
+  }
+
+  // 计算扣分项（按基准分的百分比扣除）
+  for (final item in rule.deductionItems) {
+    if (itemCompletionStatus[item.id] ?? false) {
+      // 扣分 = 基准分 × (占比 / 100)
+      totalScore -= baseScore * (item.weight / 100.0);
+    }
+  }
+
+  return totalScore;
+}
+
 /// 构建评分项卡片
 Widget _buildPointItemCard({
   required SchedulePointItem item,
   required bool isBonus,
   required bool isCompleted,
+  required VoidCallback onToggle,
 }) {
-  return Card(
-    color: mainColorPurple90,
-    margin: EdgeInsets.only(bottom: 4),
-    child: Padding(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.name,
-                  style: dialogContentSmallStyle.copyWith(
-                    color: bgColorLight80,
-                    decoration: isCompleted && !isBonus
-                        ? TextDecoration.lineThrough
-                        : null,
-                  ),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  isBonus
-                      ? '权重: ${item.weight.toStringAsFixed(1)}'
-                      : '占比: ${item.weight.toStringAsFixed(1)}%',
-                  style: dialogContentSmallStyle.copyWith(
-                    color: bgColorLight60,
-                  ),
-                ),
-              ],
+  return GestureDetector(
+    onTap: onToggle,
+    child: Card(
+      color: isCompleted
+          ? (isBonus ? mainColorGreenBlue30 : mainColorRed50)
+          : mainColorPurple90,
+      margin: EdgeInsets.only(bottom: 4),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          children: [
+            Icon(
+              isCompleted ? Icons.check_circle : Icons.circle_outlined,
+              color: isCompleted
+                  ? (isBonus ? mainColorGreenBlue : Colors.red)
+                  : bgColorLight60,
+              size: 24,
             ),
-          ),
-          Icon(
-            isBonus ? Icons.add_circle : Icons.remove_circle,
-            color: isBonus ? mainColorGreenBlue : Colors.red,
-            size: 20,
-          ),
-        ],
+            SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.name,
+                    style: dialogContentSmallStyle.copyWith(
+                      color: bgColorLight80,
+                      decoration: isCompleted && !isBonus
+                          ? TextDecoration.lineThrough
+                          : null,
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    isBonus
+                        ? '权重: ${item.weight.toStringAsFixed(1)}'
+                        : '占比: ${item.weight.toStringAsFixed(1)}%',
+                    style: dialogContentSmallStyle.copyWith(
+                      color: bgColorLight60,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              isBonus ? Icons.add_circle : Icons.remove_circle,
+              color: isBonus ? mainColorGreenBlue : Colors.red,
+              size: 20,
+            ),
+          ],
+        ),
       ),
     ),
   );
@@ -1766,21 +1802,7 @@ Future<void> _showCopyToWeekDialog({
                         });
                       },
                     );
-                  }).toList(),
-                  SizedBox(height: 8),
-                  Container(
-                    padding: EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: mainColorPurple90,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      '提示：复制后会与目标星期的现有规则合并，不会覆盖原有规则。',
-                      style: dialogContentSmallStyle.copyWith(
-                        color: bgColorLight60,
-                      ),
-                    ),
-                  ),
+                  }),
                 ],
               ),
             ),
