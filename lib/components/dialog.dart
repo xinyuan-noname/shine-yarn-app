@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shine/components/input.dart';
+import 'package:shine/components/toast.dart';
 import 'package:shine/models/course_data.dart';
 import 'package:shine/models/schedule_point_data.dart';
 import 'package:shine/pages/home_page.dart';
@@ -398,27 +398,24 @@ Future<SchedulePointData?> showSchedulePointDialog({
   required BuildContext context,
 }) async {
   // 获取现有数据或初始化空数据
-  SchedulePointData? existingData = await SchedulePointStorage.getSchedulePointData();
-  
+  SchedulePointData? existingData =
+      await SchedulePointStorage.getSchedulePointData();
+
   // 初始化7天的评分规则（如果不存在）
-  final List<SchedulePointRule> weekRules = existingData?.weekRules.toList() ?? 
-    List.generate(7, (index) => SchedulePointRule(
-      weekday: index + 1,
-      bonusItems: [],
-      deductionItems: [],
-    ));
+  final List<SchedulePointRule> weekRules =
+      existingData?.weekRules.toList() ??
+      List.generate(
+        7,
+        (index) => SchedulePointRule(
+          weekday: index + 1,
+          bonusItems: [],
+          deductionItems: [],
+        ),
+      );
 
   final completer = Completer<SchedulePointData?>();
 
-  const weekNames = [
-    '星期一',
-    '星期二',
-    '星期三',
-    '星期四',
-    '星期五',
-    '星期六',
-    '星期日',
-  ];
+  const weekNames = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
 
   final future = showDialog(
     context: context,
@@ -428,7 +425,37 @@ Future<SchedulePointData?> showSchedulePointDialog({
         builder: (BuildContext context, StateSetter setState) {
           return AlertDialog(
             backgroundColor: mainColorPurple,
-            title: Text('评分规则管理', style: dialogTitleStyle),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('评分规则管理', style: dialogTitleStyle),
+                IconButton(
+                  icon: Icon(Icons.delete_sweep, size: 20, color: Colors.red),
+                  onPressed: () async {
+                    final confirmed = await showConfirmDialog(
+                      context: context,
+                      title: '清空所有评分规则',
+                      content: '确定要清空所有星期的评分规则吗？此操作不可恢复！',
+                    );
+                    if (confirmed) {
+                      setState(() {
+                        for (int i = 0; i < 7; i++) {
+                          weekRules[i] = SchedulePointRule(
+                            weekday: i + 1,
+                            bonusItems: [],
+                            deductionItems: [],
+                          );
+                        }
+                      });
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text('已清空所有评分规则')));
+                    }
+                  },
+                  tooltip: '清空所有评分规则',
+                ),
+              ],
+            ),
             content: SizedBox(
               width: double.maxFinite,
               child: SingleChildScrollView(
@@ -438,90 +465,176 @@ Future<SchedulePointData?> showSchedulePointDialog({
                   children: [
                     ...List.generate(7, (weekdayIndex) {
                       final rule = weekRules[weekdayIndex];
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            margin: EdgeInsets.only(top: weekdayIndex > 0 ? 16 : 0, bottom: 8),
-                            decoration: BoxDecoration(
-                              color: mainColorPurple70,
-                              borderRadius: BorderRadius.circular(4),
+                      return Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          border: BoxBorder.all(color: mainColorGreenBlue),
+                        ),
+                        margin: EdgeInsets.symmetric(vertical: 10),
+                        padding: EdgeInsets.all(3),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    margin: EdgeInsets.only(
+                                      top: weekdayIndex > 0 ? 16 : 0,
+                                      bottom: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: mainColorPurple70,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      weekNames[weekdayIndex],
+                                      style: dialogContentSmallStyle.copyWith(
+                                        fontSize: 20,
+                                        color: bgColorLight,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // 复制按钮
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.content_copy,
+                                    size: 18,
+                                    color: mainColorGreenBlue,
+                                  ),
+                                  onPressed: () async {
+                                    await _showCopyToWeekDialog(
+                                      context: context,
+                                      setState: setState,
+                                      sourceWeekIndex: weekdayIndex,
+                                      weekRules: weekRules,
+                                      weekNames: weekNames,
+                                    );
+                                  },
+                                  tooltip: '复制到其它星期',
+                                ),
+                                // 删除按钮
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.delete_outline,
+                                    size: 18,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () async {
+                                    final confirmed = await showConfirmDialog(
+                                      context: context,
+                                      title: '删除${weekNames[weekdayIndex]}评分规则',
+                                      content:
+                                          '确定要删除${weekNames[weekdayIndex]}的所有评分规则吗？',
+                                    );
+                                    if (confirmed) {
+                                      setState(() {
+                                        weekRules[weekdayIndex] =
+                                            SchedulePointRule(
+                                              weekday: weekdayIndex + 1,
+                                              bonusItems: [],
+                                              deductionItems: [],
+                                            );
+                                      });
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            '已删除${weekNames[weekdayIndex]}的评分规则',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  tooltip: '删除${weekNames[weekdayIndex]}的评分规则',
+                                ),
+                              ],
                             ),
-                            child: Text(
-                              weekNames[weekdayIndex],
-                              style: dialogContentSmallStyle.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: bgColorLight,
-                              ),
-                            ),
-                          ),
-                          // 加分项
-                          _buildSection(
-                            title: '加分项',
-                            items: rule.bonusItems,
-                            isBonus: true,
-                            onAdd: () => _showAddItemDialog(
-                              context: context,
-                              setState: setState,
+                            // 加分项
+                            _buildSection(
+                              title: '加分项',
                               items: rule.bonusItems,
                               isBonus: true,
-                              commonItems: [],
+                              onAdd: () => _showAddItemDialog(
+                                context: context,
+                                setState: setState,
+                                items: rule.bonusItems,
+                                isBonus: true,
+                                commonItems: [],
+                              ),
+                              onDelete: (index) {
+                                setState(() {
+                                  weekRules[weekdayIndex] = rule.copyWith(
+                                    bonusItems: List.from(rule.bonusItems)
+                                      ..removeAt(index),
+                                  );
+                                });
+                              },
+                              onReorder: (oldIndex, newIndex) {
+                                setState(() {
+                                  if (newIndex > oldIndex) {
+                                    newIndex -= 1;
+                                  }
+                                  final items = List<SchedulePointItem>.from(
+                                    rule.bonusItems,
+                                  );
+                                  final item = items.removeAt(oldIndex);
+                                  items.insert(newIndex, item);
+                                  weekRules[weekdayIndex] = rule.copyWith(
+                                    bonusItems: items,
+                                  );
+                                });
+                              },
                             ),
-                            onDelete: (index) {
-                              setState(() {
-                                weekRules[weekdayIndex] = rule.copyWith(
-                                  bonusItems: List.from(rule.bonusItems)..removeAt(index),
-                                );
-                              });
-                            },
-                            onReorder: (oldIndex, newIndex) {
-                              setState(() {
-                                if (newIndex > oldIndex) {
-                                  newIndex -= 1;
-                                }
-                                final items = List<SchedulePointItem>.from(rule.bonusItems);
-                                final item = items.removeAt(oldIndex);
-                                items.insert(newIndex, item);
-                                weekRules[weekdayIndex] = rule.copyWith(bonusItems: items);
-                              });
-                            },
-                          ),
-                          SizedBox(height: 8),
-                          // 扣分项
-                          _buildSection(
-                            title: '扣分项（填写占比%）',
-                            items: rule.deductionItems,
-                            isBonus: false,
-                            onAdd: () => _showAddItemDialog(
-                              context: context,
-                              setState: setState,
+                            SizedBox(height: 8),
+                            // 扣分项
+                            _buildSection(
+                              title: '扣分项',
                               items: rule.deductionItems,
                               isBonus: false,
-                              commonItems: [],
+                              onAdd: () => _showAddItemDialog(
+                                context: context,
+                                setState: setState,
+                                items: rule.deductionItems,
+                                isBonus: false,
+                                commonItems: [],
+                              ),
+                              onDelete: (index) {
+                                setState(() {
+                                  weekRules[weekdayIndex] = rule.copyWith(
+                                    deductionItems: List.from(
+                                      rule.deductionItems,
+                                    )..removeAt(index),
+                                  );
+                                });
+                              },
+                              onReorder: (oldIndex, newIndex) {
+                                setState(() {
+                                  if (newIndex > oldIndex) {
+                                    newIndex -= 1;
+                                  }
+                                  final items = List<SchedulePointItem>.from(
+                                    rule.deductionItems,
+                                  );
+                                  final item = items.removeAt(oldIndex);
+                                  items.insert(newIndex, item);
+                                  weekRules[weekdayIndex] = rule.copyWith(
+                                    deductionItems: items,
+                                  );
+                                });
+                              },
                             ),
-                            onDelete: (index) {
-                              setState(() {
-                                weekRules[weekdayIndex] = rule.copyWith(
-                                  deductionItems: List.from(rule.deductionItems)..removeAt(index),
-                                );
-                              });
-                            },
-                            onReorder: (oldIndex, newIndex) {
-                              setState(() {
-                                if (newIndex > oldIndex) {
-                                  newIndex -= 1;
-                                }
-                                final items = List<SchedulePointItem>.from(rule.deductionItems);
-                                final item = items.removeAt(oldIndex);
-                                items.insert(newIndex, item);
-                                weekRules[weekdayIndex] = rule.copyWith(deductionItems: items);
-                              });
-                            },
-                          ),
-                        ],
+                          ],
+                        ),
                       );
-                    }).toList(),
+                    }),
                   ],
                 ),
               ),
@@ -538,9 +651,7 @@ Future<SchedulePointData?> showSchedulePointDialog({
               TextButton(
                 style: dialogButtonStyle,
                 onPressed: () async {
-                  final data = SchedulePointData(
-                    weekRules: weekRules,
-                  );
+                  final data = SchedulePointData(weekRules: weekRules);
                   await SchedulePointStorage.saveSchedulePointData(data);
                   Navigator.of(context).pop();
                   completer.complete(data);
@@ -577,7 +688,10 @@ Widget _buildSection({
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: dialogContentStyle.copyWith(fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style: dialogContentStyle.copyWith(fontWeight: FontWeight.bold),
+          ),
           IconButton(
             icon: Icon(Icons.add, size: 20, color: bgColorLight80),
             onPressed: onAdd,
@@ -604,19 +718,20 @@ Widget _buildSection({
               color: mainColorPurple80,
               margin: EdgeInsets.only(bottom: 8),
               child: ListTile(
-                leading: Icon(
-                  Icons.drag_indicator,
-                  color: bgColorLight60,
-                ),
+                leading: Icon(Icons.drag_indicator, color: bgColorLight60),
                 title: Text(
                   item.name,
-                  style: dialogContentSmallStyle.copyWith(color: bgColorLight80),
+                  style: dialogContentSmallStyle.copyWith(
+                    color: bgColorLight80,
+                  ),
                 ),
                 subtitle: Text(
-                  isBonus 
-                    ? '权重: ${item.weight.toStringAsFixed(1)}'
-                    : '占比: ${item.weight.toStringAsFixed(1)}%',
-                  style: dialogContentSmallStyle.copyWith(color: bgColorLight60),
+                  isBonus
+                      ? '权重: ${item.weight.toStringAsFixed(1)}'
+                      : '占比: ${item.weight.toStringAsFixed(1)}%',
+                  style: dialogContentSmallStyle.copyWith(
+                    color: bgColorLight60,
+                  ),
                 ),
                 trailing: IconButton(
                   icon: Icon(Icons.delete, size: 18, color: Colors.red),
@@ -660,7 +775,9 @@ void _showAddItemDialog({
                   // 名称输入框（带自动补全）
                   TextFormField(
                     controller: nameController,
-                    style: dialogContentSmallStyle.copyWith(color: bgColorLight80),
+                    style: dialogContentSmallStyle.copyWith(
+                      color: bgColorLight80,
+                    ),
                     decoration: InputDecoration(
                       labelText: '评分项名称',
                       labelStyle: dialogContentSmallStyle,
@@ -717,7 +834,9 @@ void _showAddItemDialog({
                   // 权重/占比输入框
                   TextFormField(
                     controller: weightController,
-                    style: dialogContentSmallStyle.copyWith(color: bgColorLight80),
+                    style: dialogContentSmallStyle.copyWith(
+                      color: bgColorLight80,
+                    ),
                     decoration: InputDecoration(
                       labelText: isBonus ? '权重' : '占比(%)',
                       labelStyle: dialogContentSmallStyle,
@@ -728,9 +847,13 @@ void _showAddItemDialog({
                       ),
                       suffixText: isBonus ? '' : '%',
                     ),
-                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
+                      FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d+\.?\d{0,1}'),
+                      ),
                     ],
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -763,16 +886,18 @@ void _showAddItemDialog({
                   if (formKey.currentState!.validate()) {
                     final name = nameController.text.trim();
                     final weight = double.parse(weightController.text.trim());
-                    
+
                     setState(() {
-                      items.add(SchedulePointItem(
-                        id: DateTime.now().millisecondsSinceEpoch.toString(),
-                        name: name,
-                        isBonus: isBonus,
-                        weight: weight,
-                      ));
+                      items.add(
+                        SchedulePointItem(
+                          id: DateTime.now().millisecondsSinceEpoch.toString(),
+                          name: name,
+                          isBonus: isBonus,
+                          weight: weight,
+                        ),
+                      );
                     });
-                    
+
                     Navigator.of(context).pop();
                   }
                 },
@@ -1337,30 +1462,24 @@ Future<bool?> showDailySchedulePointDialog({
   required int weekday, // 星期几 (1-7)
 }) async {
   // 获取评分规则和数据
-  SchedulePointData? existingData = await SchedulePointStorage.getSchedulePointData();
-  
+  SchedulePointData? existingData =
+      await SchedulePointStorage.getSchedulePointData();
+
   if (existingData == null || weekday < 1 || weekday > 7) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("未找到评分规则")),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text("未找到评分规则")));
     return null;
   }
 
   final rule = existingData.weekRules[weekday - 1];
-  final dailyRecord = existingData.dailyRecords[dateKey] ?? DailySchedulePoint();
+  final dailyRecord =
+      existingData.dailyRecords[dateKey] ?? DailySchedulePoint();
 
   bool isCompleted = dailyRecord.isCompleted;
   double score = dailyRecord.score;
 
-  const weekNames = [
-    '星期一',
-    '星期二',
-    '星期三',
-    '星期四',
-    '星期五',
-    '星期六',
-    '星期日',
-  ];
+  const weekNames = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
 
   final completer = Completer<bool?>();
 
@@ -1372,7 +1491,10 @@ Future<bool?> showDailySchedulePointDialog({
         builder: (BuildContext context, StateSetter setState) {
           return AlertDialog(
             backgroundColor: mainColorPurple,
-            title: Text('${weekNames[weekday - 1]} 评分', style: dialogTitleStyle),
+            title: Text(
+              '${weekNames[weekday - 1]} 评分',
+              style: dialogTitleStyle,
+            ),
             content: SizedBox(
               width: double.maxFinite,
               child: SingleChildScrollView(
@@ -1382,20 +1504,30 @@ Future<bool?> showDailySchedulePointDialog({
                   children: [
                     // 完成状态切换
                     Card(
-                      color: isCompleted ? mainColorGreenBlue.withOpacity(0.3) : mainColorPurple80,
+                      color: isCompleted
+                          ? mainColorGreenBlue30
+                          : mainColorPurple80,
                       child: ListTile(
                         leading: Icon(
-                          isCompleted ? Icons.check_circle : Icons.circle_outlined,
-                          color: isCompleted ? mainColorGreenBlue : bgColorLight60,
+                          isCompleted
+                              ? Icons.check_circle
+                              : Icons.circle_outlined,
+                          color: isCompleted
+                              ? mainColorGreenBlue
+                              : bgColorLight60,
                           size: 32,
                         ),
                         title: Text(
                           '完成状态',
-                          style: dialogContentStyle.copyWith(color: bgColorLight80),
+                          style: dialogContentStyle.copyWith(
+                            color: bgColorLight80,
+                          ),
                         ),
                         subtitle: Text(
                           isCompleted ? '已完成' : '未完成',
-                          style: dialogContentSmallStyle.copyWith(color: bgColorLight60),
+                          style: dialogContentSmallStyle.copyWith(
+                            color: bgColorLight60,
+                          ),
                         ),
                         trailing: Switch(
                           value: isCompleted,
@@ -1419,7 +1551,9 @@ Future<bool?> showDailySchedulePointDialog({
                           children: [
                             Text(
                               '得分',
-                              style: dialogContentStyle.copyWith(color: bgColorLight80),
+                              style: dialogContentStyle.copyWith(
+                                color: bgColorLight80,
+                              ),
                             ),
                             Text(
                               score.toStringAsFixed(1),
@@ -1444,11 +1578,15 @@ Future<bool?> showDailySchedulePointDialog({
                         ),
                       ),
                       SizedBox(height: 8),
-                      ...rule.bonusItems.map((item) => _buildPointItemCard(
-                        item: item,
-                        isBonus: true,
-                        isCompleted: isCompleted,
-                      )).toList(),
+                      ...rule.bonusItems
+                          .map(
+                            (item) => _buildPointItemCard(
+                              item: item,
+                              isBonus: true,
+                              isCompleted: isCompleted,
+                            ),
+                          )
+                          .toList(),
                       SizedBox(height: 12),
                     ],
                     // 扣分项列表
@@ -1461,11 +1599,15 @@ Future<bool?> showDailySchedulePointDialog({
                         ),
                       ),
                       SizedBox(height: 8),
-                      ...rule.deductionItems.map((item) => _buildPointItemCard(
-                        item: item,
-                        isBonus: false,
-                        isCompleted: isCompleted,
-                      )).toList(),
+                      ...rule.deductionItems
+                          .map(
+                            (item) => _buildPointItemCard(
+                              item: item,
+                              isBonus: false,
+                              isCompleted: isCompleted,
+                            ),
+                          )
+                          .toList(),
                     ],
                   ],
                 ),
@@ -1485,11 +1627,14 @@ Future<bool?> showDailySchedulePointDialog({
                 onPressed: () async {
                   // 保存评分数据
                   final updatedData = existingData.copyWith(
-                    dailyRecords: Map<String, DailySchedulePoint>.from(existingData.dailyRecords)
-                      ..[dateKey] = DailySchedulePoint(
-                        isCompleted: isCompleted,
-                        score: score,
-                      ),
+                    dailyRecords:
+                        Map<String, DailySchedulePoint>.from(
+                            existingData.dailyRecords,
+                          )
+                          ..[dateKey] = DailySchedulePoint(
+                            isCompleted: isCompleted,
+                            score: score,
+                          ),
                   );
                   await SchedulePointStorage.saveSchedulePointData(updatedData);
                   Navigator.of(context).pop();
@@ -1529,15 +1674,19 @@ Widget _buildPointItemCard({
                   item.name,
                   style: dialogContentSmallStyle.copyWith(
                     color: bgColorLight80,
-                    decoration: isCompleted && !isBonus ? TextDecoration.lineThrough : null,
+                    decoration: isCompleted && !isBonus
+                        ? TextDecoration.lineThrough
+                        : null,
                   ),
                 ),
                 SizedBox(height: 2),
                 Text(
-                  isBonus 
-                    ? '权重: ${item.weight.toStringAsFixed(1)}'
-                    : '占比: ${item.weight.toStringAsFixed(1)}%',
-                  style: dialogContentSmallStyle.copyWith(color: bgColorLight60),
+                  isBonus
+                      ? '权重: ${item.weight.toStringAsFixed(1)}'
+                      : '占比: ${item.weight.toStringAsFixed(1)}%',
+                  style: dialogContentSmallStyle.copyWith(
+                    color: bgColorLight60,
+                  ),
                 ),
               ],
             ),
@@ -1550,5 +1699,173 @@ Widget _buildPointItemCard({
         ],
       ),
     ),
+  );
+}
+
+/// 显示复制到其它星期的对话框
+Future<void> _showCopyToWeekDialog({
+  required BuildContext context,
+  required StateSetter setState,
+  required int sourceWeekIndex,
+  required List<SchedulePointRule> weekRules,
+  required List<String> weekNames,
+}) async {
+  final sourceRule = weekRules[sourceWeekIndex];
+
+  // 检查源星期是否有规则
+  if (sourceRule.bonusItems.isEmpty && sourceRule.deductionItems.isEmpty) {
+    showToast(msg: '${weekNames[sourceWeekIndex]}没有评分规则，无法复制');
+    return;
+  }
+
+  // 选择目标星期（排除当前星期）
+  final List<int> targetOptions = List.generate(
+    7,
+    (i) => i,
+  ).where((i) => i != sourceWeekIndex).toList();
+  final Set<int> selectedTargets = {};
+
+  await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter dialogSetState) {
+          return AlertDialog(
+            backgroundColor: mainColorPurple,
+            title: Text('复制到其它星期', style: dialogTitleStyle),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '从 ${weekNames[sourceWeekIndex]} 复制到：',
+                    style: dialogContentSmallStyle.copyWith(
+                      color: bgColorLight80,
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  ...targetOptions.map((targetIndex) {
+                    return CheckboxListTile(
+                      value: selectedTargets.contains(targetIndex),
+                      title: Text(
+                        weekNames[targetIndex],
+                        style: dialogContentSmallStyle.copyWith(
+                          color: bgColorLight80,
+                        ),
+                      ),
+                      subtitle: Text(
+                        weekRules[targetIndex].bonusItems.isEmpty &&
+                                weekRules[targetIndex].deductionItems.isEmpty
+                            ? '（空）'
+                            : '（已有 ${weekRules[targetIndex].bonusItems.length} 个加分项，${weekRules[targetIndex].deductionItems.length} 个扣分项）',
+                        style: dialogContentSmallStyle.copyWith(
+                          color: bgColorLight60,
+                        ),
+                      ),
+                      activeColor: mainColorGreenBlue,
+                      onChanged: (bool? value) {
+                        dialogSetState(() {
+                          if (value == true) {
+                            selectedTargets.add(targetIndex);
+                          } else {
+                            selectedTargets.remove(targetIndex);
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                  SizedBox(height: 8),
+                  Container(
+                    padding: EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: mainColorPurple90,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      '提示：复制后会与目标星期的现有规则合并，不会覆盖原有规则。',
+                      style: dialogContentSmallStyle.copyWith(
+                        color: bgColorLight60,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('取消'),
+              ),
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () {
+                  if (selectedTargets.isEmpty) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('请至少选择一个目标星期')));
+                    return;
+                  }
+
+                  // 执行复制合并操作
+                  setState(() {
+                    for (final targetIndex in selectedTargets) {
+                      final targetRule = weekRules[targetIndex];
+
+                      // 合并加分项（避免重复）
+                      final mergedBonusItems = List<SchedulePointItem>.from(
+                        targetRule.bonusItems,
+                      );
+                      for (final item in sourceRule.bonusItems) {
+                        // 通过名称判断是否已存在
+                        if (!mergedBonusItems.any(
+                          (existing) => existing.name == item.name,
+                        )) {
+                          mergedBonusItems.add(item);
+                        }
+                      }
+
+                      // 合并扣分项（避免重复）
+                      final mergedDeductionItems = List<SchedulePointItem>.from(
+                        targetRule.deductionItems,
+                      );
+                      for (final item in sourceRule.deductionItems) {
+                        // 通过名称判断是否已存在
+                        if (!mergedDeductionItems.any(
+                          (existing) => existing.name == item.name,
+                        )) {
+                          mergedDeductionItems.add(item);
+                        }
+                      }
+
+                      // 更新目标星期的规则
+                      weekRules[targetIndex] = SchedulePointRule(
+                        weekday: targetIndex + 1,
+                        bonusItems: mergedBonusItems,
+                        deductionItems: mergedDeductionItems,
+                      );
+                    }
+                  });
+
+                  final targetNames = selectedTargets
+                      .map((i) => weekNames[i])
+                      .join('、');
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('已复制到 $targetNames')));
+
+                  Navigator.of(context).pop();
+                },
+                child: Text('确定复制'),
+              ),
+            ],
+          );
+        },
+      );
+    },
   );
 }
