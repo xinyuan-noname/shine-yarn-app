@@ -447,9 +447,7 @@ Future<SchedulePointData?> showSchedulePointDialog({
                           );
                         }
                       });
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text('已清空所有评分规则')));
+                      showToast(msg: '已清空所有评分规则');
                     }
                   },
                   tooltip: '清空所有评分规则',
@@ -470,7 +468,7 @@ Future<SchedulePointData?> showSchedulePointDialog({
                           borderRadius: BorderRadius.circular(5),
                           border: BoxBorder.all(color: mainColorGreenBlue),
                         ),
-                        margin: EdgeInsets.symmetric(vertical: 10),
+                        margin: EdgeInsets.symmetric(vertical: 5),
                         padding: EdgeInsets.all(3),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -542,14 +540,9 @@ Future<SchedulePointData?> showSchedulePointDialog({
                                               deductionItems: [],
                                             );
                                       });
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
+                                      showToast(
+                                        msg:
                                             '已删除${weekNames[weekdayIndex]}的评分规则',
-                                          ),
-                                        ),
                                       );
                                     }
                                   },
@@ -1466,9 +1459,7 @@ Future<bool?> showDailySchedulePointDialog({
       await SchedulePointStorage.getSchedulePointData();
 
   if (existingData == null || weekday < 1 || weekday > 7) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("未找到评分规则")));
+    showToast(msg: "未找到评分规则");
     return null;
   }
 
@@ -1805,9 +1796,7 @@ Future<void> _showCopyToWeekDialog({
                 style: dialogButtonStyle,
                 onPressed: () {
                   if (selectedTargets.isEmpty) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text('请至少选择一个目标星期')));
+                    showToast(msg: '请至少选择一个目标星期');
                     return;
                   }
 
@@ -1854,9 +1843,7 @@ Future<void> _showCopyToWeekDialog({
                   final targetNames = selectedTargets
                       .map((i) => weekNames[i])
                       .join('、');
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text('已复制到 $targetNames')));
+                  showToast(msg: '已复制到 $targetNames');
 
                   Navigator.of(context).pop();
                 },
