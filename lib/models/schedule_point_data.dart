@@ -64,20 +64,113 @@ class SchedulePointItem {
   }
 }
 
+/// 某一天的评分数据（包含完成状态和得分）
+class DailySchedulePoint {
+  final bool isCompleted; // 是否完成
+  final double score; // 得分
+
+  const DailySchedulePoint({
+    this.isCompleted = false,
+    this.score = 0.0,
+  });
+
+  factory DailySchedulePoint.fromMap(Map<String, dynamic> json) {
+    return DailySchedulePoint(
+      isCompleted: json['isCompleted'] as bool? ?? false,
+      score: (json['score'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'isCompleted': isCompleted,
+      'score': score,
+    };
+  }
+
+  DailySchedulePoint copyWith({
+    bool? isCompleted,
+    double? score,
+  }) {
+    return DailySchedulePoint(
+      isCompleted: isCompleted ?? this.isCompleted,
+      score: score ?? this.score,
+    );
+  }
+}
+
 class SchedulePointData {
+  // 星期一到星期日的评分规则（索引0=星期一，索引6=星期日）
+  final List<SchedulePointRule> weekRules;
+  
+  // 每日评分记录（key格式: "YYYY-MM-DD"，value为该天的评分数据）
+  final Map<String, DailySchedulePoint> dailyRecords;
+
+  const SchedulePointData({
+    required this.weekRules,
+    this.dailyRecords = const {},
+  });
+
+  factory SchedulePointData.fromMap(Map<String, dynamic> json) {
+    final weekRulesList = json['weekRules'] as List;
+    final dailyRecordsMap = json['dailyRecords'] as Map<String, dynamic>? ?? {};
+    
+    return SchedulePointData(
+      weekRules: weekRulesList
+          .map((e) => SchedulePointRule.fromMap(e as Map<String, dynamic>))
+          .toList(),
+      dailyRecords: dailyRecordsMap.map(
+        (key, value) => MapEntry(
+          key,
+          DailySchedulePoint.fromMap(value as Map<String, dynamic>),
+        ),
+      ),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'weekRules': weekRules.map((e) => e.toMap()).toList(),
+      'dailyRecords': dailyRecords.map(
+        (key, value) => MapEntry(key, value.toMap()),
+      ),
+    };
+  }
+
+  SchedulePointData copyWith({
+    List<SchedulePointRule>? weekRules,
+    Map<String, DailySchedulePoint>? dailyRecords,
+  }) {
+    return SchedulePointData(
+      weekRules: weekRules ?? this.weekRules,
+      dailyRecords: dailyRecords ?? this.dailyRecords,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'SchedulePointData(weekRules: $weekRules, dailyRecords: $dailyRecords)';
+  }
+}
+
+/// 某一天的评分规则
+class SchedulePointRule {
+  final int weekday; // 星期几 (1-7)
   final List<SchedulePointItem> bonusItems; // 加分项列表
   final List<SchedulePointItem> deductionItems; // 扣分项列表
 
-  const SchedulePointData({
+  const SchedulePointRule({
+    required this.weekday,
     required this.bonusItems,
     required this.deductionItems,
   });
 
-  factory SchedulePointData.fromMap(Map<String, dynamic> json) {
+  factory SchedulePointRule.fromMap(Map<String, dynamic> json) {
     final bonusList = json['bonusItems'] as List;
     final deductionList = json['deductionItems'] as List;
 
-    return SchedulePointData(
+    return SchedulePointRule(
+      weekday: json['weekday'] as int,
       bonusItems: bonusList
           .map((e) => SchedulePointItem.fromMap(e as Map<String, dynamic>))
           .toList(),
@@ -89,16 +182,19 @@ class SchedulePointData {
 
   Map<String, dynamic> toMap() {
     return {
+      'weekday': weekday,
       'bonusItems': bonusItems.map((e) => e.toMap()).toList(),
       'deductionItems': deductionItems.map((e) => e.toMap()).toList(),
     };
   }
 
-  SchedulePointData copyWith({
+  SchedulePointRule copyWith({
+    int? weekday,
     List<SchedulePointItem>? bonusItems,
     List<SchedulePointItem>? deductionItems,
   }) {
-    return SchedulePointData(
+    return SchedulePointRule(
+      weekday: weekday ?? this.weekday,
       bonusItems: bonusItems ?? this.bonusItems,
       deductionItems: deductionItems ?? this.deductionItems,
     );
@@ -106,6 +202,6 @@ class SchedulePointData {
 
   @override
   String toString() {
-    return 'SchedulePointData(bonusItems: $bonusItems, deductionItems: $deductionItems)';
+    return 'SchedulePointRule(weekday: $weekday, bonusItems: $bonusItems, deductionItems: $deductionItems)';
   }
 }
