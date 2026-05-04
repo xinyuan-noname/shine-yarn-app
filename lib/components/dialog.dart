@@ -1632,19 +1632,12 @@ Future<bool?> showDailySchedulePointDialog({
 }
 
 /// 计算得分（基准分可配置，加分项按权重比例分配基准分，扣分项按百分比扣除）
-double _calculateScore(
-  SchedulePointRule rule,
-  Map<String, bool> itemCompletionStatus,
-  double baseScore,
-) {
-  double totalScore = baseScore; // 使用传入的基准分
-
+double _calculateScore(SchedulePointRule rule, Map<String, bool> itemCompletionStatus, double baseScore) {
+  double totalScore = 0.0; // 初始为0分
+  
   // 计算加分项总权重
-  double totalBonusWeight = rule.bonusItems.fold(
-    0.0,
-    (sum, item) => sum + item.weight,
-  );
-
+  double totalBonusWeight = rule.bonusItems.fold(0.0, (sum, item) => sum + item.weight);
+  
   // 计算加分项得分（按权重比例分配基准分）
   if (totalBonusWeight > 0) {
     for (final item in rule.bonusItems) {
@@ -1654,7 +1647,7 @@ double _calculateScore(
       }
     }
   }
-
+  
   // 计算扣分项（按基准分的百分比扣除）
   for (final item in rule.deductionItems) {
     if (itemCompletionStatus[item.id] ?? false) {
@@ -1662,7 +1655,7 @@ double _calculateScore(
       totalScore -= baseScore * (item.weight / 100.0);
     }
   }
-
+  
   return totalScore;
 }
 
