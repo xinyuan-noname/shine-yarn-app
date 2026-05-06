@@ -561,6 +561,8 @@ Future<SchedulePointData?> showSchedulePointDialog({
                                 items: rule.bonusItems,
                                 isBonus: true,
                                 commonItems: [],
+                                weekRules: weekRules,
+                                weekdayIndex: weekdayIndex,
                               ),
                               onDelete: (index) {
                                 setState(() {
@@ -598,6 +600,8 @@ Future<SchedulePointData?> showSchedulePointDialog({
                                 items: rule.deductionItems,
                                 isBonus: false,
                                 commonItems: [],
+                                weekRules: weekRules,
+                                weekdayIndex: weekdayIndex,
                               ),
                               onDelete: (index) {
                                 setState(() {
@@ -745,12 +749,16 @@ void _showAddItemDialog({
   required List<SchedulePointItem> items,
   required bool isBonus,
   required List<String> commonItems,
+  required List<SchedulePointRule> weekRules,
+  required int weekdayIndex,
 }) {
   final nameController = TextEditingController();
   final weightController = TextEditingController();
   final formKey = GlobalKey<FormState>();
   List<String> filteredSuggestions = [];
   bool showSuggestions = false;
+  // 用于存储选中的星期（默认包含当前星期）
+  Set<int> selectedWeekdays = {weekdayIndex};
 
   showDialog(
     context: context,
@@ -880,16 +888,46 @@ void _showAddItemDialog({
                     final name = nameController.text.trim();
                     final weight = double.parse(weightController.text.trim());
 
+                    // 创建新的评分项
+                    final newItem = SchedulePointItem(
+                      id: DateTime.now().millisecondsSinceEpoch.toString(),
+                      name: name,
+                      isBonus: isBonus,
+                      weight: weight,
+                    );
+
+                    // 添加到选中的星期
                     setState(() {
-                      items.add(
-                        SchedulePointItem(
-                          id: DateTime.now().millisecondsSinceEpoch.toString(),
-                          name: name,
-                          isBonus: isBonus,
-                          weight: weight,
-                        ),
-                      );
+                      for (final targetWeekdayIndex in selectedWeekdays) {
+                        final targetRule = weekRules[targetWeekdayIndex];
+                        if (isBonus) {
+                          // 检查是否已存在同名项
+                          if (!targetRule.bonusItems.any(
+                            (existing) => existing.name == name,
+                          )) {
+                            weekRules[targetWeekdayIndex] = targetRule.copyWith(
+                              bonusItems: List.from(targetRule.bonusItems)
+                                ..add(newItem),
+                            );
+                          }
+                        } else {
+                          // 检查是否已存在同名项
+                          if (!targetRule.deductionItems.any(
+                            (existing) => existing.name == name,
+                          )) {
+                            weekRules[targetWeekdayIndex] = targetRule.copyWith(
+                              deductionItems: List.from(targetRule.deductionItems)
+                                ..add(newItem),
+                            );
+                          }
+                        }
+                      }
                     });
+
+                    final targetNames = selectedWeekdays
+                        .map((i) => ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'][i])
+                        .join('、');
+                    showToast(msg: '已添加到 $targetNames');
 
                     Navigator.of(context).pop();
                   }
@@ -1738,12 +1776,10 @@ Future<void> _showCopyToWeekDialog({
     return;
   }
 
-  // 选择目标星期（排除当前星期）
-  final List<int> targetOptions = List.generate(
-    7,
-    (i) => i,
-  ).where((i) => i != sourceWeekIndex).toList();
-  final Set<int> selectedTargets = {};
+  // 选择目标星期（包含当前星期）
+  final List<int> targetOptions = List.generate(7, (i) => i);
+  // 默认包含当前编辑的星期索引
+  final Set<int> selectedTargets = {sourceWeekIndex};
 
   await showDialog(
     context: context,
@@ -1863,6 +1899,108 @@ Future<void> _showCopyToWeekDialog({
                   Navigator.of(context).pop();
                 },
                 child: Text('确定复制'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
+
+/// 显示添加到特定星期的对话框
+Future<void> _showAddToWeekDialog({
+  required BuildContext context,
+  required StateSetter setState,
+  required String name,
+  required double weight,
+  required bool isBonus,
+  required List<SchedulePointRule> weekRules,
+  required List<String> weekNames,
+}) async {
+  // 选择目标星期（包含当前星期）
+  final List<int> targetOptions = List.generate(7, (i) => i);
+  // 默认包含当前编辑的星期索引
+  final Set<int> selectedWeekdays = {};
+
+  await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter dialogSetState) {
+          return AlertDialog(
+            backgroundColor: mainColorPurple,
+            title: Text('添加到特定星期', style: dialogTitleStyle),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '添加到：',
+                    style: dialogContentSmallStyle.copyWith(
+                      color: bgColorLight80,
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  ...targetOptions.map((targetIndex) {
+                    return CheckboxListTile(
+                      value: selectedWeekdays.contains(targetIndex),
+                      title: Text(
+                        weekNames[targetIndex],
+                        style: dialogContentSmallStyle.copyWith(
+                          color: bgColorLight80,
+                        ),
+                      ),
+                      subtitle: Text(
+                        weekRules[targetIndex].bonusItems.isEmpty &&
+                                weekRules[targetIndex].deductionItems.isEmpty
+                            ? '（空）'
+                            : '（已有 ${weekRules[targetIndex].bonusItems.length} 个加分项，${weekRules[targetIndex].deductionItems.length} 个扣分项）',
+                        style: dialogContentSmallStyle.copyWith(
+                          color: bgColorLight60,
+                        ),
+                      ),
+                      activeColor: mainColorGreenBlue,
+                      onChanged: (bool? value) {
+                        dialogSetState(() {
+                          if (value == true) {
+                            selectedWeekdays.add(targetIndex);
+                          } else {
+                            selectedWeekdays.remove(targetIndex);
+                          }
+                        });
+                      },
+                    );
+                  }),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('取消'),
+              ),
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () {
+                  if (selectedWeekdays.isEmpty) {
+                    showToast(msg: '请至少选择一个目标星期');
+                    return;
+                  }
+
+                  final targetNames = selectedWeekdays
+                      .map((i) => ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'][i])
+                      .join('、');
+                  showToast(msg: '已添加到 $targetNames');
+
+                  Navigator.of(context).pop();
+                },
+                child: Text('确定添加'),
               ),
             ],
           );
