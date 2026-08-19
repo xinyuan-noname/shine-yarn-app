@@ -152,6 +152,18 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
 
   _TransformEntry? _matchInput(String raw) {
     final x = _normalize(raw);
+    if (x.startsWith('-')) {
+      final base = _matchInput(x.substring(1));
+      if (base != null) {
+        return _scaled(base, '-1');
+      }
+    }
+    if (x.startsWith('+')) {
+      final base = _matchInput(x.substring(1));
+      if (base != null) {
+        return base;
+      }
+    }
     final coefMatch = RegExp(r'^([0-9.]+)\*?(.*)$').firstMatch(x);
     if (coefMatch != null) {
       final coef = coefMatch.group(1)!;
@@ -212,7 +224,7 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
   }
 
   _TransformEntry? _matchDiscrete(String x) {
-    if (x == 'δ[n]' || x == 'dirac[n]' || x == 'impulse[n]') {
+    if (x == 'δ[n]' || x == 'dirac[n]' || x == 'impulse[n]' || x == 'delta[n]') {
       return _TransformEntry(
         name: 'δ[n]',
         category: '离散',
@@ -298,9 +310,9 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
         name: '$a^n·sin($w·n)·u[n]',
         category: '离散',
         timeDomain: '$a^n·sin($w·n)·u[n]',
-        fourier: 'DTFT = $a·sin($w)·e^(-jω)/(1 - 2$a·cos($w)·e^(-jω) + $a²·e^(-j2ω))',
+        fourier: 'DTFT = $a·sin($w)·e^(-jω)/(1 - 2·$a·cos($w)·e^(-jω) + $a²·e^(-j2ω))',
         laplace: '不适用（离散信号）',
-        zTransform: 'F(z) = $a·z·sin($w)/(z² - 2$a·z·cos($w) + $a²)',
+        zTransform: 'F(z) = $a·z·sin($w)/(z² - 2·$a·z·cos($w) + $a²)',
         note: '收敛域 |z| > |$a|',
       );
     }
@@ -312,9 +324,9 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
         name: '$a^n·cos($w·n)·u[n]',
         category: '离散',
         timeDomain: '$a^n·cos($w·n)·u[n]',
-        fourier: 'DTFT = (1 - $a·cos($w)·e^(-jω))/(1 - 2$a·cos($w)·e^(-jω) + $a²·e^(-j2ω))',
+        fourier: 'DTFT = (1 - $a·cos($w)·e^(-jω))/(1 - 2·$a·cos($w)·e^(-jω) + $a²·e^(-j2ω))',
         laplace: '不适用（离散信号）',
-        zTransform: 'F(z) = z(z - $a·cos($w))/(z² - 2$a·z·cos($w) + $a²)',
+        zTransform: 'F(z) = z(z - $a·cos($w))/(z² - 2·$a·z·cos($w) + $a²)',
         note: '收敛域 |z| > |$a|',
       );
     }
@@ -322,7 +334,7 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
   }
 
   _TransformEntry? _matchContinuous(String x) {
-    if (x == 'δ(t)' || x == 'dirac(t)' || x == 'impulse(t)') {
+    if (x == 'δ(t)' || x == 'dirac(t)' || x == 'impulse(t)' || x == 'delta(t)') {
       return _TransformEntry(
         name: 'δ(t)',
         category: '连续',
@@ -332,15 +344,15 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
         zTransform: '不适用（连续信号）',
       );
     }
-    final diracShift = RegExp(r'^(?:δ|dirac|impulse)\(t-([0-9.]+)\)$').firstMatch(x);
+    final diracShift = RegExp(r'^(?:δ|dirac|impulse|delta)\(t-([0-9.]+)\)$').firstMatch(x);
     if (diracShift != null) {
       final t0 = diracShift.group(1)!;
       return _TransformEntry(
         name: 'δ(t-$t0)',
         category: '连续',
         timeDomain: 'δ(t-$t0)',
-        fourier: 'F(jω) = e^(-jω$t0)',
-        laplace: 'F(s) = e^(-s$t0)',
+        fourier: 'F(jω) = e^(-jω·$t0)',
+        laplace: 'F(s) = e^(-s·$t0)',
         zTransform: '不适用（连续信号）',
         note: '时移性质',
       );
@@ -363,8 +375,8 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
         name: 'u(t-$t0)',
         category: '连续',
         timeDomain: 'u(t-$t0)',
-        fourier: 'F(jω) = e^(-jω$t0)·(πδ(ω) + 1/(jω))',
-        laplace: 'F(s) = e^(-s$t0)/s',
+        fourier: 'F(jω) = e^(-jω·$t0)·(πδ(ω) + 1/(jω))',
+        laplace: 'F(s) = e^(-s·$t0)/s',
         zTransform: '不适用（连续信号）',
         note: '时移性质',
       );
@@ -386,7 +398,7 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
         name: 't^$n·u(t)',
         category: '连续',
         timeDomain: 't^$n·u(t)',
-        fourier: 'F(jω) = n!/(jω)^${int.parse(n) + 1}（含冲激项）',
+        fourier: 'F(jω) = ${_factorial(int.parse(n))}/(jω)^${int.parse(n) + 1}（含冲激项）',
         laplace: 'F(s) = ${_factorial(int.parse(n))}/s^${int.parse(n) + 1}',
         zTransform: '不适用（连续信号）',
       );
@@ -475,11 +487,15 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
       final t = rect.group(1);
       final tStr = t ?? '1';
       return _TransformEntry(
-        name: 'rect(t/${t == null ? 'T' : tStr})',
+        name: t == null ? 'rect(t)' : 'rect(t/$tStr)',
         category: '连续',
-        timeDomain: 'rect(t/${t == null ? 'T' : tStr})',
-        fourier: 'F(jω) = $tStr·Sa(ω$tStr/2)',
-        laplace: 'F(s) = (e^(s$tStr/2) - e^(-s$tStr/2))/s',
+        timeDomain: t == null ? 'rect(t)' : 'rect(t/$tStr)',
+        fourier: tStr == '1'
+              ? 'F(jω) = Sa(ω/2)'
+              : 'F(jω) = $tStr·Sa(ω·$tStr/2)',
+        laplace: tStr == '1'
+              ? 'F(s) = (e^(s/2) - e^(-s/2))/s'
+              : 'F(s) = (e^(s$tStr/2) - e^(-s$tStr/2))/s',
         zTransform: '不适用（连续信号）',
       );
     }
@@ -493,7 +509,7 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
         zTransform: '不适用（连续信号）',
       );
     }
-    if (x == 'e^(-t^2)' || x == 'gaussian(t)') {
+    if (x == 'e^(-t^2)' || x == 'e^(-t²)' || x == 'gaussian(t)' || x == 'exp(-t^2)' || x == 'exp(-t²)') {
       return _TransformEntry(
         name: 'e^(-t²)',
         category: '连续',
@@ -656,7 +672,7 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
         gradient: whiteLinearGradient,
       ),
       child: const Text(
-        '说明：本工具面向电子、通信专业学生，整理常见连续与离散信号的傅里叶变换、'
+        '说明：本工具面向电子、通信专业学生，支持输入常见函数并查看其傅里叶变换、'
         '拉普拉斯变换和 z 变换。离散信号默认给出 DTFT 与 z 变换；'
         '连续信号默认给出傅里叶变换与拉普拉斯变换。',
         style: TextStyle(fontSize: 13, height: 1.5, color: Colors.black87),
