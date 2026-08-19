@@ -15,6 +15,7 @@ import 'package:shine/pages/task_vote_page.dart';
 import 'package:shine/pages/to_do_page.dart';
 import 'package:shine/pages/tool_convert_to_pdf_page.dart';
 import 'package:shine/pages/tool_function_transformer_page.dart';
+import 'package:shine/pages/tool_encoder_page.dart';
 import 'package:shine/pages/tool_karnaugh_map_page.dart';
 import 'package:shine/pages/view_image_page.dart';
 import 'package:shine/pages/view_pdf_page.dart';
@@ -37,6 +38,7 @@ final Map<String, WidgetBuilder> appRouters = {
   '/tool/convert/pdf': (_) => ToolConvertToPdfPage(),
     '/tool/karnaugh': (_) => const ToolKarnaughMapPage(),
     '/tool/function_transformer': (_) => const ToolFunctionTransformerPage(),
+    '/tool/encoder': (_) => const ToolEncoderPage(),
   '/to_do': (_) => ToDoPage(),
   "/notice/upload": (_) => NoticeUploadPage(),
 };

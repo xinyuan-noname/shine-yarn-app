@@ -615,6 +615,52 @@ class FlagView extends StatelessWidget {
                           ),
                         ),
                       ),
+                      GestureDetector(
+                        onTap: () {
+                          globalNavigatorKey.currentState?.pushNamed(
+                            '/tool/encoder',
+                          );
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            gradient: purpleLinearGradient,
+                            border: Border.all(color: mainColorGreenBlue),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey,
+                                spreadRadius: 1,
+                                blurRadius: 3,
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(6),
+                                  gradient: blueLinearGradient80,
+                                ),
+                                child: const Icon(
+                                  Icons.code,
+                                  size: largeIconSize,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const Text(
+                                '编码器',
+                                style: TextStyle(
+                                  fontFamily: "SmileySans",
+                                  fontSize: 12,
+                                  color: bgColorLight,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                   ],
                 ),
             ],
