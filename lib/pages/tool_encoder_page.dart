@@ -77,8 +77,8 @@ class _ToolEncoderPageState extends State<ToolEncoderPage> {
                   value: item.id,
                   child: Text(
                     '${item.category} · ${item.name}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    
+                    
                   ),
                 ),
             ],
@@ -130,7 +130,11 @@ class _ToolEncoderPageState extends State<ToolEncoderPage> {
           compute: _computeModulation,
         );
       case 'cyclic':
-        return _buildCyclicCard();
+        return _buildInteractiveCard(
+            title: '循环码 (7,4)',
+            hint: '输入4位信息，例如 1010',
+            compute: _computeCyclic,
+          );
       case 'conv':
         return _buildConvolutionalCard();
       default:
@@ -279,7 +283,7 @@ class _ToolEncoderPageState extends State<ToolEncoderPage> {
         gradient: whiteLinearGradient,
       ),
       child: const Text(
-        '说明：本工具面向通信专业学生，涵盖 PCM、信源编码、信道编码、线路编码和数字调制。'
+        '说明：本工具涵盖 PCM、信源编码、信道编码、线路编码和数字调制。'
         '可输入参数实时计算，也可查看原理说明。',
         style: TextStyle(fontSize: 13, height: 1.5, color: Colors.black87),
       ),
@@ -486,6 +490,34 @@ class _ToolEncoderPageState extends State<ToolEncoderPage> {
   }
 
   bool _isPowerOfTwo(int x) => x > 0 && (x & (x - 1)) == 0;
+
+  String _computeCyclic(String raw) {
+    final input = raw.trim().replaceAll(' ', '');
+    if (!RegExp(r'^[01]{4}$').hasMatch(input)) {
+      return '请输入4位信息，例如 1010';
+    }
+    final message = input.split('').map(int.parse).toList();
+    const generator = [1, 0, 1, 1]; // g(x) = x^3 + x + 1
+    final dividend = [...message, 0, 0, 0];
+    final remainder = _polyMod(dividend, generator);
+    final code = [...message, ...remainder];
+    return '生成多项式：g(x) = x³ + x + 1\n'
+        '余式：${remainder.join()}\n'
+        '循环码(7,4)：${code.join()}';
+  }
+
+  List<int> _polyMod(List<int> data, List<int> generator) {
+    final work = List<int>.from(data);
+    for (var i = 0; i <= work.length - generator.length; i++) {
+      if (work[i] == 1) {
+        for (var j = 0; j < generator.length; j++) {
+          work[i + j] ^= generator[j];
+        }
+      }
+    }
+    return work.sublist(work.length - generator.length + 1);
+  }
+
 
   String _computeLineCodes(String raw) {
     final input = raw.trim().replaceAll(' ', '');

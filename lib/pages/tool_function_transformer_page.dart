@@ -205,6 +205,109 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
     if (eq >= 0) {
       return '${formula.substring(0, eq + 1)} $coef·(${formula.substring(eq + 1).trim()})';
     }
+
+      final colon = formula.indexOf(':');
+      if (colon >= 0) {
+        return '${formula.substring(0, colon + 1)} $coef·(${formula.substring(colon + 1).trim()})';
+      }
+      return '$coef·($formula)';
+    }
+
+
+  String _readableFormula(String s) {
+    var r = s;
+    r = r.replaceAllMapped(
+      RegExp(r'\^\{([^}]*)\}'),
+      (m) => _toSuperscript(m.group(1)!),
+    );
+    r = r.replaceAllMapped(
+      RegExp(r'_\{([^}]*)\}'),
+      (m) => _toSubscript(m.group(1)!),
+    );
+      r = r.replaceAllMapped(
+        RegExp(r'\^\(([^)]*)\)'),
+        (m) => _toSuperscript(m.group(1)!),
+      );
+      r = r.replaceAllMapped(
+        RegExp(r'_\(([^)]*)\)'),
+        (m) => _toSubscript(m.group(1)!),
+      );
+    r = r.replaceAllMapped(
+      RegExp(r'\^([0-9a-zA-Z])'),
+      (m) => _toSuperscript(m.group(1)!),
+    );
+    r = r.replaceAllMapped(
+      RegExp(r'_([0-9a-zA-Z])'),
+      (m) => _toSubscript(m.group(1)!),
+    );
+    r = r.replaceAllMapped(
+      RegExp(r'ω(\d)'),
+      (m) => 'ω${_toSubscript(m.group(1)!)}',
+    );
+    return r;
+  }
+
+  String _toSuperscript(String s) {
+    const map = {
+      '0': '⁰',
+      '1': '¹',
+      '2': '²',
+      '3': '³',
+      '4': '⁴',
+      '5': '⁵',
+      '6': '⁶',
+      '7': '⁷',
+      '8': '⁸',
+      '9': '⁹',
+      '-': '⁻',
+      '+': '⁺',
+      '(': '⁽',
+      ')': '⁾',
+      'n': 'ⁿ',
+      'k': 'ᵏ',
+      'i': 'ⁱ',
+      'j': 'ʲ',
+      'N': 'ᴺ',
+      't': 'ᵗ',
+    };
+    final b = StringBuffer();
+    for (final ch in s.split('')) {
+      b.write(map[ch] ?? ch);
+    }
+    return b.toString();
+  }
+
+  String _toSubscript(String s) {
+    const map = {
+      '0': '₀',
+      '1': '₁',
+      '2': '₂',
+      '3': '₃',
+      '4': '₄',
+      '5': '₅',
+      '6': '₆',
+      '7': '₇',
+      '8': '₈',
+      '9': '₉',
+      '-': '₋',
+      '+': '₊',
+      '(': '₍',
+      ')': '₎',
+      'n': 'ₙ',
+      'k': 'ₖ',
+      'i': 'ᵢ',
+      'j': 'ⱼ',
+  // ignore: unused_element
+
+    };
+    final b = StringBuffer();
+    for (final ch in s.split('')) {
+      b.write(map[ch] ?? ch);
+    }
+    return b.toString();
+  }
+
+  String _unusedStray(String formula, String coef) {
     final colon = formula.indexOf(':');
     if (colon >= 0) {
       return '${formula.substring(0, colon + 1)} $coef·(${formula.substring(colon + 1).trim()})';
@@ -564,8 +667,8 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
                   value: entry.name,
                   child: Text(
                     '${entry.category} · ${entry.name}',
-                    maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    
+                      
                   ),
                 ),
             ],
@@ -654,7 +757,7 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              value,
+              _readableFormula(value),
               style: const TextStyle(fontSize: 15, height: 1.4),
             ),
           ),
@@ -672,7 +775,7 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
         gradient: whiteLinearGradient,
       ),
       child: const Text(
-        '说明：本工具面向电子、通信专业学生，支持输入常见函数并查看其傅里叶变换、'
+        '说明：本工具支持输入常见函数并查看其傅里叶变换、'
         '拉普拉斯变换和 z 变换。离散信号默认给出 DTFT 与 z 变换；'
         '连续信号默认给出傅里叶变换与拉普拉斯变换。',
         style: TextStyle(fontSize: 13, height: 1.5, color: Colors.black87),
