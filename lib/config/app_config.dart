@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 
 class AppConfig {
-  // flutter build apk --dart-define=PRODUCTION=true --release --target-platform android-arm64    
+  // flutter build apk --dart-define=PRODUCTION=true --release --target-platform android-arm64
   // flutter run --dart-define=PRODUCTION=true
-  // $env:CMAKE_TLS_VERIFY=0          
+  // $env:CMAKE_TLS_VERIFY=0
   // flutter run -d windows --dart-define=PRODUCTION=true
   //flutter build web --release --dart-define=PRODUCTION=true
   //flutter build web --release --dart-define=PRODUCTION=true --dart-define=FLUTTER_WEB_CANVASKIT_URL=https://cdn.jsdelivr.net/npm/canvaskit-wasm@0.28.1/bin/
@@ -12,7 +12,9 @@ class AppConfig {
     defaultValue: false,
   );
 
-  static const List<String> githubAndProxy = [ 
+  static const List<String> githubAndProxy = [
+    "https://v4.gh-proxy.org/https://raw.githubusercontent.com/xinyuan-noname",
+    "https://v6.gh-proxy.org/https://raw.githubusercontent.com/xinyuan-noname",
     "https://gh.llkk.cc/https://raw.githubusercontent.com/xinyuan-noname",
     "https://raw.bgithub.xyz/xinyuan-noname",
     "https://raw.kkgithub.com/xinyuan-noname",
