@@ -19,7 +19,7 @@ class _ToolEncoderPageState extends State<ToolEncoderPage> {
   final List<_EncoderItem> _items = const [
     _EncoderItem('pcm', 'PCM A律13折线编码', 'PCM / 信源编码'),
     _EncoderItem('source', '香农码 / 费诺码 / 哈夫曼码', '信源编码'),
-    _EncoderItem('hamming', '汉明码 (7,4)', '信道编码'),
+    _EncoderItem('hamming', '汉明码（可调位数）', '信道编码'),
     _EncoderItem('cyclic', '循环码', '信道编码'),
     _EncoderItem('conv', '卷积码', '信道编码'),
     _EncoderItem('line', 'AMI码 / HDB3码', '线路编码'),
@@ -113,7 +113,7 @@ class _ToolEncoderPageState extends State<ToolEncoderPage> {
         );
       case 'hamming':
         return _buildInteractiveCard(
-          title: '汉明码 (7,4)',
+          title: '汉明码（可调位数）',
           hint: '输入任意位数数据，例如 1010 或 10101010',
           compute: _computeHamming,
         );
@@ -453,19 +453,39 @@ class _ToolEncoderPageState extends State<ToolEncoderPage> {
 
   String _computeHamming(String raw) {
     final input = raw.trim().replaceAll(' ', '');
-    if (!RegExp(r'^[01]{4}$').hasMatch(input)) {
-      return '请输入4位二进制数据，例如 1010';
+    if (!RegExp(r'^[01]+$').hasMatch(input) || input.length < 2) {
+      return '请输入至少2位二进制数据，例如 1010 或 10101010';
     }
-    final d1 = int.parse(input[0]);
-    final d2 = int.parse(input[1]);
-    final d3 = int.parse(input[2]);
-    final d4 = int.parse(input[3]);
-    final p1 = d1 ^ d2 ^ d4;
-    final p2 = d1 ^ d3 ^ d4;
-    final p3 = d2 ^ d3 ^ d4;
-    final code = '$p1$p2$d1$p3$d2$d3$d4';
-    return '汉明码(7,4)：$code\n校验位：p1=$p1, p2=$p2, p3=$p3';
+    final k = input.length;
+    var r = 1;
+    while ((1 << r) < k + r + 1) {
+      r++;
+    }
+    final n = k + r;
+    final code = List<int>.filled(n + 1, 0);
+
+    var dataIndex = 0;
+    for (var pos = 1; pos <= n; pos++) {
+      if (_isPowerOfTwo(pos)) continue;
+      code[pos] = int.parse(input[dataIndex]);
+      dataIndex++;
+    }
+
+    for (var p = 1; p <= n; p <<= 1) {
+      var parity = 0;
+      for (var pos = 1; pos <= n; pos++) {
+        if ((pos & p) != 0 && pos != p) {
+          parity ^= code[pos];
+        }
+      }
+      code[p] = parity;
+    }
+
+    final codeStr = code.sublist(1).join();
+    return '汉明码($n,$k)：$codeStr\n校验位个数：$r';
   }
+
+  bool _isPowerOfTwo(int x) => x > 0 && (x & (x - 1)) == 0;
 
   String _computeLineCodes(String raw) {
     final input = raw.trim().replaceAll(' ', '');
