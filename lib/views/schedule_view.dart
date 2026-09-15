@@ -13,14 +13,102 @@ import 'package:shine/models/course_data.dart';
 import 'package:shine/utils/time_utils.dart';
 import 'package:week_of_year/date_week_extensions.dart';
 
-const _titleTextStyle = TextStyle(fontFamily: "SmileySans", fontSize: 12);
-const _timeTextStyle = TextStyle(
+/// 基准尺寸，以 360 宽屏幕下的课表为基准，其它屏幕按比例自适应
+const double _baseCellWidth = 35;
+const double _baseCourseHeight = 60;
+
+/// 单列最小宽度，避免屏幕过窄时单元格被压扁
+const double _minCellWidth = 30;
+
+/// 课表最小展示宽度，低于该宽度时提示用户
+const double _minScreenWidth = 360;
+
+/// 单节课的最小 / 最大高度（最大值会随文字缩放一起放大）
+const double _minCourseHeight = _baseCourseHeight;
+const double _maxCourseHeight = 120;
+
+/// 文字最大放大倍数，避免大屏下单元格文字被拉得过大
+const double _maxTextScale = 1.8;
+
+/// 列数：节次列 + 7 天
+const int _columnCount = 8;
+const double _cardPadding = 20;
+
+const _baseTitleTextStyle = TextStyle(fontFamily: "SmileySans", fontSize: 12);
+const _baseDayTextStyle = TextStyle(
+  fontFamily: "SmileySans",
+  fontSize: 10,
+  color: Colors.grey,
+);
+const _basePeriodTextStyle = TextStyle(fontFamily: "SmileySans", fontSize: 10);
+const _baseTimeTextStyle = TextStyle(
   fontFamily: "SmileySans",
   fontSize: 8,
   color: Colors.grey,
 );
-const double _cellWidth = 35;
-const double _courseHeight = 60;
+const _baseCourseTextStyle = TextStyle(fontFamily: "SmileySans", fontSize: 10);
+const _baseLocationTextStyle = TextStyle(
+  fontFamily: "SmileySans",
+  fontSize: 10,
+  color: bgColorLight,
+);
+
+/// 依据可用宽度求单列宽度，保证 8 列刚好铺满可用宽度
+double _resolveCellWidth(double availableWidth) {
+  return max(_minCellWidth, availableWidth / _columnCount);
+}
+
+/// 依据可用高度与节次数求单节课高度：空间足够时铺满可视区域，不足时保持最小高度并滚动
+double _resolveCourseHeight(
+  double availableHeight,
+  int phaseCount,
+  double textScale,
+) {
+  if (phaseCount <= 0) return _baseCourseHeight;
+  return (availableHeight / phaseCount)
+      .clamp(_minCourseHeight, _maxCourseHeight * textScale)
+      .toDouble();
+}
+
+/// 课表自适应布局参数：列宽、课程行高、文字缩放均由可用空间推导
+class _ScheduleLayout {
+  /// 单列（节次列 / 某一天）宽度
+  final double cellWidth;
+
+  /// 单节课（一个节次）的高度
+  final double courseHeight;
+
+  const _ScheduleLayout({required this.cellWidth, required this.courseHeight});
+
+  /// 只依据可用宽度推导，用于表头等与行高无关的部分
+  factory _ScheduleLayout.fromWidth(double availableWidth) => _ScheduleLayout(
+    cellWidth: _resolveCellWidth(availableWidth),
+    courseHeight: _minCourseHeight,
+  );
+
+  _ScheduleLayout withCourseHeight(double height) =>
+      _ScheduleLayout(cellWidth: cellWidth, courseHeight: height);
+
+  /// 文字 / 图标相对基准尺寸的缩放比例
+  double get textScale =>
+      (cellWidth / _baseCellWidth).clamp(1.0, _maxTextScale).toDouble();
+
+  TextStyle _scaled(TextStyle style) =>
+      style.copyWith(fontSize: (style.fontSize ?? 0) * textScale);
+
+  TextStyle get titleTextStyle => _scaled(_baseTitleTextStyle);
+  TextStyle get dayTextStyle => _scaled(_baseDayTextStyle);
+  TextStyle get periodTextStyle => _scaled(_basePeriodTextStyle);
+  TextStyle get timeTextStyle => _scaled(_baseTimeTextStyle);
+  TextStyle get courseTextStyle => _scaled(_baseCourseTextStyle);
+  TextStyle get locationTextStyle => _scaled(_baseLocationTextStyle);
+
+  /// 课程格内部的小间距 / 图标尺寸
+  double get cellPadding => 2 * textScale;
+  double get cellTopPadding => 5 * textScale;
+  double get labIconSize => 10 * textScale;
+}
+
 const List<Color> _courseColorList = [
   mainColorPurple50,
   mainColorPurple60,
@@ -58,11 +146,11 @@ class ScheduleView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     try {
-      Size screenSize = MediaQuery.of(context).size;
-      if (screenSize.width < 360) {
+      final Size screenSize = MediaQuery.of(context).size;
+      if (screenSize.width < _minScreenWidth) {
         return Container(
           alignment: Alignment.topCenter,
-          child: Text(
+          child: const Text(
             "宽度不足以展示课表！",
             style: viewEmptyTextStyle,
             textAlign: TextAlign.center,
@@ -73,7 +161,7 @@ class ScheduleView extends StatelessWidget {
         child: Container(
           padding: bodyPadding,
           child: Container(
-            padding: EdgeInsets.all(20),
+            padding: const EdgeInsets.all(_cardPadding),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
@@ -81,118 +169,137 @@ class ScheduleView extends StatelessWidget {
                   color: Colors.grey,
                   spreadRadius: 1,
                   blurRadius: 5,
-                  offset: Offset(0, 3),
+                  offset: const Offset(0, 3),
                 ),
               ],
               gradient: whiteLinearGradient,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "${semesterName ?? "未知学期"}(第${_getCurrentWeek()}周)",
-                  style: labelStyle,
-                ),
-                bottomLine,
-                SizedBox(
-                  child: Row(
-                    children: [
-                      InkWell(
-                        onTap: () async {
-                          if (semesterStartedAt == null) return;
-                          final result = await showWeekBottomSheet(
-                            context,
-                            startedAt: semesterStartedAt!,
-                            selectedDate: showDate,
-                          );
-                          if (result != null) {
-                            onChangeShowDate(result);
-                          }
-                        },
-                        child: Container(
-                          padding: EdgeInsets.only(
-                            top: 1,
-                            bottom: 1,
-                            left: 20,
-                            right: 18,
-                          ),
-                          margin: EdgeInsets.symmetric(vertical: 3),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color: mainColorGreenBlue,
-                            boxShadow: [
-                              BoxShadow(
-                                blurRadius: 10,
-                                color: mainColorGrey20,
-                                offset: Offset(0, 1),
+            // 按可用宽度推导列宽，使表格恰好铺满屏幕宽度
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final columnLayout = _ScheduleLayout.fromWidth(
+                  constraints.maxWidth,
+                );
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "${semesterName ?? "未知学期"}(第${_getCurrentWeek()}周)",
+                      style: labelStyle,
+                    ),
+                    bottomLine,
+                    SizedBox(
+                      child: Row(
+                        children: [
+                          InkWell(
+                            onTap: () async {
+                              if (semesterStartedAt == null) return;
+                              final result = await showWeekBottomSheet(
+                                context,
+                                startedAt: semesterStartedAt!,
+                                selectedDate: showDate,
+                              );
+                              if (result != null) {
+                                onChangeShowDate(result);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.only(
+                                top: 1,
+                                bottom: 1,
+                                left: 20,
+                                right: 18,
                               ),
-                            ],
-                          ),
-                          child: Text(
-                            '第${_getShowTimeWeek()}周▼',
-                            style: const TextStyle(
-                              fontFamily: "SmileySans",
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: bgColorLight,
-                    borderRadius: BorderRadius.all(Radius.circular(5)),
-                  ),
-                  child: SizedBox(
-                    width: 245,
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              width: _cellWidth,
-                              child: Container(
-                                alignment: Alignment.center,
-                                child: Text(
-                                  '${showDate.month}月',
-                                  style: _titleTextStyle,
+                              margin: const EdgeInsets.symmetric(vertical: 3),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                color: mainColorGreenBlue,
+                                boxShadow: [
+                                  BoxShadow(
+                                    blurRadius: 10,
+                                    color: mainColorGrey20,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                '第${_getShowTimeWeek()}周▼',
+                                style: const TextStyle(
+                                  fontFamily: "SmileySans",
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
-                            ..._genTableTitleList(context),
-                          ],
-                        ),
-                        bottomLineSmall,
-                        SizedBox(
-                          height: min(
-                            screenSize.height * 0.630136986301369,
-                            460,
                           ),
-                          child: RefreshIndicator(
-                            onRefresh: onRefresh,
-                            child: SingleChildScrollView(
-                              padding: EdgeInsets.all(0),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  _genPhaseList(),
-                                  ..._genCourseColumn(context),
-                                ],
+                        ],
+                      ),
+                    ),
+                    // 表格区域占满剩余高度，随屏幕高度自适应
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        decoration: const BoxDecoration(
+                          color: bgColorLight,
+                          borderRadius: BorderRadius.all(Radius.circular(5)),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  width: columnLayout.cellWidth,
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      '${showDate.month}月',
+                                      style: columnLayout.titleTextStyle,
+                                    ),
+                                  ),
+                                ),
+                                ..._genTableTitleList(context, columnLayout),
+                              ],
+                            ),
+                            bottomLineSmall,
+                            // 依据剩余高度计算单节课高度，空间足够时无需滚动
+                            Expanded(
+                              child: LayoutBuilder(
+                                builder: (context, bodyConstraints) {
+                                  final layout = columnLayout.withCourseHeight(
+                                    _resolveCourseHeight(
+                                      bodyConstraints.maxHeight,
+                                      semesterPhaseList.length,
+                                      columnLayout.textScale,
+                                    ),
+                                  );
+                                  return RefreshIndicator(
+                                    onRefresh: onRefresh,
+                                    child: SingleChildScrollView(
+                                      physics:
+                                          const AlwaysScrollableScrollPhysics(),
+                                      padding: EdgeInsets.zero,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        children: [
+                                          _genPhaseList(layout),
+                                          ..._genCourseColumn(context, layout),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
           ),
         ),
@@ -205,7 +312,10 @@ class ScheduleView extends StatelessWidget {
     }
   }
 
-  List<Widget> _genTableTitleList(BuildContext context) {
+  List<Widget> _genTableTitleList(
+    BuildContext context,
+    _ScheduleLayout layout,
+  ) {
     return getWeekDates(showDate)
         .map(
           (d) => GestureDetector(
@@ -220,19 +330,12 @@ class ScheduleView extends StatelessWidget {
               );
             },
             child: Container(
-              width: _cellWidth,
+              width: layout.cellWidth,
               color: isToday(d) ? mainColorGreenBlue : Colors.transparent,
               child: Column(
                 children: [
-                  Text(getCnWeekDayName(d), style: _titleTextStyle),
-                  Text(
-                    d.day.toString(),
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontFamily: "SmileySans",
-                      fontSize: 10,
-                    ),
-                  ),
+                  Text(getCnWeekDayName(d), style: layout.titleTextStyle),
+                  Text(d.day.toString(), style: layout.dayTextStyle),
                 ],
               ),
             ),
@@ -270,7 +373,7 @@ class ScheduleView extends StatelessWidget {
     return result;
   }
 
-  List<Widget> _genCourseColumn(BuildContext context) {
+  List<Widget> _genCourseColumn(BuildContext context, _ScheduleLayout layout) {
     final courseList = _getshowSubjectInfoList();
     final scheduleDataList = _getShowScheduleDataList();
     return getWeekDates(showDate).map((d) {
@@ -278,13 +381,16 @@ class ScheduleView extends StatelessWidget {
         decoration: isToday(d)
             ? BoxDecoration(boxShadow: [BoxShadow(color: mainColorGreenBlue)])
             : null,
-        width: _cellWidth,
+        width: layout.cellWidth,
         child: Column(
+          // 让课程格铺满整列宽度
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: _genCourseRow(
             context: context,
             courseList: courseList,
             date: d,
             scheduleDataList: scheduleDataList,
+            layout: layout,
           ),
         ),
       );
@@ -295,10 +401,11 @@ class ScheduleView extends StatelessWidget {
     BuildContext context, {
     required int weekday,
     required int startPeriod,
+    required _ScheduleLayout layout,
   }) {
     return GestureDetector(
       child: Container(
-        height: _courseHeight,
+        height: layout.courseHeight,
         decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: mainColorGrey20)),
         ),
@@ -367,6 +474,7 @@ class ScheduleView extends StatelessWidget {
     required DateTime date,
     required List<ScheduleData> scheduleDataList,
     required BuildContext context,
+    required _ScheduleLayout layout,
   }) {
     final List<Widget> children = [];
     final index = date.weekday - 1;
@@ -383,7 +491,12 @@ class ScheduleView extends StatelessWidget {
       }
       if (scheduleItem == null) {
         children.add(
-          _genEmptyCourse(context, weekday: date.weekday, startPeriod: i),
+          _genEmptyCourse(
+            context,
+            weekday: date.weekday,
+            startPeriod: i,
+            layout: layout,
+          ),
         );
         continue;
       }
@@ -438,7 +551,7 @@ class ScheduleView extends StatelessWidget {
               }
             },
             child: Container(
-              height: _courseHeight * scheduleItem.$2.periodLength,
+              height: layout.courseHeight * scheduleItem.$2.periodLength,
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(color: bgColorLight),
@@ -451,25 +564,12 @@ class ScheduleView extends StatelessWidget {
                 children: [
                   Container(
                     padding:
-                        EdgeInsets.symmetric(horizontal: 2) +
-                        EdgeInsets.only(top: 5),
+                        EdgeInsets.symmetric(horizontal: layout.cellPadding) +
+                        EdgeInsets.only(top: layout.cellTopPadding),
                     child: Wrap(
                       children: [
-                        Text(
-                          courseName,
-                          style: const TextStyle(
-                            fontFamily: "SmileySans",
-                            fontSize: 10,
-                          ),
-                        ),
-                        Text(
-                          location,
-                          style: const TextStyle(
-                            fontFamily: "SmileySans",
-                            fontSize: 10,
-                            color: bgColorLight,
-                          ),
-                        ),
+                        Text(courseName, style: layout.courseTextStyle),
+                        Text(location, style: layout.locationTextStyle),
                       ],
                     ),
                   ),
@@ -478,14 +578,14 @@ class ScheduleView extends StatelessWidget {
                       bottom: 0,
                       right: 0,
                       child: Container(
-                        padding: EdgeInsets.all(2),
+                        padding: EdgeInsets.all(layout.cellPadding),
                         decoration: BoxDecoration(
                           color: mainColorRed,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.science,
-                          size: 10,
+                          size: layout.labIconSize,
                           color: Colors.white,
                         ),
                       ),
@@ -500,38 +600,37 @@ class ScheduleView extends StatelessWidget {
         continue;
       }
       children.add(
-        _genEmptyCourse(context, weekday: date.weekday, startPeriod: i),
+        _genEmptyCourse(
+          context,
+          weekday: date.weekday,
+          startPeriod: i,
+          layout: layout,
+        ),
       );
     }
     return children;
   }
 
-  Widget _genPhaseList() {
+  Widget _genPhaseList(_ScheduleLayout layout) {
     return SizedBox(
-      width: _cellWidth,
+      width: layout.cellWidth,
       child: Column(
         children: List.generate(semesterPhaseList.length, (index) {
           final phase = semesterPhaseList[index];
           final start = phase[0];
           final end = phase[1];
           return SizedBox(
-            height: _courseHeight,
+            height: layout.courseHeight,
             child: Column(
               children: [
-                Text(
-                  (index + 1).toString(),
-                  style: const TextStyle(
-                    fontFamily: "SmileySans",
-                    fontSize: 10,
-                  ),
-                ),
+                Text((index + 1).toString(), style: layout.periodTextStyle),
                 Text(
                   '${start.hour >= 10 ? start.hour : '0${start.hour}'}:${start.minute >= 10 ? start.minute : '0${start.minute}'}',
-                  style: _timeTextStyle,
+                  style: layout.timeTextStyle,
                 ),
                 Text(
                   '${end.hour >= 10 ? end.hour : '0${end.hour}'}:${end.minute >= 10 ? end.minute : '0${end.minute}'}',
-                  style: _timeTextStyle,
+                  style: layout.timeTextStyle,
                 ),
               ],
             ),

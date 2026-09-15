@@ -307,13 +307,6 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
     return b.toString();
   }
 
-  String _unusedStray(String formula, String coef) {
-    final colon = formula.indexOf(':');
-    if (colon >= 0) {
-      return '${formula.substring(0, colon + 1)} $coef·(${formula.substring(colon + 1).trim()})';
-    }
-    return '$coef·($formula)';
-  }
 
   String _normalize(String s) {
     var x = s.replaceAll('T', '\u0001');

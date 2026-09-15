@@ -209,20 +209,6 @@ class _ToolEncoderPageState extends State<ToolEncoderPage> {
     );
   }
 
-  Widget _buildCyclicCard() {
-    return _buildReferenceCard(
-      title: '循环码',
-      lines: const [
-        '循环码是线性分组码，任一码字循环移位后仍是码字。',
-        '生成多项式 g(x)，信息多项式 m(x)，编码为：',
-        'C(x) = x^(n-k)·m(x) + r(x)',
-        '其中 r(x) 是 x^(n-k)·m(x) 对 g(x) 取模的余式。',
-        '',
-        '例：(7,4) 循环码，g(x) = x³ + x + 1',
-        '信息 1010 编码后得到码字 1010001（示例）。',
-      ],
-    );
-  }
 
   Widget _buildConvolutionalCard() {
     return _buildReferenceCard(
