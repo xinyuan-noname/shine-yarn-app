@@ -269,6 +269,8 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
       'j': 'ʲ',
       'N': 'ᴺ',
       't': 'ᵗ',
+      'a': 'ᵃ',
+      'w': 'ʷ',
     };
     final b = StringBuffer();
     for (final ch in s.split('')) {

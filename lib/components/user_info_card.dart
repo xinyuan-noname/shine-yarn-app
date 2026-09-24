@@ -18,6 +18,7 @@ class UserInfoCard extends StatelessWidget {
   final GestureTapCallback? onDelete;
   final GestureTapCallback? onEdit;
   final GestureTapCallback? onIssuePswdKey;
+  final GestureTapCallback? onSendMessage;
   final GestureTapCallback? onPress;
   final GestureLongPressCallback? onLongPress;
   final bool useAvatar;
@@ -27,6 +28,7 @@ class UserInfoCard extends StatelessWidget {
     this.onDelete,
     this.onEdit,
     this.onIssuePswdKey,
+    this.onSendMessage,
     this.onLongPress,
     this.onPress,
     this.noOperation,
@@ -88,6 +90,10 @@ class UserInfoCard extends StatelessWidget {
       children: [
         Row(
           children: [
+            if (onSendMessage != null)
+              _buildMessageButton(),
+            if (onSendMessage != null && onIssuePswdKey != null)
+              const SizedBox(width: 10),
             if (onIssuePswdKey != null)
               GestureDetector(
                 onTap: onIssuePswdKey,
@@ -137,6 +143,45 @@ class UserInfoCard extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+
+  /// 消息图标：点击后可以给该成员发送消息(支持匿名)
+  Widget _buildMessageButton() {
+    return GestureDetector(
+      onTap: onSendMessage,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        alignment: Alignment.center,
+        height: adminFontSize * 1.1,
+        decoration: BoxDecoration(
+          color: mainColorGreenBlue60,
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+          boxShadow: [
+            BoxShadow(
+              color: bgColorLight60,
+              spreadRadius: 0.5,
+              offset: Offset(0.5, 0.5),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.message_outlined,
+              color: Colors.white,
+              size: adminFontSize * 0.8,
+            ),
+            const SizedBox(width: 3),
+            const Text(
+              "发消息",
+              style: TextStyle(color: Colors.white, fontFamily: 'SmileySans'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

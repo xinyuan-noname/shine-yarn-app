@@ -335,6 +335,7 @@ class _HomePageState extends State<HomePage>
               taskNoticeList: _taskNoticeList,
               messageList: _messageList,
               uploadDataList: _myUploadsList,
+              message: _message,
               onRefresh: () async {
                 await _updateMessageData();
               },

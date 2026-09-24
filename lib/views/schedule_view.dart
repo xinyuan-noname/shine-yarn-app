@@ -17,17 +17,18 @@ import 'package:week_of_year/date_week_extensions.dart';
 const double _baseCellWidth = 35;
 const double _baseCourseHeight = 60;
 
-/// 单列最小宽度，避免屏幕过窄时单元格被压扁
-const double _minCellWidth = 30;
+/// 单列最小宽度：240 宽屏幕下可用宽度仅 160，8 列即为 20，保证不会被压得更窄
+const double _minCellWidth = 20;
 
 /// 课表最小展示宽度，低于该宽度时提示用户
-const double _minScreenWidth = 360;
+const double _minScreenWidth = 240;
 
 /// 单节课的最小 / 最大高度（最大值会随文字缩放一起放大）
 const double _minCourseHeight = _baseCourseHeight;
 const double _maxCourseHeight = 120;
 
-/// 文字最大放大倍数，避免大屏下单元格文字被拉得过大
+/// 文字缩放范围：窄屏适当缩小文字，避免挤在过窄的单元格里换行
+const double _minTextScale = 0.8;
 const double _maxTextScale = 1.8;
 
 /// 列数：节次列 + 7 天
@@ -90,8 +91,9 @@ class _ScheduleLayout {
       _ScheduleLayout(cellWidth: cellWidth, courseHeight: height);
 
   /// 文字 / 图标相对基准尺寸的缩放比例
-  double get textScale =>
-      (cellWidth / _baseCellWidth).clamp(1.0, _maxTextScale).toDouble();
+  double get textScale => (cellWidth / _baseCellWidth)
+      .clamp(_minTextScale, _maxTextScale)
+      .toDouble();
 
   TextStyle _scaled(TextStyle style) =>
       style.copyWith(fontSize: (style.fontSize ?? 0) * textScale);

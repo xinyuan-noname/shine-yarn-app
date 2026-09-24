@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:shine/components/dialog.dart';
+import 'package:shine/components/send_message_dialog.dart';
+import 'package:shine/components/toast.dart';
 import 'package:shine/components/user_info_card.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/api_auth.dart';
@@ -60,9 +62,33 @@ class UserView extends StatelessWidget {
                   _issuePasswordKey(id, context);
                 }
               : null,
+          onSendMessage: id is String && id.isNotEmpty
+              ? () {
+                  _sendMessage(userInfo, context);
+                }
+              : null,
         );
         return userInfoCard;
       },
+    );
+  }
+
+  /// 给该成员发送消息(可匿名)
+  Future<void> _sendMessage(dynamic userInfo, BuildContext context) async {
+    final id = userInfo["id"];
+    if (id is! String || id.isEmpty) {
+      showToast(msg: "无法确定消息接收人");
+      return;
+    }
+    if (!context.mounted) return;
+    final username = userInfo["username"] is String
+        ? userInfo["username"] as String
+        : "";
+    await showSendMessageDialog(
+      context: context,
+      targetId: id,
+      targetUsername: username,
+      message: message,
     );
   }
 

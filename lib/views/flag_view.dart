@@ -147,7 +147,8 @@ class FlagView extends StatelessWidget {
                     fileName: fileName,
                     maxLines: 3,
                     onPress: () async {
-                      final url = '${ApiResource.baseUrl}/${Uri.encodeComponent(currentSubject)}/${Uri.encodeComponent(fileName)}';
+                      final url =
+                          '${ApiResource.baseUrl}/${Uri.encodeComponent(currentSubject)}/${Uri.encodeComponent(fileName)}';
                       gotoViewPdfUrl(
                         url,
                         filename: fileName,
@@ -490,179 +491,179 @@ class FlagView extends StatelessWidget {
                   ),
                 ],
               ),
-                const SizedBox(height: 12),
-                const Row(
-                  children: [
-                    Icon(
-                      Icons.school,
-                      color: mainColorOrange,
-                      size: 17,
+              const SizedBox(height: 12),
+              const Row(
+                children: [
+                  Icon(
+                    Icons.school,
+                    color: mainColorOrange,
+                    size: 17,
+                    shadows: [Shadow(color: Colors.grey, blurRadius: 5)],
+                  ),
+                  Text(
+                    "学习工具",
+                    style: TextStyle(
+                      fontFamily: "SmileySans",
+                      fontSize: 17,
+                      fontWeight: FontWeight.w500,
+                      color: mainColorGreenBlue,
                       shadows: [Shadow(color: Colors.grey, blurRadius: 5)],
                     ),
-                    Text(
-                      "学习工具",
-                      style: TextStyle(
-                        fontFamily: "SmileySans",
-                        fontSize: 17,
-                        fontWeight: FontWeight.w500,
-                        color: mainColorGreenBlue,
-                        shadows: [Shadow(color: Colors.grey, blurRadius: 5)],
-                      ),
-                    ),
-                  ],
-                ),
-                bottomLineSmall,
-                const SizedBox(height: 2),
-                GridView(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    mainAxisSpacing: 5,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 1,
                   ),
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        globalNavigatorKey.currentState?.pushNamed(
-                          '/tool/karnaugh',
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          gradient: purpleLinearGradient,
-                          border: Border.all(color: mainColorGreenBlue),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey,
-                              spreadRadius: 1,
-                              blurRadius: 3,
+                ],
+              ),
+              bottomLineSmall,
+              const SizedBox(height: 2),
+              GridView(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 5,
+                  crossAxisSpacing: 10,
+                  childAspectRatio: 1,
+                ),
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      globalNavigatorKey.currentState?.pushNamed(
+                        '/tool/karnaugh',
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: purpleLinearGradient,
+                        border: Border.all(color: mainColorGreenBlue),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey,
+                            spreadRadius: 1,
+                            blurRadius: 3,
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              gradient: blueLinearGradient80,
                             ),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(6),
-                                gradient: blueLinearGradient80,
-                              ),
-                              child: const Icon(
-                                Icons.grid_on,
-                                size: largeIconSize,
-                                color: Colors.white,
-                              ),
+                            child: const Icon(
+                              Icons.grid_on,
+                              size: largeIconSize,
+                              color: Colors.white,
                             ),
-                            const Text(
-                              '卡诺图',
-                              style: TextStyle(
-                                fontFamily: "SmileySans",
-                                fontSize: 12,
-                                color: bgColorLight,
-                              ),
-                              textAlign: TextAlign.center,
+                          ),
+                          const Text(
+                            '卡诺图',
+                            style: TextStyle(
+                              fontFamily: "SmileySans",
+                              fontSize: 12,
+                              color: bgColorLight,
                             ),
-                          ],
-                        ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
                     ),
-                      GestureDetector(
-                        onTap: () {
-                          globalNavigatorKey.currentState?.pushNamed(
-                            '/tool/function_transformer',
-                          );
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            gradient: purpleLinearGradient,
-                            border: Border.all(color: mainColorGreenBlue),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey,
-                                spreadRadius: 1,
-                                blurRadius: 3,
-                              ),
-                            ],
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      globalNavigatorKey.currentState?.pushNamed(
+                        '/tool/encoder',
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: purpleLinearGradient,
+                        border: Border.all(color: mainColorGreenBlue),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey,
+                            spreadRadius: 1,
+                            blurRadius: 3,
                           ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(6),
-                                  gradient: blueLinearGradient80,
-                                ),
-                                child: const Icon(
-                                  Icons.functions,
-                                  size: largeIconSize,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const Text(
-                                '函数变换器',
-                                style: TextStyle(
-                                  fontFamily: "SmileySans",
-                                  fontSize: 12,
-                                  color: bgColorLight,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        ),
+                        ],
                       ),
-                      GestureDetector(
-                        onTap: () {
-                          globalNavigatorKey.currentState?.pushNamed(
-                            '/tool/encoder',
-                          );
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            gradient: purpleLinearGradient,
-                            border: Border.all(color: mainColorGreenBlue),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey,
-                                spreadRadius: 1,
-                                blurRadius: 3,
-                              ),
-                            ],
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              gradient: blueLinearGradient80,
+                            ),
+                            child: const Icon(
+                              Icons.code,
+                              size: largeIconSize,
+                              color: Colors.white,
+                            ),
                           ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(6),
-                                  gradient: blueLinearGradient80,
-                                ),
-                                child: const Icon(
-                                  Icons.code,
-                                  size: largeIconSize,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              const Text(
-                                '编码器',
-                                style: TextStyle(
-                                  fontFamily: "SmileySans",
-                                  fontSize: 12,
-                                  color: bgColorLight,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
+                          const Text(
+                            '编码器',
+                            style: TextStyle(
+                              fontFamily: "SmileySans",
+                              fontSize: 12,
+                              color: bgColorLight,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                        ),
+                        ],
                       ),
-                  ],
-                ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      globalNavigatorKey.currentState?.pushNamed(
+                        '/tool/base_converter',
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: purpleLinearGradient,
+                        border: Border.all(color: mainColorGreenBlue),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey,
+                            spreadRadius: 1,
+                            blurRadius: 3,
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              gradient: blueLinearGradient80,
+                            ),
+                            child: const Icon(
+                              Icons.swap_horiz,
+                              size: largeIconSize,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const Text(
+                            '进制转换',
+                            style: TextStyle(
+                              fontFamily: "SmileySans",
+                              fontSize: 12,
+                              color: bgColorLight,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),

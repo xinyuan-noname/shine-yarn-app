@@ -118,6 +118,12 @@ class AppDatabase extends _$AppDatabase {
     await stmt.go();
   }
 
+  Future<void> deleteRemindMessages(List<int> idList) async {
+    if (idList.isEmpty) return;
+    final stmt = delete(remindMessage)..where((tbl) => tbl.id.isIn(idList));
+    await stmt.go();
+  }
+
   Future<List<RemindMessageData>> getRemindMessagesByLevel(int level) async {
     return await (select(
       remindMessage,

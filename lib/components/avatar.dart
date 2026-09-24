@@ -71,6 +71,41 @@ class NetworkAvatar extends StatelessWidget {
   }
 }
 
+/// 匿名消息使用的头像，不展示任何身份信息
+class AnonymousAvatar extends StatelessWidget {
+  final double radius;
+  const AnonymousAvatar({super.key, this.radius = 30});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: deepColorBlue, width: 0.5),
+        color: mainColorGreenBlue40,
+        boxShadow: [
+          const BoxShadow(
+            color: Color.fromRGBO(255, 255, 255, 0.2),
+            spreadRadius: 1,
+            blurRadius: 2,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: CircleAvatar(
+        backgroundColor: mainColorGreenBlue40,
+        radius: radius,
+        child: Icon(
+          Icons.person_off_outlined,
+          size: radius * 1.2,
+          color: bgColorLight80,
+        ),
+      ),
+    );
+  }
+}
+
 final defaultAvatar25 = Container(
   alignment: Alignment.center,
   decoration: BoxDecoration(

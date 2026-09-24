@@ -23,6 +23,9 @@ class MessageCard extends StatelessWidget {
   final GestureLongPressCallback? onLongPress;
   final GestureTapCallback? onPress;
   final bool hasController;
+
+  /// 精简模式：不展示头像与昵称(按人物分类时，同一分组内共用分组头部信息)
+  final bool compact;
   const MessageCard({
     super.key,
     required this.messageData,
@@ -30,6 +33,7 @@ class MessageCard extends StatelessWidget {
     this.onLongPress,
     this.onPress,
     this.hasController = true,
+    this.compact = false,
   });
 
   @override
@@ -91,18 +95,21 @@ class MessageCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      _buildAvatar(),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [_buildUsername(), _buildContent()],
+                  if (compact)
+                    _buildCompactRow()
+                  else
+                    Row(
+                      children: [
+                        _buildAvatar(),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [_buildUsername(), _buildContent()],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
                   bottomLine,
                   if (messageData.sentAt is DateTime) _buildTime(),
                 ],
@@ -120,14 +127,39 @@ class MessageCard extends StatelessWidget {
       backgroundColor: mainColorRed,
       smallSize: 10,
       isLabelVisible: !messageData.readed,
-      child: NetworkAvatar(id: messageData.sourceId),
+      child: messageData.anonymous
+          ? const AnonymousAvatar()
+          : NetworkAvatar(id: messageData.sourceId),
     );
   }
 
   Widget _buildUsername() {
-    return Text(
-      messageData.sourceUsername,
+    final username = Text(
+      messageData.displayUsername,
       style: const TextStyle(fontFamily: 'SmileySans', fontSize: 20),
+    );
+    if (!messageData.anonymous) return username;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        username,
+        const SizedBox(width: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0.5),
+          decoration: BoxDecoration(
+            color: mainColorGreenBlue60,
+            borderRadius: BorderRadius.all(Radius.circular(5)),
+          ),
+          child: const Text(
+            "匿名",
+            style: TextStyle(
+              fontFamily: 'SmileySans',
+              fontSize: 12,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -140,6 +172,26 @@ class MessageCard extends StatelessWidget {
         color: _levelColor.elementAtOrNull(messageData.level) ?? Colors.grey,
       ),
       maxLines: 10,
+    );
+  }
+
+  /// 精简模式下的内容行，未读时左侧显示小红点
+  Widget _buildCompactRow() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (!messageData.readed)
+          Container(
+            width: 8,
+            height: 8,
+            margin: const EdgeInsets.only(top: 6, right: 6),
+            decoration: const BoxDecoration(
+              color: mainColorRed,
+              shape: BoxShape.circle,
+            ),
+          ),
+        Expanded(child: _buildContent()),
+      ],
     );
   }
 

@@ -4,6 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shine/database/database.dart';
 import 'package:shine/storage/profile_storage.dart';
 
+/// 匿名消息在本地统一使用的来源标识与昵称
+const String anonymousMessageSourceId = "anonymous";
+const String anonymousMessageUsername = "匿名用户";
+
 class MessageStorageData {
   final int id;
   final DateTime? sentAt;
@@ -12,6 +16,7 @@ class MessageStorageData {
   final String sourceUsername;
   final String content;
   final bool readed;
+  final bool anonymous;
   const MessageStorageData({
     required this.id,
     required this.sourceId,
@@ -19,8 +24,21 @@ class MessageStorageData {
     required this.content,
     this.level = 1,
     this.readed = false,
+    this.anonymous = false,
     this.sentAt,
   });
+
+  /// 按人物分类时使用的分组键，匿名消息统一归入同一个分组
+  String get groupKey {
+    if (anonymous) return anonymousMessageSourceId;
+    if (sourceId.isNotEmpty) return sourceId;
+    if (sourceUsername.isNotEmpty) return "username:$sourceUsername";
+    return "unknown";
+  }
+
+  /// 用于界面展示的来源昵称
+  String get displayUsername =>
+      anonymous ? anonymousMessageUsername : sourceUsername;
 }
 
 class RemindMessageStorageData extends MessageStorageData {
@@ -31,6 +49,7 @@ class RemindMessageStorageData extends MessageStorageData {
     required super.content,
     super.readed,
     super.level,
+    super.anonymous,
     super.sentAt,
   });
 }
@@ -70,6 +89,49 @@ class MessageStorage {
     }
   }
 
+  /// 批量标记消息为已读
+  static Future<void> addMessagesReaded(List<int> idList) async {
+    if (idList.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    final userId = await ProfileStorage.getId();
+    final key = '$_remindMessageReadedKeyPrefix$userId';
+    List<String> readedList = prefs.getStringList(key) ?? [];
+    bool changed = false;
+    for (final id in idList) {
+      if (!readedList.contains(id.toString())) {
+        readedList.add(id.toString());
+        changed = true;
+      }
+    }
+    if (changed) await prefs.setStringList(key, readedList);
+  }
+
+  /// 解析消息来源，返回 (来源id, 来源昵称, 是否匿名)
+  static (String, String, bool) _parseSource(String source) {
+    String sourceId = '';
+    String sourceUsername = '';
+    bool anonymous = false;
+    try {
+      final sourceMap = jsonDecode(source);
+      if (sourceMap is Map) {
+        if (sourceMap['anonymous'] == true) anonymous = true;
+        if (sourceMap['id'] is String) {
+          sourceId = sourceMap['id'];
+        }
+        if (sourceMap['username'] is String) {
+          sourceUsername = sourceMap['username'];
+        }
+      }
+    } catch (e) {
+      anonymous = false;
+    }
+    if (anonymous) {
+      sourceId = anonymousMessageSourceId;
+      sourceUsername = anonymousMessageUsername;
+    }
+    return (sourceId, sourceUsername, anonymous);
+  }
+
   static Future<List<MessageStorageData>> getAllMessage() async {
     final List<MessageStorageData> result = [];
     result.addAll(await MessageStorage.getAllRemindMessages());
@@ -80,17 +142,9 @@ class MessageStorage {
     final result = await _db.getAllRemindMessages();
     final list = <RemindMessageStorageData>[];
     for (final messageData in result) {
-      String sourceId = '';
-      String sourceUsername = '';
-      final sourceMap = jsonDecode(messageData.source);
-      if (sourceMap is Map) {
-        if (sourceMap['id'] is String) {
-          sourceId = sourceMap['id'];
-        }
-        if (sourceMap['username'] is String) {
-          sourceUsername = sourceMap['username'];
-        }
-      }
+      final (sourceId, sourceUsername, anonymous) = MessageStorage._parseSource(
+        messageData.source,
+      );
       final readed = await MessageStorage.judgeRemindMessageReaded(
         messageData.id,
       );
@@ -102,6 +156,7 @@ class MessageStorage {
           sentAt: messageData.sentAt,
           sourceId: sourceId,
           sourceUsername: sourceUsername,
+          anonymous: anonymous,
           readed: readed,
         ),
       );
@@ -112,21 +167,14 @@ class MessageStorage {
   static Future<RemindMessageStorageData?> getRemindMessage(int id) async {
     final result = await _db.getRemindMessage(id);
     if (result == null) return null;
-    String sourceId = '';
-    String sourceUsername = '';
-    final sourceMap = jsonDecode(result.source);
-    if (sourceMap is Map) {
-      if (sourceMap['id'] is String) {
-        sourceId = sourceMap['id'];
-      }
-      if (sourceMap['username'] is String) {
-        sourceUsername = sourceMap['username'];
-      }
-    }
+    final (sourceId, sourceUsername, anonymous) = MessageStorage._parseSource(
+      result.source,
+    );
     return RemindMessageStorageData(
       id: id,
       sourceId: sourceId,
       sourceUsername: sourceUsername,
+      anonymous: anonymous,
       content: result.content,
       level: result.level,
       sentAt: result.sentAt,
@@ -151,6 +199,15 @@ class MessageStorage {
   static Future<void> removeRemindMessage(int id) async {
     await MessageStorage.removeReminderMessageReaded(id);
     await _db.deleteRemindMessage(id);
+  }
+
+  /// 批量删除提醒消息(按人物清空时使用)
+  static Future<void> removeRemindMessages(List<int> idList) async {
+    if (idList.isEmpty) return;
+    for (final id in idList) {
+      await MessageStorage.removeReminderMessageReaded(id);
+    }
+    await _db.deleteRemindMessages(idList);
   }
 
   // -- --

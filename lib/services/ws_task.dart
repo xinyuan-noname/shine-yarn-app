@@ -76,6 +76,7 @@ class WsTask {
     required String msg,
     required List<String> targetList,
     int level = 1,
+    bool anonymous = false,
   }) {
     final wsi = Uuid().v4();
     final map = {
@@ -85,6 +86,7 @@ class WsTask {
       "ts": DateTime.now().millisecondsSinceEpoch,
       "wsi": wsi,
       "level": level,
+      if (anonymous) "anonymous": true,
     };
     WsTask.send(jsonEncode(map));
     return WsTask.recordAndWait(wsi: wsi, type: "remind");
@@ -109,8 +111,11 @@ class WsTask {
     _taskRecordList.remove(record);
   }
 
-  static (String, Completer, String) findRecord(String wsi) {
-    return _taskRecordList.firstWhere((ele) => ele.$1 == wsi);
+  static (String, Completer, String)? findRecord(String wsi) {
+    for (final item in _taskRecordList) {
+      if (item.$1 == wsi) return item;
+    }
+    return null;
   }
 
   static void _handlePing() {
@@ -121,6 +126,7 @@ class WsTask {
   static void _handleAck(Map map) {
     final wsi = map['wsi'];
     final record = findRecord(wsi);
+    if (record == null) return;
     switch (record.$3) {
       case "remind":
         removeRecordAndDoNext(record: record);
@@ -129,22 +135,50 @@ class WsTask {
   }
 
   static Future _handleRemind(Map map) async {
-    final String content = map["content"];
-    final String source = map["source"];
-    final int ts = map["ts"];
-    final int level = map["level"];
-    final mapS = jsonDecode(source);
+    final String content = map["content"] is String
+        ? map["content"] as String
+        : "";
+    final int level = map["level"] is int ? map["level"] as int : 1;
+    final int ts = map["ts"] is int
+        ? map["ts"] as int
+        : DateTime.now().millisecondsSinceEpoch;
+    Map sourceMap = {};
+    final rawSource = map["source"];
+    if (rawSource is Map) {
+      sourceMap = rawSource;
+    } else if (rawSource is String) {
+      try {
+        final decoded = jsonDecode(rawSource);
+        if (decoded is Map) sourceMap = decoded;
+      } catch (e) {
+        sourceMap = {};
+      }
+    }
+    // 匿名消息不会保留发送者的任何身份信息
+    final bool anonymous =
+        map["anonymous"] == true || sourceMap["anonymous"] == true;
+    final String source;
+    final String sourceUsername;
+    if (anonymous) {
+      source = jsonEncode({
+        "id": anonymousMessageSourceId,
+        "username": anonymousMessageUsername,
+        "anonymous": true,
+      });
+      sourceUsername = anonymousMessageUsername;
+    } else {
+      source = jsonEncode(sourceMap);
+      sourceUsername = sourceMap['username'] is String
+          ? sourceMap['username'] as String
+          : "未知用户";
+    }
     await MessageStorage.addRemindMessage(
       content: content,
       level: level,
       source: source,
       sentAt: DateTime.fromMillisecondsSinceEpoch(ts),
     );
-    EventBus.publish(
-      MessageEvent(
-        sourceUser: mapS is Map ? mapS['username'] ?? "未知用户" : "未知用户",
-      ),
-    );
+    EventBus.publish(MessageEvent(sourceUser: sourceUsername));
   }
 
   static Future<void> start() async {
