@@ -57,6 +57,8 @@ class ApiAdmin {
           "username": true,
           "position": true,
           "passwordRequired": true,
+          // 管理页也展示获赞数
+          "likeCount": true,
         },
       });
       final response = await dio.post('/admin/search/user', data: data);

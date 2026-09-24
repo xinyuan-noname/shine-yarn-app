@@ -164,6 +164,17 @@ class ApiService {
     return payload["id"] ?? "";
   }
 
+  /// 安全地读取当前用户 ID：令牌缺失或解不开时返回空串
+  ///
+  /// 会被 build / 消息回调这类不方便抛异常的地方使用
+  static String get safeUserId {
+    try {
+      return userId;
+    } catch (e) {
+      return "";
+    }
+  }
+
   static String? get position {
     if (_accessToken.isEmpty) return null;
     final payload = JwtDecoder.decode(_accessToken);

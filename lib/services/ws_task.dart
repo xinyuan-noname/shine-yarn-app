@@ -205,7 +205,8 @@ class WsTask {
     if (navigator == null || context == null) return;
     final (creatorId, creatorName) = _parseVoteSource(map["source"]);
     // 自己发起的投票不需要再弹窗邀请自己
-    if (creatorId.isNotEmpty && creatorId == ApiService.userId) return;
+    final myId = ApiService.safeUserId;
+    if (creatorId.isNotEmpty && creatorId == myId) return;
     final goVote = await showVoteInviteDialog(
       context: context,
       title: title,

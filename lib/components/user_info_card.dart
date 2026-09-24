@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:shine/components/avatar.dart';
-import 'package:shine/components/line.dart';
 import 'dart:math' as math;
 
+import 'package:flutter/material.dart';
+import 'package:shine/components/avatar.dart';
+import 'package:shine/components/like_chip.dart';
+import 'package:shine/components/line.dart';
 import 'package:shine/theme.dart';
 
 const double adminFontSize = 24;
@@ -186,6 +187,8 @@ class UserInfoCard extends StatelessWidget {
   }
 
   Widget _buildUsernameRow() {
+    final id = userInfo['id'];
+    final likeCount = userInfo['likeCount'];
     return Row(
       children: [
         userInfo['userType'] == "admin"
@@ -201,6 +204,15 @@ class UserInfoCard extends StatelessWidget {
               ),
         const SizedBox(width: 5),
         Text(userInfo['username'] ?? "??", style: adminUsernameTextStyle),
+        // 获赞数：每天可以给同一个同学点一个赞，这里直接点标记就能赞
+        if (id is String && id.isNotEmpty)
+          LikeChip(
+            key: ValueKey('like-chip-$id'),
+            userId: id,
+            likeCount: likeCount is int ? likeCount : null,
+            likedToday: userInfo['likedToday'] == true,
+            interactive: noOperation != true,
+          ),
         if (userInfo['position'] is String)
           Container(
             margin: EdgeInsets.only(left: 10),
