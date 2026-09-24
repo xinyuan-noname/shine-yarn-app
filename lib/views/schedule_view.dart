@@ -131,6 +131,11 @@ const List<Color> _courseColorList = [
 typedef ChangeShowWeekCallback = void Function(DateTime d);
 
 class ScheduleView extends StatefulWidget {
+  /// 首页顶栏的提醒入口通过它打开课表页的提醒管理弹窗。
+  ///
+  /// 与 HomePageRefreshNotifier 的做法一致：谁挂载谁注册，没挂载时为 null。
+  static Future<void> Function()? openReminderManager;
+
   final String? semesterName;
   final DateTime? semesterStartedAt;
   final List<List<TimeOfDay>> semesterPhaseList;
@@ -171,6 +176,15 @@ class _ScheduleViewState extends State<ScheduleView> {
     super.initState();
     _loadElectiveSelection();
     _loadReminderSettings();
+    ScheduleView.openReminderManager = _openReminderManagerDialog;
+  }
+
+  @override
+  void dispose() {
+    if (ScheduleView.openReminderManager == _openReminderManagerDialog) {
+      ScheduleView.openReminderManager = null;
+    }
+    super.dispose();
   }
 
   @override
@@ -202,16 +216,24 @@ class _ScheduleViewState extends State<ScheduleView> {
   bool _isReminderEnabled(String subjectName) =>
       _reminderSettings[subjectName]?.enabled ?? false;
 
-  /// 按指定提前量预览下次提醒的时间
+  /// 按指定提前量预览某门课的下次提醒时间
   String? _reminderPreviewText(String subjectName, int leadMinutes) {
+    return _nextReminderSummary({
+      subjectName: ScheduleReminderSetting(
+        enabled: true,
+        leadMinutes: leadMinutes,
+      ),
+    });
+  }
+
+  /// 按一组提醒设置算出最近的一条提醒文案（多条时取最早的那条）
+  String? _nextReminderSummary(
+    Map<String, ScheduleReminderSetting> settings, {
+    bool withSubjectName = false,
+  }) {
     final occurrences = buildScheduleReminderOccurrences(
       courseList: widget.subjectInfoList,
-      settings: {
-        subjectName: ScheduleReminderSetting(
-          enabled: true,
-          leadMinutes: leadMinutes,
-        ),
-      },
+      settings: settings,
       phaseList: widget.semesterPhaseList,
       semesterStartedAt: widget.semesterStartedAt,
       horizonDays: ScheduleReminderService.horizonDays,
@@ -220,9 +242,12 @@ class _ScheduleViewState extends State<ScheduleView> {
     if (first == null) return null;
     final weekNames = ['一', '二', '三', '四', '五', '六', '日'];
     final date = first.remindAt;
+    final time =
+        '${date.hour.toString().padLeft(2, '0')}:'
+        '${date.minute.toString().padLeft(2, '0')}';
+    final subject = withSubjectName ? '（${first.displayName}）' : '';
     return '下次提醒：${date.month}月${date.day}日（周${weekNames[first.weekday - 1]}）'
-        '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}'
-        '，第 ${first.startPeriod}-${first.endPeriod} 节';
+        '$time$subject，第 ${first.startPeriod}-${first.endPeriod} 节';
   }
 
   /// 打开统一的日程提醒管理
@@ -232,15 +257,40 @@ class _ScheduleViewState extends State<ScheduleView> {
       showToast(msg: "本学期暂无课程");
       return;
     }
+    // 把排期与权限状态一起带进弹窗，方便判断「为什么收不到提醒」
+    final scheduledCount =
+        (await ScheduleReminderStorage.getScheduledIds()).length;
+    final notificationsAllowed =
+        await NotificationService.areNotificationsEnabled();
+    final exactAlarmAllowed =
+        await NotificationService.canScheduleExactNotifications();
+    if (!mounted) return;
     final result = await showScheduleReminderManagerDialog(
       context: context,
       courseList: courseList,
       settings: _reminderSettings,
       previewBuilder: _reminderPreviewText,
+      scheduledCount: scheduledCount,
+      notificationsAllowed: notificationsAllowed,
+      exactAlarmAllowed: exactAlarmAllowed,
+      onSendTestNotification: () async {
+        await NotificationService.requestPermission();
+        return NotificationService.showScheduleTestNotification();
+      },
+      // 走真正的定时排期链路，1 分钟内就能验证「到点会不会弹」
+      onScheduleDelayedTest: () async {
+        await NotificationService.requestPermission();
+        return NotificationService.scheduleTestNotificationIn(
+          const Duration(minutes: 1),
+        );
+      },
     );
     if (result == null) return;
     await ScheduleReminderStorage.saveSettings(result);
-    if (result.values.any((setting) => setting.enabled)) {
+    final enabledCount = result.values
+        .where((setting) => setting.enabled)
+        .length;
+    if (enabledCount > 0) {
       await NotificationService.requestPermission();
     }
     if (!mounted) return;
@@ -248,9 +298,15 @@ class _ScheduleViewState extends State<ScheduleView> {
       _reminderSettings = result;
     });
     widget.onReminderChanged?.call();
-    final enabledCount = result.values
-        .where((setting) => setting.enabled)
-        .length;
+    // 立刻发一条确认通知：既让用户知道设置生效，也能当场发现通知被系统拦了
+    if (enabledCount > 0) {
+      await NotificationService.showScheduleTestNotification(
+        title: '提醒已开启（$enabledCount 门课程）',
+        body:
+            _nextReminderSummary(result, withSubjectName: true) ??
+            '未来 7 天没有需要提醒的课次',
+      );
+    }
     showToast(msg: enabledCount > 0 ? '已开启 $enabledCount 门课程的提醒' : '已关闭全部课程提醒');
   }
 
@@ -286,6 +342,15 @@ class _ScheduleViewState extends State<ScheduleView> {
       _reminderSettings = {..._reminderSettings, subjectName: result};
     });
     widget.onReminderChanged?.call();
+    // 立刻发一条确认通知，让用户当场知道提醒是否真的能送达
+    if (result.enabled) {
+      await NotificationService.showScheduleTestNotification(
+        title: '提醒已开启：${courseData.alias ?? subjectName}',
+        body:
+            _reminderPreviewText(subjectName, result.leadMinutes) ??
+            '未来 7 天没有该课程的课次',
+      );
+    }
     showToast(msg: result.enabled ? '已开启提醒（${result.leadText}）' : '已关闭该课程的提醒');
   }
 

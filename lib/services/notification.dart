@@ -181,6 +181,69 @@ class NotificationService {
     }
   }
 
+  /// 测试提醒用的固定通知 id
+  static const int scheduleTestNotificationId = 299999;
+
+  /// 系统通知权限是否可用（关掉时任何提醒都送不到用户手上）
+  static Future<bool> areNotificationsEnabled() async {
+    if (kIsWeb) return false;
+    try {
+      if (Platform.isAndroid) {
+        final androidImplementation = _notificationsPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
+        return await androidImplementation?.areNotificationsEnabled() ?? true;
+      }
+    } catch (e) {
+      return true;
+    }
+    return true;
+  }
+
+  /// 立刻弹一条日程提醒样式的通知。
+  ///
+  /// 用来确认通知权限与渠道是否正常：保存提醒设置后会立刻发一条，
+  /// 用户当场就知道「设置生效了」还是「通知被系统拦了」。
+  static Future<bool> showScheduleTestNotification({
+    String? title,
+    String? body,
+  }) async {
+    if (kIsWeb) return false;
+    try {
+      await _notificationsPlugin.show(
+        id: scheduleTestNotificationId,
+        title: title ?? '测试提醒：日程提醒已就绪',
+        body: body ?? '看到这条通知说明提醒能正常送达，上课前会按你设置的提前量提醒你',
+        notificationDetails: _scheduleNotificationDetails,
+        payload: 'schedule_test',
+      );
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// 排一条 [delay] 之后的测试提醒，用来验证「定时投递」链路本身。
+  ///
+  /// 和真正的上课提醒走完全相同的 zonedSchedule → AlarmManager 路径，
+  /// 所以「1 分钟后提醒」能弹出来，就说明定时提醒在这台机器上是可用的。
+  static Future<bool> scheduleTestNotificationIn(Duration delay) async {
+    if (kIsWeb) return false;
+    try {
+      await zonedSchedule(
+        id: scheduleTestNotificationId,
+        scheduledDate: DateTime.now().add(delay),
+        title: '测试提醒：定时投递正常',
+        body: '这条是定时提醒，能按约定时间弹出来说明排期链路可用',
+        payload: 'schedule_test_delayed',
+      );
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   /// 撤销一条已排期的通知
   static Future<void> cancelScheduled({required int id}) async {
     if (kIsWeb) return;

@@ -162,11 +162,6 @@ Future<void> showScheduleDialog({
           ),
         ),
         actions: [
-          TextButton(
-            style: dialogButtonStyle,
-            onPressed: onYes ?? () => Navigator.of(context).pop(),
-            child: Text("关闭"),
-          ),
           if (onReminder != null)
             TextButton(
               style: dialogButtonStyle,
@@ -809,14 +804,7 @@ Future<ScheduleReminderSetting?> showScheduleReminderDialog({
   return completer.future;
 }
 
-String _leadMinuteLabel(int minutes) {
-  if (minutes < 60) return '$minutes 分钟';
-  final hours = minutes / 60;
-  final text = hours == hours.roundToDouble()
-      ? hours.round().toString()
-      : hours.toStringAsFixed(1);
-  return '$text 小时';
-}
+String _leadMinuteLabel(int minutes) => formatMinutesText(minutes);
 
 Widget _buildLeadMinuteChip({
   required String label,
@@ -855,6 +843,21 @@ showScheduleReminderManagerDialog({
   required List<CourseData> courseList,
   required Map<String, ScheduleReminderSetting> settings,
   String? Function(String subjectName, int leadMinutes)? previewBuilder,
+
+  /// 进入弹窗时已经排期出去的提醒条数
+  int? scheduledCount,
+
+  /// 系统通知权限是否可用（关掉时提醒送不到）
+  bool notificationsAllowed = true,
+
+  /// 是否已拿到精确闹钟权限（没有时提醒可能延迟几分钟）
+  bool exactAlarmAllowed = true,
+
+  /// 点击「发送测试提醒」时调用，返回是否发送成功
+  Future<bool> Function()? onSendTestNotification,
+
+  /// 点击「1 分钟后提醒」时调用（走真正的定时排期链路），返回是否排期成功
+  Future<bool> Function()? onScheduleDelayedTest,
 }) async {
   final Map<String, ScheduleReminderSetting> current = {
     for (final course in courseList)
@@ -872,9 +875,6 @@ showScheduleReminderManagerDialog({
       return StatefulBuilder(
         builder: (BuildContext context, StateSetter setState) {
           final enabledCount = current.values.where((s) => s.enabled).length;
-          final hasCustomLead = current.values.any(
-            (s) => s.enabled && s.leadMinutes != defaultLeadMinutes,
-          );
           return AlertDialog(
             backgroundColor: mainColorPurple,
             title: Text('日程提醒', style: dialogTitleStyle),
@@ -886,11 +886,18 @@ showScheduleReminderManagerDialog({
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '共 ${courseList.length} 门课程，已开启 $enabledCount 门',
+                      '共 ${courseList.length} 门课程，已开启 $enabledCount 门'
+                      '${scheduledCount == null ? '' : '，已排期 $scheduledCount 条提醒'}',
                       style: dialogContentSmallStyle.copyWith(
                         color: bgColorLight80,
                       ),
                     ),
+                    if (!notificationsAllowed)
+                      _buildReminderWarning(
+                        '系统通知权限未开启，提醒发不出去：请在系统设置里允许「闪纺」发送通知',
+                      ),
+                    if (!exactAlarmAllowed)
+                      _buildReminderWarning('未获得「闹钟和提醒」权限，提醒可能延迟几分钟'),
                     SizedBox(height: 8),
                     Text(
                       '新开启课程的提前量',
@@ -937,24 +944,6 @@ showScheduleReminderManagerDialog({
                         ),
                       ],
                     ),
-                    if (hasCustomLead)
-                      TextButton(
-                        style: dialogButtonStyle,
-                        onPressed: () {
-                          setState(() {
-                            for (final name in current.keys.toList()) {
-                              final setting = current[name];
-                              if (setting == null || !setting.enabled) continue;
-                              current[name] = setting.copyWith(
-                                leadMinutes: defaultLeadMinutes,
-                              );
-                            }
-                          });
-                        },
-                        child: Text(
-                          '把「${_leadMinuteLabel(defaultLeadMinutes)}」应用到已开启课程',
-                        ),
-                      ),
                     Wrap(
                       spacing: 8,
                       runSpacing: 4,
@@ -1039,7 +1028,7 @@ showScheduleReminderManagerDialog({
                         subtitle: Text(
                           setting.enabled
                               ? '${setting.leadText}'
-                                    '${preview == null ? '' : ' · $preview'}'
+                                    '${preview == null ? ' · 未来 7 天没有这节课' : ' · $preview'}'
                               : '未开启提醒',
                           style: dialogContentSmallStyle,
                         ),
@@ -1206,6 +1195,32 @@ Future<int?> showScheduleReminderLeadPicker({
   });
 
   return completer.future;
+}
+
+/// 提醒相关的警告条（权限不足时提示用户去哪里开）
+Widget _buildReminderWarning(String text) {
+  return Container(
+    margin: EdgeInsets.only(top: 6),
+    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+    decoration: BoxDecoration(
+      color: mainColorRed20,
+      borderRadius: BorderRadius.circular(6),
+      border: Border.all(color: mainColorRed50, width: 0.8),
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(Icons.warning_amber_rounded, size: 16, color: mainColorRed),
+        SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            text,
+            style: dialogContentSmallStyle.copyWith(color: bgColorLight),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 /// 已开启课程里最常见的提前量

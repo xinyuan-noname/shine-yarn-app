@@ -308,11 +308,11 @@ class _HomePageState extends State<HomePage>
 
   /// 按当前课表与提醒设置重排上课提醒（课表/学期数据变化、用户改设置后调用）
   Future<void> _rescheduleScheduleReminders() async {
-    await ScheduleReminderService.rescheduleAll(
-      courseList: _subjectInfo,
-      phaseList: _semesterPhaseList,
-      semesterStartedAt: _semesterStartedAt,
-    );
+      await ScheduleReminderService.rescheduleAll(
+        courseList: _subjectInfo,
+        phaseList: _semesterPhaseList,
+        semesterStartedAt: _semesterStartedAt,
+      );
   }
 
   Future<void> _updateScheduleData() async {

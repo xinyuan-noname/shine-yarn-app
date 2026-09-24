@@ -53,12 +53,30 @@ void main() {
       );
       expect(
         const ScheduleReminderSetting(enabled: true, leadMinutes: 90).leadText,
-        '提前 1.5 小时',
+        '提前 1 小时 30 分',
+      );
+      expect(
+        const ScheduleReminderSetting(enabled: true, leadMinutes: 150).leadText,
+        '提前 2 小时 30 分',
+      );
+      expect(
+        const ScheduleReminderSetting(enabled: true, leadMinutes: 45).leadText,
+        '提前 45 分钟',
       );
       expect(
         const ScheduleReminderSetting(enabled: true, leadMinutes: 0).leadText,
         '上课时',
       );
+    });
+
+    test('分钟数统一写成 x 小时 y 分，不再出现 x.x 小时', () {
+      expect(formatMinutesText(0), '0 分钟');
+      expect(formatMinutesText(30), '30 分钟');
+      expect(formatMinutesText(59), '59 分钟');
+      expect(formatMinutesText(60), '1 小时');
+      expect(formatMinutesText(90), '1 小时 30 分');
+      expect(formatMinutesText(125), '2 小时 5 分');
+      expect(formatMinutesText(1440), '24 小时');
     });
 
     test('默认提前 30 分钟，且默认关闭', () {
@@ -203,7 +221,7 @@ void main() {
       expect(occurrences.single.remindAt, DateTime(2026, 3, 9, 7, 30));
     });
 
-    test('自定义提前量（含提前 1.5 小时与不提前）', () {
+    test('自定义提前量（含提前 1 小时 30 分与不提前）', () {
       // now 设成 06:00，否则周一 08:00 的课提前 90 分钟（06:30）还没到提醒点
       final early = build(
         now: DateTime(2026, 3, 2, 6, 0),
@@ -280,6 +298,23 @@ void main() {
       expect(
         ScheduleReminderService.buildReminderBody(occurrence),
         '第 1-2 节 08:00 开始，30 分钟后，地点 A101',
+      );
+    });
+
+    test('超过 1 小时的提前量写成 x 小时 y 分', () {
+      final occurrence = ScheduleReminderOccurrence(
+        subjectName: '数字信号处理',
+        weekday: 1,
+        startPeriod: 1,
+        endPeriod: 2,
+        location: 'A101',
+        classStart: DateTime(2026, 3, 2, 8, 0),
+        remindAt: DateTime(2026, 3, 2, 6, 30),
+        leadMinutes: 90,
+      );
+      expect(
+        ScheduleReminderService.buildReminderBody(occurrence),
+        '第 1-2 节 08:00 开始，1 小时 30 分后，地点 A101',
       );
     });
 
@@ -369,7 +404,7 @@ void main() {
       await tester.tap(find.text('数字信号处理'));
       await tester.pumpAndSettle();
       expect(find.text('共 2 门课程，已开启 1 门'), findsOneWidget);
-      expect(find.text('提前 30 分钟'), findsWidgets);
+      expect(find.textContaining('提前 30 分钟'), findsWidgets);
 
       await tester.tap(find.text('保存'));
       await tester.pumpAndSettle();
@@ -407,7 +442,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('高等数学'));
       await tester.pumpAndSettle();
-      expect(find.text('提前 1 小时'), findsWidgets);
+      expect(find.textContaining('提前 1 小时'), findsWidgets);
       await tester.tap(find.text('保存'));
       await tester.pumpAndSettle();
       final settings = await completer.future;
@@ -454,7 +489,7 @@ void main() {
 
       // 打开的是管理弹窗，里面直接能看到课程
       expect(find.text('日程提醒'), findsOneWidget);
-      expect(find.text('共 1 门课程，已开启 0 门'), findsOneWidget);
+      expect(find.textContaining('已开启 0 门'), findsOneWidget);
       expect(find.text('高等数学'), findsNothing);
     });
   });
@@ -492,6 +527,41 @@ void main() {
       expect(await ScheduleReminderStorage.getScheduledIds(), [200000, 200001]);
       await ScheduleReminderStorage.saveScheduledIds(const []);
       expect(await ScheduleReminderStorage.getScheduledIds(), isEmpty);
+    });
+
+    test('课表数据不完整时不重排，也不清掉已有排期', () async {
+      SharedPreferences.setMockInitialValues({
+        'schedule_reminder_scheduled_ids_key': '[200000]',
+      });
+      // 学期开始时间缺失
+      expect(
+        await ScheduleReminderService.rescheduleAll(
+          courseList: const [],
+          phaseList: _phaseList,
+          semesterStartedAt: null,
+        ),
+        -1,
+      );
+      // 节次表为空
+      expect(
+        await ScheduleReminderService.rescheduleAll(
+          courseList: const [],
+          phaseList: const [],
+          semesterStartedAt: _semesterStartedAt,
+        ),
+        -1,
+      );
+      // 课程为空
+      expect(
+        await ScheduleReminderService.rescheduleAll(
+          courseList: const [],
+          phaseList: _phaseList,
+          semesterStartedAt: _semesterStartedAt,
+        ),
+        -1,
+      );
+      // 原有排期保持不变
+      expect(await ScheduleReminderStorage.getScheduledIds(), [200000]);
     });
 
     test('损坏的数据不会抛异常', () async {

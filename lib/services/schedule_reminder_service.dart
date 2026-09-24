@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shine/models/course_data.dart';
 import 'package:shine/models/schedule_reminder_data.dart';
@@ -17,13 +18,20 @@ class ScheduleReminderService {
   /// 单次最多排期的提醒条数
   static const int maxOccurrenceCount = 40;
 
-  /// 按当前课表与提醒设置重排所有上课提醒，返回实际排期成功的条数
+  /// 按当前课表与提醒设置重排所有上课提醒。
+  ///
+  /// 返回排期成功的条数；课表数据还不完整（缺少学期开始时间 / 节次表 / 课程）时
+  /// 返回 -1 并且**保留原有排期**——否则启动瞬间数据没加载完就把已排好的提醒清掉了。
   static Future<int> rescheduleAll({
     required List<CourseData> courseList,
     required List<List<TimeOfDay>> phaseList,
     required DateTime? semesterStartedAt,
     DateTime? now,
   }) async {
+    if (semesterStartedAt == null || phaseList.isEmpty || courseList.isEmpty) {
+      return -1;
+    }
+
     await _cancelScheduled();
 
     final settings = await ScheduleReminderStorage.getSettings();
@@ -52,9 +60,18 @@ class ScheduleReminderService {
         scheduledIds.add(id);
       } catch (e) {
         // 单条排期失败不影响其它提醒
+        if (kDebugMode) {
+          debugPrint('[日程提醒] 排期失败：${occurrence.subjectName} $e');
+        }
       }
     }
     await ScheduleReminderStorage.saveScheduledIds(scheduledIds);
+    if (kDebugMode) {
+      debugPrint(
+        '[日程提醒] 已排期 ${scheduledIds.length} 条，'
+        '开启提醒的课程 ${settings.values.where((s) => s.enabled).length} 门',
+      );
+    }
     return scheduledIds.length;
   }
 
@@ -82,22 +99,10 @@ class ScheduleReminderService {
         ? '第 ${occurrence.startPeriod} 节'
         : '第 ${occurrence.startPeriod}-${occurrence.endPeriod} 节';
     final buffer = StringBuffer('$period $time 开始');
-    if (occurrence.leadMinutes > 0) {
-      buffer.write('，${_leadText(occurrence.leadMinutes)}后');
-    }
     final location = occurrence.location;
     if (location != null && location.isNotEmpty) {
       buffer.write('，地点 $location');
     }
     return buffer.toString();
-  }
-
-  static String _leadText(int leadMinutes) {
-    if (leadMinutes < 60) return '$leadMinutes 分钟';
-    final hours = leadMinutes / 60;
-    final text = hours == hours.roundToDouble()
-        ? hours.round().toString()
-        : hours.toStringAsFixed(1);
-    return '$text 小时';
   }
 }

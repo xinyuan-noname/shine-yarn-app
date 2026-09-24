@@ -42,15 +42,10 @@ class ScheduleReminderSetting {
     );
   }
 
-  /// 提前量的文案：不足 1 小时显示分钟，否则显示小时
+  /// 提前量的文案：不足 1 小时显示分钟，超过 1 小时写成「x 小时 y 分」
   String get leadText {
     if (leadMinutes <= 0) return '上课时';
-    if (leadMinutes < 60) return '提前 $leadMinutes 分钟';
-    final hours = leadMinutes / 60;
-    final text = hours == hours.roundToDouble()
-        ? hours.round().toString()
-        : hours.toStringAsFixed(1);
-    return '提前 $text 小时';
+    return '提前 ${formatMinutesText(leadMinutes)}';
   }
 
   @override
@@ -62,6 +57,16 @@ class ScheduleReminderSetting {
 
   @override
   int get hashCode => Object.hash(enabled, leadMinutes);
+}
+
+/// 把分钟数写成中文时长：45 -> 45 分钟，60 -> 1 小时，90 -> 1 小时 30 分
+String formatMinutesText(int minutes) {
+  if (minutes <= 0) return '0 分钟';
+  if (minutes < 60) return '$minutes 分钟';
+  final hours = minutes ~/ 60;
+  final rest = minutes % 60;
+  if (rest == 0) return '$hours 小时';
+  return '$hours 小时 $rest 分';
 }
 
 /// 一次即将到来的上课提醒

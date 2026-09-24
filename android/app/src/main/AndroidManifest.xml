@@ -27,6 +27,25 @@
             android:foregroundServiceType="dataSync"
             android:exported="false" />
 
+        <!-- 日程提醒的定时投递（flutter_local_notifications 必需）：
+             插件是用 AlarmManager + 显式广播把提醒送到 ScheduledNotificationReceiver 的，
+             这两个 receiver 不声明的话，zonedSchedule 会「设置成功」但到点永远不会弹通知。
+             见插件 README「Android setup」一节，以及 ScheduledNotificationReceiver.java。 -->
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+        <!-- 关机重启 / 应用被覆盖安装后，恢复已经排期好的提醒。 -->
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
