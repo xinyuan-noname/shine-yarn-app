@@ -140,6 +140,199 @@ class _ToolKarnaughMapPageState extends State<ToolKarnaughMapPage> {
     return maxterms.map((m) => _maxtermAlgebraic(m, order)).join(' · ');
   }
 
+  List<String> _minimalSop(
+    Set<int> ones,
+    Set<int> dontCares,
+    List<String> order,
+  ) {
+    if (ones.isEmpty) return ['0'];
+    final n = order.length;
+    final required = ones.toSet();
+    final allowed = {...ones, ...dontCares};
+    final patterns = _allPatterns(n)
+        .where((pattern) => _patternIsValid(pattern, allowed, n))
+        .toList();
+    final primes = _primePatterns(patterns);
+    final cover = _selectCover(primes, required, n);
+    if (cover.isEmpty && required.isNotEmpty) {
+      return ['?'];
+    }
+    return cover.map((pattern) => _patternToProduct(pattern, order)).toList();
+  }
+
+  List<String> _minimalPos(
+    Set<int> zeros,
+    Set<int> dontCares,
+    List<String> order,
+  ) {
+    if (zeros.isEmpty) return ['1'];
+    final n = order.length;
+    final required = zeros.toSet();
+    final allowed = {...zeros, ...dontCares};
+    final patterns = _allPatterns(n)
+        .where((pattern) => _patternIsValid(pattern, allowed, n))
+        .toList();
+    final primes = _primePatterns(patterns);
+    final cover = _selectCover(primes, required, n);
+    if (cover.isEmpty && required.isNotEmpty) {
+      return ['?'];
+    }
+    final sums = cover.map((pattern) => _patternToSum(pattern, order)).toList();
+    if (sums.any((sum) => sum.isEmpty)) {
+      return ['0'];
+    }
+    return sums;
+  }
+
+  List<String> _allPatterns(int n) {
+    final result = <String>[];
+    void generate(String prefix) {
+      if (prefix.length == n) {
+        result.add(prefix);
+        return;
+      }
+      generate('${prefix}0');
+      generate('${prefix}1');
+      generate('$prefix-');
+    }
+
+    generate('');
+    return result;
+  }
+
+  bool _patternIsValid(String pattern, Set<int> allowed, int n) {
+    for (var index = 0; index < (1 << n); index++) {
+      if (_patternMatches(pattern, index, n) && !allowed.contains(index)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool _patternMatches(String pattern, int index, int n) {
+    for (var i = 0; i < n; i++) {
+      final c = pattern[i];
+      if (c == '-') continue;
+      final bit = (index >> (n - 1 - i)) & 1;
+      final expected = c == '1' ? 1 : 0;
+      if (bit != expected) return false;
+    }
+    return true;
+  }
+
+  List<String> _primePatterns(List<String> patterns) {
+    final result = <String>[];
+    for (final pattern in patterns) {
+      var dominated = false;
+      for (final other in patterns) {
+        if (pattern == other) continue;
+        if (_patternCovers(other, pattern) && !_patternCovers(pattern, other)) {
+          dominated = true;
+          break;
+        }
+      }
+      if (!dominated) result.add(pattern);
+    }
+    return result;
+  }
+
+  bool _patternCovers(String general, String specific) {
+    if (general.length != specific.length) return false;
+    for (var i = 0; i < general.length; i++) {
+      if (general[i] != '-' && general[i] != specific[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  List<String> _selectCover(
+    List<String> patterns,
+    Set<int> required,
+    int n,
+  ) {
+    if (required.isEmpty || patterns.isEmpty) return [];
+
+    final count = patterns.length;
+    if (count > 12) {
+      final remaining = required.toSet();
+      final chosen = <String>[];
+      while (remaining.isNotEmpty) {
+        String? best;
+        var bestCover = 0;
+        for (final pattern in patterns) {
+          final cover = remaining
+              .where((index) => _patternMatches(pattern, index, n))
+              .length;
+          if (cover > bestCover) {
+            bestCover = cover;
+            best = pattern;
+          }
+        }
+        if (best == null || bestCover == 0) break;
+        chosen.add(best!);
+        remaining.removeWhere((index) => _patternMatches(best!, index, n));
+      }
+      return chosen;
+    }
+
+    var bestMask = 0;
+    var bestTerms = 1 << 30;
+    var bestLiterals = 1 << 30;
+    for (var mask = 1; mask < (1 << count); mask++) {
+      final covered = <int>{};
+      var termCount = 0;
+      var literalCount = 0;
+      for (var i = 0; i < count; i++) {
+        if ((mask & (1 << i)) == 0) continue;
+        termCount++;
+        literalCount += patterns[i].replaceAll('-', '').length;
+        for (final index in required) {
+          if (_patternMatches(patterns[i], index, n)) {
+            covered.add(index);
+          }
+        }
+      }
+      if (!required.every(covered.contains)) continue;
+      if (termCount < bestTerms ||
+          (termCount == bestTerms && literalCount < bestLiterals)) {
+        bestTerms = termCount;
+        bestLiterals = literalCount;
+        bestMask = mask;
+      }
+    }
+
+    if (bestMask == 0) return [];
+    final result = <String>[];
+    for (var i = 0; i < count; i++) {
+      if ((bestMask & (1 << i)) != 0) {
+        result.add(patterns[i]);
+      }
+    }
+    return result;
+  }
+
+  String _patternToProduct(String pattern, List<String> order) {
+    final terms = <String>[];
+    for (var i = 0; i < pattern.length; i++) {
+      final c = pattern[i];
+      if (c == '0') terms.add("${order[i]}'");
+      if (c == '1') terms.add(order[i]);
+    }
+    return terms.isEmpty ? '1' : terms.join('·');
+  }
+
+  String _patternToSum(String pattern, List<String> order) {
+    final terms = <String>[];
+    for (var i = 0; i < pattern.length; i++) {
+      final c = pattern[i];
+      if (c == '0') terms.add(order[i]);
+      if (c == '1') terms.add("${order[i]}'");
+    }
+    return terms.isEmpty ? '' : '(${terms.join(' + ')})';
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final order = _activeOrder;
@@ -385,6 +578,14 @@ class _ToolKarnaughMapPageState extends State<ToolKarnaughMapPage> {
     final functionName = 'F(${order.join()})';
     final mintermsText = minterms.isEmpty ? '' : minterms.join(',');
     final maxtermsText = maxterms.isEmpty ? '' : maxterms.join(',');
+    final dontCares = <int>{};
+    _cells.forEach((index, state) {
+      if (state == 'd') dontCares.add(index);
+    });
+    final sopTerms = _minimalSop(minterms.toSet(), dontCares, order);
+    final posTerms = _minimalPos(maxterms.toSet(), dontCares, order);
+    final sopText = sopTerms.join(' + ');
+    final posText = posTerms.join('·');
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -397,7 +598,7 @@ class _ToolKarnaughMapPageState extends State<ToolKarnaughMapPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            '表达式输出',
+            '最简式与 m(x)/M(x)',
             style: TextStyle(
               fontFamily: 'SmileySans',
               fontSize: 18,
@@ -406,31 +607,31 @@ class _ToolKarnaughMapPageState extends State<ToolKarnaughMapPage> {
           ),
           const SizedBox(height: 10),
           Text(
-            '最小项之和：$functionName = Σm($mintermsText)',
+            '最简与或式：$functionName = $sopText',
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
             if (minterms.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(
-                '展开：$functionName = ${_mintermsAlgebraic(minterms, order)}',
+                'm(x) = Σm($mintermsText)',
                 style: const TextStyle(fontSize: 14, color: Colors.black87),
               ),
             ],
           const SizedBox(height: 6),
           Text(
-            '最大项之积：$functionName = ΠM($maxtermsText)',
+            '最简或与式：$functionName = $posText',
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
             if (maxterms.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(
-                '展开：$functionName = ${_maxtermsAlgebraic(maxterms, order)}',
+                'M(x) = ΠM($maxtermsText)',
                 style: const TextStyle(fontSize: 14, color: Colors.black87),
               ),
             ],
           const SizedBox(height: 8),
           const Text(
-            '注：d 为无关项，不参与最小项/最大项统计。',
+            '注：d 作为无关项参与化简。',
             style: TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ],
