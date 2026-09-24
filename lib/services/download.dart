@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:shine/components/toast.dart';
@@ -8,6 +9,9 @@ import '../utils/permission_utils.dart';
 typedef DownloadCallback = void Function(String taskId, TaskStatus status);
 
 typedef DownloadProgressCallback = void Function(String taskId, int progress);
+
+/// 下载完成回调：带上文件的真实路径（解析不出来时为 null）
+typedef DownloadDoneCallback = void Function(String taskId, String? filePath);
 
 class DownloadTaskWrapper {
   final DownloadTask task;
@@ -25,6 +29,13 @@ class DownloadUtils {
   static final DownloadUtils _instance = DownloadUtils._internal();
   factory DownloadUtils() => _instance;
   DownloadUtils._internal();
+
+  /// 所有下载都放在 baseDirectory 下的这个子目录里，
+  /// 下载完成后按 `Task.filePath()` 就能算出文件的真实位置
+  static const String defaultDirectory = 'downloads';
+
+  /// 失败自动重试次数：移动网络下大文件很容易断一次就整体失败
+  static const int defaultRetries = 3;
 
   final FileDownloader _downloader = FileDownloader();
 
@@ -85,10 +96,14 @@ class DownloadUtils {
     required String url,
     required String filename,
     Map<String, String>? headers,
+    String directory = defaultDirectory,
+    BaseDirectory baseDirectory = BaseDirectory.temporary,
+    int retries = defaultRetries,
     String title = '正在下载...',
     String description = '请稍候',
     DownloadCallback? onStatusChanged,
     DownloadProgressCallback? onProgress,
+    DownloadDoneCallback? onDone,
   }) async {
     try {
       final hasPermission = await _checkPermission();
@@ -100,10 +115,12 @@ class DownloadUtils {
       final task = DownloadTask(
         url: url,
         filename: filename,
+        directory: directory,
         headers: headers,
         updates: Updates.statusAndProgress,
         allowPause: true,
-        baseDirectory: BaseDirectory.temporary,
+        retries: retries,
+        baseDirectory: baseDirectory,
       );
 
       _activeTasks[task.taskId] = DownloadTaskWrapper(
@@ -112,21 +129,39 @@ class DownloadUtils {
         filename: filename,
       );
 
-      await _downloader.download(
+      // download() 会一直等到任务结束，返回最终状态
+      final update = await _downloader.download(
         task,
         onProgress: (progress) {
           final percent = (progress * 100).toInt();
           _progressCache[task.taskId] = percent;
           onProgress?.call(task.taskId, percent);
         },
-        onStatus: (status) {
-          onStatusChanged?.call(task.taskId, status);
-        },
+        onStatus: (status) => onStatusChanged?.call(task.taskId, status),
       );
+
+      // 下载完成后把真实文件路径交给调用方：文件实际落在
+      // baseDirectory/directory/filename，自己拼路径很容易拼错。
+      // 这里等 await 回来再解析，避免和回调抢时序（回调可能晚于 download() 返回）。
+      if (update.status == TaskStatus.complete) {
+        onDone?.call(task.taskId, await _resolveFilePath(task));
+      }
 
       return task.taskId;
     } catch (e) {
       showToast(msg: '下载失败：${e.toString()}');
+      return null;
+    }
+  }
+
+  /// 任务对应的真实文件路径，文件不存在或解析失败时返回 null
+  Future<String?> _resolveFilePath(DownloadTask task) async {
+    try {
+      final path = await task.filePath();
+      if (path.isEmpty) return null;
+      if (!await File(path).exists()) return null;
+      return path;
+    } catch (e) {
       return null;
     }
   }

@@ -124,6 +124,22 @@ class PermissionUtils {
     }
   }
 
+  /// 「允许安装未知应用」权限（Android 8+ 安装 apk 必需）。
+  ///
+  /// 系统没有直接授权的对话框，request 会把用户带到该应用的开关页面，
+  /// 用户打开开关返回后这里再读一次状态；桌面端没有这个权限，直接返回 true。
+  static Future<bool> requestInstallPermission() async {
+    if (!Platform.isAndroid) return true;
+    try {
+      final status = await Permission.requestInstallPackages.status;
+      if (status.isGranted) return true;
+      final result = await Permission.requestInstallPackages.request();
+      return result.isGranted;
+    } catch (e) {
+      return false;
+    }
+  }
+
   static Future<bool> ensureDownloadPermission() async {
     final hasPermission = await requestStoragePermission();
     

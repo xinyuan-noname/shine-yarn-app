@@ -882,8 +882,7 @@ showScheduleReminderManagerDialog({
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '共 ${courseList.length} 门课程，已开启 $enabledCount 门'
-                      '${scheduledCount == null ? '' : '，已排期 $scheduledCount 条提醒'}',
+                      '共 ${courseList.length} 门课程，已开启 $enabledCount 门',
                       style: dialogContentSmallStyle.copyWith(
                         color: bgColorLight80,
                       ),
@@ -896,7 +895,7 @@ showScheduleReminderManagerDialog({
                       _buildReminderWarning('未获得「闹钟和提醒」权限，提醒可能延迟几分钟'),
                     SizedBox(height: 8),
                     Text(
-                      '新开启课程的提前量',
+                      '提前提醒时间',
                       style: dialogContentStyle.copyWith(
                         fontWeight: FontWeight.bold,
                       ),

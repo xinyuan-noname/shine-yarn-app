@@ -341,28 +341,37 @@ class _ProfilePageState extends State<ProfilePage> {
       color: Colors.white,
       child: InkWell(
         onTap: () async {
-          if (ApiUpdate.downloadUrl.isEmpty) {
-            showAlertDialog(context: context, title: "暂无更新", content: "暂无更新包");
+          final release = ApiUpdate.latestRelease;
+          if (release == null || ApiUpdate.downloadUrl.isEmpty) {
+            // 以前这里忘了 return，提示完「暂无更新」还会去跳转一个空链接
+            await showAlertDialog(
+              context: context,
+              title: "暂无更新",
+              content: "暂时没有拿到更新包，请稍后再试",
+            );
+            return;
           }
+          final isWindows = ApiUpdate.isWindowsPlatform;
+          final assetName = release.assetNameFor(isWindows: isWindows);
+          final remoteVersion = release.versionFor(isWindows: isWindows);
           final result = await showConfirmDialog(
             context: context,
-            title: "跳转更新",
-            content: "点击“确认”跳转更新。",
+            title: "下载更新",
+            content:
+                "当前版本 $_version，最新版本 $remoteVersion（$assetName）。\n"
+                "下载完成后会直接打开安装包。",
+            confirmText: "下载",
           );
-          if (result) {
-            launchUrlString(
-              ApiUpdate.downloadUrl,
-              mode: LaunchMode.externalApplication,
-            );
-          }
+          if (!result || !mounted) return;
+          await Worker.downloadUpdatePackage(context: context, release: release);
         },
         child: Container(
           padding: bodyPadding,
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("跳转更新", style: profileKeyTextStyle),
-              Text("跳转更新", style: profileValueTextStyle),
+              Text("应用更新", style: profileKeyTextStyle),
+              Text("应用内下载", style: profileValueTextStyle),
             ],
           ),
         ),

@@ -29,9 +29,14 @@ class ApiMessage {
     }
   }
 
+  /// 发布事项。
+  ///
+  /// [source] 是发布者昵称：事项改为所有人都能发布后，来源统一写昵称，
+  /// 由服务端原样存回列表的 source 字段（不传时保持服务端原有取值）。
   static Future<String?> addPublicToDoItem({
     required String title,
     required String content,
+    String? source,
   }) async {
     if (!ApiService.prepared) return "服务未就绪";
     try {
@@ -41,6 +46,7 @@ class ApiMessage {
           "title": title,
           "content": content,
           "ts": DateTime.now().millisecondsSinceEpoch,
+          if (source != null && source.trim().isNotEmpty) "source": source.trim(),
         },
       );
       return null;
@@ -51,16 +57,25 @@ class ApiMessage {
     }
   }
 
+  /// 修改事项。
+  ///
+  /// [source] 传原事项的来源，避免服务端把作者改写成当前操作人。
   static Future<String?> updatePublicToDoItem({
     required String itemId,
     required String title,
     required String content,
+    String? source,
   }) async {
     if (!ApiService.prepared) return "服务未就绪";
     try {
       await dio.patch(
         "/message/to_do/public/update",
-        data: {"itemId": itemId, "title": title, "content": content},
+        data: {
+          "itemId": itemId,
+          "title": title,
+          "content": content,
+          if (source != null && source.trim().isNotEmpty) "source": source.trim(),
+        },
       );
       return null;
     } on DioException catch (e) {

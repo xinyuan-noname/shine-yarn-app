@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -150,6 +151,91 @@ void main() {
     });
   });
 
+  group('事项图片标记', () {
+    final String imageName = '${'a' * 64}.png';
+
+    test('识别 %img[名称]% 标记', () {
+      final segments = parseRichTextSegments(
+        '明天交作业 %img[$imageName]% 记得打印',
+      );
+      final images = segments
+          .where((s) => s.type == RichTextSegmentType.image)
+          .toList();
+      expect(images.length, 1);
+      expect(images.single.imageName, imageName);
+      // 拼回原文时标记保持完整
+      expect(segments.map((s) => s.text).join(), '明天交作业 %img[$imageName]% 记得打印');
+    });
+
+    test('多个图片标记都能识别', () {
+      final other = '${'b' * 64}.jpg';
+      final segments = parseRichTextSegments(
+        '%img[$imageName]%\n%img[$other]%',
+      );
+      final images = segments
+          .where((s) => s.type == RichTextSegmentType.image)
+          .toList();
+      expect(images.map((s) => s.imageName), [imageName, other]);
+    });
+
+    test('非法标记按普通文字处理', () {
+      for (final text in [
+        '%img[../secret.png]%',
+        '%img[abc.png]%',
+        '%img[${'a' * 64}.exe]%',
+      ]) {
+        final segments = parseRichTextSegments(text);
+        expect(
+          segments.every((s) => s.type == RichTextSegmentType.text),
+          isTrue,
+          reason: text,
+        );
+        expect(segments.map((s) => s.text).join(), text);
+      }
+    });
+
+    test('绝对地址写法不会被当成图片标记', () {
+      // 图片标记只认服务端文件名，写出完整网址时退化成普通链接
+      final text = '%img[https://a.com/x.png]%';
+      final segments = parseRichTextSegments(text);
+      expect(
+        segments.any((s) => s.type == RichTextSegmentType.image),
+        isFalse,
+      );
+      expect(segments.any((s) => s.type == RichTextSegmentType.link), isTrue);
+      expect(segments.map((s) => s.text).join(), text);
+    });
+
+    test('图片标记与链接可以混排', () {
+      final segments = parseRichTextSegments(
+        '见 https://example.com/a 和 %img[$imageName]%',
+      );
+      expect(
+        segments.map((s) => s.type),
+        [
+          RichTextSegmentType.text,
+          RichTextSegmentType.link,
+          RichTextSegmentType.text,
+          RichTextSegmentType.image,
+        ],
+      );
+    });
+
+    test('清理标记后可用于纯文本消息', () {
+      final content = '交作业 %img[$imageName]% 别忘了';
+      expect(stripToDoImageTags(content), '交作业  别忘了');
+      expect(stripToDoImageTags('没有图片'), '没有图片');
+      expect(
+        stripToDoImageTags(content, replacement: '[图片]'),
+        '交作业 [图片] 别忘了',
+      );
+    });
+
+    test('图片地址按当前服务器地址拼接', () {
+      expect(toDoImageUrl(imageName), endsWith('/asset/image/$imageName'));
+    });
+  });
+
   group('LinkText 渲染与点击', () {
     Future<void> pumpLinkText(
       WidgetTester tester, {
@@ -260,6 +346,53 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('学习通'), findsNothing);
+    });
+
+    testWidgets('图片标记渲染成图片且点击可看大图', (WidgetTester tester) async {
+      final imageName = '${'c' * 64}.png';
+      final opened = <(String, String)>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: LinkText(
+              '作业如图 %img[$imageName]% 请查收',
+              style: const TextStyle(fontSize: 16),
+              onOpenImage: (name, url) async {
+                opened.add((name, url));
+                return true;
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.byType(CachedNetworkImage), findsOneWidget);
+      // 标记本身不再作为文字出现
+      expect(find.textContaining('%img['), findsNothing);
+
+      await tester.tap(find.byType(CachedNetworkImage));
+      await tester.pump();
+      expect(opened.length, 1);
+      expect(opened.single.$1, imageName);
+      expect(opened.single.$2, endsWith('/asset/image/$imageName'));
+    });
+
+    testWidgets('showImages 关闭时图片标记按文字展示', (WidgetTester tester) async {
+      final imageName = '${'d' * 64}.png';
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: LinkText(
+              '标题 %img[$imageName]%',
+              showImages: false,
+              style: const TextStyle(fontSize: 16),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(CachedNetworkImage), findsNothing);
+      expect(find.textContaining('%img['), findsOneWidget);
     });
   });
 }

@@ -11,7 +11,6 @@ import 'package:shine/components/toast.dart';
 import 'package:shine/models/to_do_item_data.dart';
 import 'package:shine/pages/to_do_page.dart';
 import 'package:shine/routes.dart';
-import 'package:shine/services/api.dart';
 import 'package:shine/services/api_message.dart';
 import 'package:shine/services/api_resource.dart';
 import 'package:shine/storage/message_storage.dart';
@@ -19,7 +18,9 @@ import 'package:shine/storage/to_do_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/file_utils.dart';
 import 'package:shine/utils/time_utils.dart';
+import 'package:shine/utils/to_do_author_utils.dart';
 import 'package:shine/utils/to_do_subject_utils.dart';
+import 'package:shine/utils/to_do_viewer.dart';
 
 class FlagView extends StatelessWidget {
   final List<ToDoItemData> unfinishedItemList;
@@ -265,6 +266,8 @@ class FlagView extends StatelessWidget {
                                             textAlign: TextAlign.left,
                                             overflow: TextOverflow.ellipsis,
                                             maxLines: 1,
+                                            // 标题只有一行，图片标记按文字展示即可
+                                            showImages: false,
                                           ),
                                         ),
                                         if (itemSubject != null) ...[
@@ -288,7 +291,7 @@ class FlagView extends StatelessWidget {
                                             MainAxisAlignment.end,
                                         children: [
                                           Text(
-                                            item.source,
+                                            toDoSourceLabel(item.source),
                                             style: const TextStyle(
                                               fontFamily: "SmileySans",
                                               fontSize: 13,
@@ -373,6 +376,8 @@ class FlagView extends StatelessWidget {
                                             textAlign: TextAlign.left,
                                             overflow: TextOverflow.ellipsis,
                                             maxLines: 1,
+                                            // 标题只有一行，图片标记按文字展示即可
+                                            showImages: false,
                                           ),
                                         ),
                                         if (itemSubject != null) ...[
@@ -409,7 +414,7 @@ class FlagView extends StatelessWidget {
                                             MainAxisAlignment.end,
                                         children: [
                                           Text(
-                                            item.source,
+                                            toDoSourceLabel(item.source),
                                             style: const TextStyle(
                                               fontFamily: "SmileySans",
                                               fontSize: 13,
@@ -461,10 +466,7 @@ class FlagView extends StatelessWidget {
             bottom: 20,
             child: FloatingActionButtonWidget(
               onTap: () async {
-                if (ApiService.position == null) {
-                  showToast(msg: "没有职务的同学不能创建事项");
-                  return;
-                }
+                // 所有人都能发布事项，不再限制职务
                 await globalNavigatorKey.currentState?.pushNamed('/to_do');
               },
             ),
@@ -891,9 +893,10 @@ class FlagView extends StatelessWidget {
   }
 
   void _deleteToDoItem(BuildContext context, ToDoItemData data) async {
-    if (ApiService.position == null) return;
-    if (ApiService.position != data.source) {
-      showToast(msg: "你无法操作其他人发布的代办项！");
+    final viewer = await ToDoViewer.load();
+    if (!context.mounted) return;
+    if (!viewer.canOperate(data.source)) {
+      showToast(msg: "只能操作自己发布的事项");
       return;
     }
     final result = await showConfirmDialog(
@@ -915,6 +918,11 @@ class FlagView extends StatelessWidget {
   }
 
   void _gotoEditToDoItem(ToDoItemData data) async {
+    final viewer = await ToDoViewer.load();
+    if (!viewer.canOperate(data.source)) {
+      showToast(msg: "只能编辑自己发布的事项");
+      return;
+    }
     await globalNavigatorKey.currentState?.pushNamed(
       '/to_do',
       arguments: ToDoPageArgs(data: data),

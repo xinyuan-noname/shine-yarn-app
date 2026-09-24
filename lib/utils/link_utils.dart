@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:shine/components/toast.dart';
+import 'package:shine/services/api.dart';
 import 'package:shine/services/launch_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -26,8 +27,24 @@ final RegExp urlPattern = RegExp(
 /// 「学习通」关键字匹配：允许带【】/ [] / 「」 括号与空格，例如「【学习通】」
 final RegExp chaoxingPattern = RegExp(r'[【\[「]?\s*学习通\s*[】\]」]?');
 
+/// 事项内容里插入图片的标记：%img[<sha256>.<后缀>]%
+///
+/// 只存服务端的文件名（而不是完整网址），这样服务器地址变化后老内容依然可用
+final RegExp toDoImagePattern = RegExp(
+  r'%img\[([0-9a-f]{64}\.(?:jpg|jpeg|png|gif|webp|bmp))\]%',
+);
+
+/// 把事项里保存的图片名拼成可访问的地址
+String toDoImageUrl(String name) => '${ApiService.url}/asset/image/$name';
+
+/// 去掉内容里的图片标记，用于只展示纯文本的场景（例如提醒消息）
+String stripToDoImageTags(String text, {String replacement = ''}) {
+  if (text.isEmpty) return text;
+  return text.replaceAll(toDoImagePattern, replacement);
+}
+
 /// 文本片段类型
-enum RichTextSegmentType { text, link, chaoxing }
+enum RichTextSegmentType { text, link, chaoxing, image }
 
 /// 切分后的文本片段
 class RichTextSegment {
@@ -39,7 +56,10 @@ class RichTextSegment {
   /// 链接片段对应的可打开地址
   final String? url;
 
-  const RichTextSegment(this.type, this.text, {this.url});
+  /// 图片片段对应的服务端文件名
+  final String? imageName;
+
+  const RichTextSegment(this.type, this.text, {this.url, this.imageName});
 }
 
 /// 去掉链接末尾常见的标点，避免把句号、右括号算进网址
@@ -69,7 +89,7 @@ Uri? toOpenableUri(String url) {
 /// 文本中是否提到学习通
 bool containsChaoxingKeyword(String text) => chaoxingPattern.hasMatch(text);
 
-/// 把一段文本切成「普通文本 / 链接 / 学习通」片段，供富文本渲染使用
+/// 把一段文本切成「普通文本 / 链接 / 学习通 / 图片」片段，供富文本渲染使用
 List<RichTextSegment> parseRichTextSegments(
   String text, {
   bool recognizeChaoxing = true,
@@ -94,6 +114,15 @@ List<RichTextSegment> parseRichTextSegments(
         value: match.group(0)!,
       ));
     }
+  }
+  for (final match in toDoImagePattern.allMatches(text)) {
+    // 图片片段只需要文件名，展示时再拼成地址
+    matches.add((
+      start: match.start,
+      end: match.end,
+      type: RichTextSegmentType.image,
+      value: match.group(1)!,
+    ));
   }
   matches.sort((a, b) => a.start.compareTo(b.start));
 
@@ -123,6 +152,14 @@ List<RichTextSegment> parseRichTextSegments(
           ),
         );
       }
+    } else if (match.type == RichTextSegmentType.image) {
+      segments.add(
+        RichTextSegment(
+          RichTextSegmentType.image,
+          toDoImageToken(match.value),
+          imageName: match.value,
+        ),
+      );
     } else {
       segments.add(
         RichTextSegment(RichTextSegmentType.chaoxing, chaoxingKeyword),
@@ -137,6 +174,9 @@ List<RichTextSegment> parseRichTextSegments(
   }
   return segments;
 }
+
+/// 由图片文件名还原出完整标记，便于把片段重新拼回原文
+String toDoImageToken(String name) => '%img[$name]%';
 
 /// 用系统浏览器 / 默认应用打开链接
 Future<bool> openLinkUrl(String url) async {
