@@ -68,7 +68,13 @@ Future<DateTime?> showWeekBottomSheet(
           ),
           itemCount: 20,
           itemBuilder: (BuildContext context, int index) {
-            DateTime date = startedAt.add(Duration(days: index * 7));
+            // 从第 1 周的周一算起，和课表里的「第 N 周」保持一致
+            final weekStart = weekStartOf(startedAt);
+            DateTime date = DateTime(
+              weekStart.year,
+              weekStart.month,
+              weekStart.day + index * 7,
+            );
             return GestureDetector(
               onTap: () {
                 Navigator.of(context).pop();

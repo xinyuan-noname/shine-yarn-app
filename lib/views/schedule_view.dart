@@ -19,7 +19,6 @@ import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/models/course_data.dart';
 import 'package:shine/utils/time_utils.dart';
-import 'package:week_of_year/date_week_extensions.dart';
 
 /// 基准尺寸，以 360 宽屏幕下的课表为基准，其它屏幕按比例自适应
 const double _baseCellWidth = 35;
@@ -1020,8 +1019,10 @@ class _ScheduleViewState extends State<ScheduleView> {
                         ),
                       ),
                     ),
-                  // 已开启上课提醒的课程打个铃铛标
-                  if (_isReminderEnabled(scheduleItem.$1.subjectName))
+                  // 已开启上课提醒的课程打个铃铛标；
+                  // 节假日不上课、也不会排提醒，所以不显示
+                  if (holidayName == null &&
+                      _isReminderEnabled(scheduleItem.$1.subjectName))
                     Positioned(
                       bottom: 0,
                       left: 0,
@@ -1092,12 +1093,8 @@ class _ScheduleViewState extends State<ScheduleView> {
     return _getWeek(DateTime.now());
   }
 
-  int _getWeek(DateTime d) {
-    if (widget.semesterStartedAt == null) return 0;
-    final s = widget.semesterStartedAt?.weekOfYear ?? 1;
-    final e = d.weekOfYear;
-    return e - s + 1;
-  }
+  /// 第几周：以学期开始日期所在周的周一为第 1 周（跨年不会算成负数）
+  int _getWeek(DateTime d) => semesterWeekOf(d, widget.semesterStartedAt);
 
   int _getShowTimeWeek() {
     return _getWeek(widget.showDate);

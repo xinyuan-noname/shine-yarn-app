@@ -28,7 +28,6 @@ import 'package:shine/utils/share_utils.dart';
 import 'package:shine/utils/time_utils.dart';
 import 'package:shine/utils/upload_utils.dart';
 import 'package:shine/worker/worker.dart';
-import 'package:week_of_year/date_week_extensions.dart';
 
 class TaskUploadPage extends StatefulWidget {
   const TaskUploadPage({super.key});
@@ -523,11 +522,8 @@ class _TaskUploadPageState extends State<TaskUploadPage> {
     return result;
   }
 
-  int _getSemesterWeek(DateTime d) {
-    final s = _semesterStartedAt.weekOfYear;
-    final e = d.weekOfYear;
-    return e - s + 1;
-  }
+  /// 第几周：以学期开始日期所在周的周一为第 1 周（跨年不会算成负数）
+  int _getSemesterWeek(DateTime d) => semesterWeekOf(d, _semesterStartedAt);
 
   Widget _buildUpdateButton() {
     return Container(

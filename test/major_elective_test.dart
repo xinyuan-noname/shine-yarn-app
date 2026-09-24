@@ -33,6 +33,18 @@ CourseData _course({
   );
 }
 
+/// 判断某个课程格上是否显示着「上课提醒」铃铛角标
+bool _hasReminderBadge(WidgetTester tester, String courseName) {
+  final cell = find.ancestor(
+    of: find.text(courseName),
+    matching: find.byType(InkWell),
+  );
+  return find
+      .descendant(of: cell, matching: find.byIcon(Icons.notifications_active))
+      .evaluate()
+      .isNotEmpty;
+}
+
 /// 判断某个课程格是否使用了指定底色
 bool _hasBackgroundColor(WidgetTester tester, String courseName, Color color) {
   final containers = find.ancestor(
@@ -279,6 +291,26 @@ void main() {
       expect(_hasBackgroundColor(tester, '嵌入式系统', mainColorHoliday), isTrue);
       // 其它天的课程不受影响
       expect(_hasOrangeBackground(tester, '数字信号处理'), isTrue);
+    });
+
+    testWidgets('节假日的课程不显示提醒铃铛角标', (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues({
+        // 2026-03-04（周三）放假；缓存未过期，不会触发联网
+        'holiday_cache_key': jsonEncode([
+          {'start': '2026-03-04', 'end': '2026-03-04', 'name': '校庆'},
+        ]),
+        'holiday_cache_synced_at_key': DateTime.now().toIso8601String(),
+        // 周三、周二两门课都开了上课提醒
+        'schedule_reminder_setting_key': jsonEncode({
+          '嵌入式系统': {'enabled': true, 'leadMinutes': 30},
+          '数字信号处理': {'enabled': true, 'leadMinutes': 30},
+        }),
+      });
+      await pumpSchedule(tester);
+      // 节假日那门课不会响，因此不显示铃铛
+      expect(_hasReminderBadge(tester, '嵌入式系统'), isFalse);
+      // 正常上课的那天仍然有铃铛
+      expect(_hasReminderBadge(tester, '数字信号处理'), isTrue);
     });
 
     testWidgets('没有节假日时课程按原配色显示', (WidgetTester tester) async {

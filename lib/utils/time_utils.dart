@@ -1,5 +1,3 @@
-import 'package:week_of_year/date_week_extensions.dart';
-
 DateTime getTodayStartMoment() {
   final now = DateTime.now().toLocal();
   return DateTime(now.year, now.month, now.day);
@@ -41,11 +39,33 @@ String getLocalTimeYMDString(DateTime time, {String joinedString = '/'}) {
   return [yS, mS, dS].join(joinedString);
 }
 
+/// 某天所在周的周一（本地日期，时间部分归零）。
+///
+/// 所有周相关的计算都以这个函数为基准：ISO 周号在跨年处会回绕
+/// （2026 年第 52 周之后是 2027 年第 1 周），直接相减会算出负数。
+DateTime weekStartOf(DateTime date) {
+  final day = DateTime(date.year, date.month, date.day);
+  return day.subtract(Duration(days: date.weekday - 1));
+}
+
+/// 两个日期相差的自然天数（用 UTC 归一化，避免夏令时把天数算错一天）
+int daysBetween(DateTime from, DateTime to) {
+  final start = DateTime.utc(from.year, from.month, from.day);
+  final end = DateTime.utc(to.year, to.month, to.day);
+  return end.difference(start).inDays;
+}
+
+/// 某天是学期的第几周（第 1 周从学期开始日期所在周的周一起算）。
+///
+/// 跨年不会算错；早于学期开始返回 0 或负数；没有学期开始时间返回 0。
+int semesterWeekOf(DateTime date, DateTime? semesterStartedAt) {
+  if (semesterStartedAt == null) return 0;
+  return daysBetween(weekStartOf(semesterStartedAt), weekStartOf(date)) ~/ 7 +
+      1;
+}
+
 List<DateTime> getWeekDates(DateTime date) {
-  final weekday = date.weekday;
-
-  final monday = date.subtract(Duration(days: weekday - 1));
-
+  final monday = weekStartOf(date);
   return List.generate(7, (i) {
     return DateTime(monday.year, monday.month, monday.day + i);
   });
@@ -58,9 +78,9 @@ bool isToday(DateTime date) {
       now.day == date.day;
 }
 
+/// 是否和今天在同一周（同 ISO 周但跨年的情况也能正确判断）
 bool inCurrentWeek(DateTime date) {
-  final now = DateTime.now();
-  return date.year == now.year && date.weekOfYear == now.weekOfYear;
+  return weekStartOf(date) == weekStartOf(DateTime.now());
 }
 
 String getCnWeekDayName(DateTime date) {
@@ -85,7 +105,6 @@ String getCnWeekDayName(DateTime date) {
 }
 
 extension DateTimeExtension on DateTime {
-  inSameWeek(DateTime date) {
-    return year == date.year && weekOfYear == date.weekOfYear;
-  }
+  /// 是否和 [date] 在同一周（按周一划分，跨年也对）
+  bool inSameWeek(DateTime date) => weekStartOf(this) == weekStartOf(date);
 }

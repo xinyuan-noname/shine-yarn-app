@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shine/models/course_data.dart';
 import 'package:shine/models/holiday_data.dart';
+import 'package:shine/utils/time_utils.dart';
 
 /// 日程提醒设置：是否开启 + 提前多少分钟提醒
 class ScheduleReminderSetting {
@@ -128,9 +129,7 @@ List<ScheduleReminderOccurrence> buildScheduleReminderOccurrences({
   if (semesterStartedAt == null || phaseList.isEmpty) return const [];
   final current = now ?? DateTime.now();
   // 第 1 周周一：学期开始日期所在那一周的周一
-  final weekOneMonday = DateUtils.dateOnly(
-    semesterStartedAt,
-  ).subtract(Duration(days: semesterStartedAt.weekday - 1));
+  final weekOneMonday = weekStartOf(semesterStartedAt);
   final horizonEnd = DateUtils.dateOnly(
     current,
   ).add(Duration(days: horizonDays));
@@ -147,8 +146,11 @@ List<ScheduleReminderOccurrence> buildScheduleReminderOccurrences({
       final startTime = phaseList[startPeriod - 1][0];
       for (final week in session.weeks) {
         if (week < 1) continue;
-        final date = weekOneMonday.add(
-          Duration(days: (week - 1) * 7 + session.weekday - 1),
+        // 用日历天相加，避免夏令时导致日期偏移
+        final date = DateTime(
+          weekOneMonday.year,
+          weekOneMonday.month,
+          weekOneMonday.day + (week - 1) * 7 + session.weekday - 1,
         );
         if (date.isAfter(horizonEnd)) continue;
         // 节假日不上课，不排提醒
