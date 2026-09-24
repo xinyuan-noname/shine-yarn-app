@@ -6,15 +6,15 @@ import 'package:shine/storage/message_storage.dart';
 
 MessageGroupData _anonymousGroup() {
   return MessageGroupData(
-    sourceKey: anonymousMessageSourceId,
+    sourceKey: "$anonymousMessageSourceId:安静的海豚",
     sourceId: anonymousMessageSourceId,
-    sourceUsername: anonymousMessageUsername,
+    sourceUsername: "安静的海豚",
     anonymous: true,
     messageList: [
       RemindMessageStorageData(
         id: 2,
         sourceId: anonymousMessageSourceId,
-        sourceUsername: anonymousMessageUsername,
+        sourceUsername: "安静的海豚",
         content: "匿名消息内容",
         anonymous: true,
         sentAt: DateTime(2026, 1, 1, 10),
@@ -22,7 +22,7 @@ MessageGroupData _anonymousGroup() {
       RemindMessageStorageData(
         id: 1,
         sourceId: anonymousMessageSourceId,
-        sourceUsername: anonymousMessageUsername,
+        sourceUsername: "安静的海豚",
         content: "更早的匿名消息",
         anonymous: true,
         readed: true,
@@ -53,8 +53,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text(anonymousMessageUsername), findsOneWidget);
-    expect(find.text("匿名"), findsOneWidget);
+    expect(find.text("安静的海豚"), findsOneWidget);
     expect(find.text("共2条"), findsOneWidget);
     // 折叠状态下展示最新一条消息的预览
     expect(find.text("匿名消息内容"), findsOneWidget);
@@ -81,7 +80,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text(anonymousMessageUsername));
+    await tester.tap(find.text("安静的海豚"));
     await tester.pumpAndSettle();
 
     // 两条消息都以精简模式展示，且提供清空操作；匿名分组不提供回复入口

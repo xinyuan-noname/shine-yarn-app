@@ -71,10 +71,11 @@ class NetworkAvatar extends StatelessWidget {
   }
 }
 
-/// 匿名消息使用的头像，不展示任何身份信息
-class AnonymousAvatar extends StatelessWidget {
+/// 匿名消息使用的头像：直接展示随机昵称的首字，不请求网络头像
+class AliasAvatar extends StatelessWidget {
+  final String name;
   final double radius;
-  const AnonymousAvatar({super.key, this.radius = 30});
+  const AliasAvatar({super.key, this.name = '', this.radius = 30});
 
   @override
   Widget build(BuildContext context) {
@@ -96,10 +97,14 @@ class AnonymousAvatar extends StatelessWidget {
       child: CircleAvatar(
         backgroundColor: mainColorGreenBlue40,
         radius: radius,
-        child: Icon(
-          Icons.person_off_outlined,
-          size: radius * 1.2,
-          color: bgColorLight80,
+        child: Text(
+          name.isEmpty ? "闪" : name.substring(0, 1),
+          style: TextStyle(
+            fontSize: radius * 1.2,
+            fontWeight: FontWeight.bold,
+            fontFamily: "SmileySans",
+            color: bgColorLight,
+          ),
         ),
       ),
     );

@@ -103,7 +103,7 @@ class _MessageGroupCardState extends State<MessageGroupCard> {
           backgroundColor: mainColorRed,
           textColor: bgColorLight,
           child: group.anonymous
-              ? const AnonymousAvatar(radius: 24)
+              ? AliasAvatar(name: group.displayUsername, radius: 24)
               : NetworkAvatar(id: group.sourceId, radius: 24),
         ),
         const SizedBox(width: 10),
@@ -162,33 +162,10 @@ class _MessageGroupCardState extends State<MessageGroupCard> {
 
   Widget _buildUsername() {
     final group = widget.group;
-    final username = Text(
-      group.displayUsername.isEmpty ? "未知用户" : group.displayUsername,
+    return Text(
+      group.displayUsername,
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(fontFamily: 'SmileySans', fontSize: 20),
-    );
-    if (!group.anonymous) return username;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Flexible(child: username),
-        const SizedBox(width: 6),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0.5),
-          decoration: BoxDecoration(
-            color: mainColorGreenBlue60,
-            borderRadius: BorderRadius.all(Radius.circular(5)),
-          ),
-          child: const Text(
-            "匿名",
-            style: TextStyle(
-              fontFamily: 'SmileySans',
-              fontSize: 12,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ],
     );
   }
 

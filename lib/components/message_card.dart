@@ -128,38 +128,15 @@ class MessageCard extends StatelessWidget {
       smallSize: 10,
       isLabelVisible: !messageData.readed,
       child: messageData.anonymous
-          ? const AnonymousAvatar()
+          ? AliasAvatar(name: messageData.displayUsername)
           : NetworkAvatar(id: messageData.sourceId),
     );
   }
 
   Widget _buildUsername() {
-    final username = Text(
+    return Text(
       messageData.displayUsername,
       style: const TextStyle(fontFamily: 'SmileySans', fontSize: 20),
-    );
-    if (!messageData.anonymous) return username;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        username,
-        const SizedBox(width: 6),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0.5),
-          decoration: BoxDecoration(
-            color: mainColorGreenBlue60,
-            borderRadius: BorderRadius.all(Radius.circular(5)),
-          ),
-          child: const Text(
-            "匿名",
-            style: TextStyle(
-              fontFamily: 'SmileySans',
-              fontSize: 12,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ],
     );
   }
 

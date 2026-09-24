@@ -2,7 +2,7 @@ import 'package:shine/storage/message_storage.dart';
 
 /// 消息按人物分类后的分组数据
 class MessageGroupData {
-  /// 分组键，通常为对方学号，匿名消息为 [anonymousMessageSourceId]
+  /// 分组键，通常为对方学号，匿名消息为「匿名来源id:随机昵称」
   final String sourceKey;
   final String sourceId;
   final String sourceUsername;
@@ -34,7 +34,7 @@ class MessageGroupData {
 
   /// 界面展示用的昵称
   String get displayUsername =>
-      anonymous ? anonymousMessageUsername : sourceUsername;
+      sourceUsername.isEmpty ? "未知用户" : sourceUsername;
 
   /// 是否可以给该分组的主人发送消息(匿名消息没有可回复的对象)
   bool get canReply => !anonymous && sourceId.isNotEmpty;

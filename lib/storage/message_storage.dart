@@ -4,9 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shine/database/database.dart';
 import 'package:shine/storage/profile_storage.dart';
 
-/// 匿名消息在本地统一使用的来源标识与昵称
-const String anonymousMessageSourceId = "anonymous";
-const String anonymousMessageUsername = "匿名用户";
+/// 匿名消息统一使用的来源id，不包含任何真实身份信息
+const String anonymousMessageSourceId = "fffffffff";
 
 class MessageStorageData {
   final int id;
@@ -28,9 +27,13 @@ class MessageStorageData {
     this.sentAt,
   });
 
-  /// 按人物分类时使用的分组键，匿名消息统一归入同一个分组
+  /// 按人物分类时使用的分组键，匿名消息以随机昵称作为区分依据
   String get groupKey {
-    if (anonymous) return anonymousMessageSourceId;
+    if (anonymous) {
+      return sourceUsername.isEmpty
+          ? anonymousMessageSourceId
+          : "$anonymousMessageSourceId:$sourceUsername";
+    }
     if (sourceId.isNotEmpty) return sourceId;
     if (sourceUsername.isNotEmpty) return "username:$sourceUsername";
     return "unknown";
@@ -38,7 +41,7 @@ class MessageStorageData {
 
   /// 用于界面展示的来源昵称
   String get displayUsername =>
-      anonymous ? anonymousMessageUsername : sourceUsername;
+      sourceUsername.isEmpty ? "未知用户" : sourceUsername;
 }
 
 class RemindMessageStorageData extends MessageStorageData {
@@ -125,10 +128,9 @@ class MessageStorage {
     } catch (e) {
       anonymous = false;
     }
-    if (anonymous) {
-      sourceId = anonymousMessageSourceId;
-      sourceUsername = anonymousMessageUsername;
-    }
+    // 使用匿名来源id的消息一律视为匿名消息
+    if (sourceId == anonymousMessageSourceId) anonymous = true;
+    if (anonymous) sourceId = anonymousMessageSourceId;
     return (sourceId, sourceUsername, anonymous);
   }
 

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:shine/services/event.dart';
 import 'package:shine/services/ws.dart';
 import 'package:shine/storage/message_storage.dart';
+import 'package:shine/utils/anonymous_utils.dart';
 import 'package:shine/worker/worker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -86,7 +87,8 @@ class WsTask {
       "ts": DateTime.now().millisecondsSinceEpoch,
       "wsi": wsi,
       "level": level,
-      if (anonymous) "anonymous": true,
+      // 匿名消息由客户端直接指定来源：id 为 fffffffff，昵称为随机名字
+      if (anonymous) ...buildAnonymousPayloadFields(),
     };
     WsTask.send(jsonEncode(map));
     return WsTask.recordAndWait(wsi: wsi, type: "remind");
@@ -154,18 +156,14 @@ class WsTask {
         sourceMap = {};
       }
     }
-    // 匿名消息不会保留发送者的任何身份信息
-    final bool anonymous =
-        map["anonymous"] == true || sourceMap["anonymous"] == true;
+    // 匿名消息的来源id固定为 ffffffffff，昵称使用随机名字
+    final bool anonymous = isAnonymousMessage(map, sourceMap);
     final String source;
     final String sourceUsername;
     if (anonymous) {
-      source = jsonEncode({
-        "id": anonymousMessageSourceId,
-        "username": anonymousMessageUsername,
-        "anonymous": true,
-      });
-      sourceUsername = anonymousMessageUsername;
+      final result = buildAnonymousSource(map, sourceMap);
+      source = result.$1;
+      sourceUsername = result.$2;
     } else {
       source = jsonEncode(sourceMap);
       sourceUsername = sourceMap['username'] is String

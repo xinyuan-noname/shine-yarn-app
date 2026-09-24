@@ -61,12 +61,20 @@ void main() {
       expect(groupList.last.messageCount, 1);
     });
 
-    test('匿名消息统一归入匿名分组且不可回复', () {
+    test('匿名消息使用 fffffffff 作为来源id并以随机昵称分组', () {
       final groupList = MessageGroupData.fromMessageList([
+        _message(
+          id: 6,
+          sourceId: anonymousMessageSourceId,
+          sourceUsername: "安静的海豚",
+          content: "匿名消息3",
+          sentAt: DateTime(2026, 1, 2, 13),
+          anonymous: true,
+        ),
         _message(
           id: 5,
           sourceId: anonymousMessageSourceId,
-          sourceUsername: anonymousMessageUsername,
+          sourceUsername: "安静的海豚",
           content: "匿名消息2",
           sentAt: DateTime(2026, 1, 2, 12),
           anonymous: true,
@@ -81,20 +89,33 @@ void main() {
         _message(
           id: 3,
           sourceId: anonymousMessageSourceId,
-          sourceUsername: anonymousMessageUsername,
+          sourceUsername: "迷路的小鹿",
           content: "匿名消息1",
           sentAt: DateTime(2026, 1, 2, 10),
           anonymous: true,
         ),
       ]);
 
-      expect(groupList.length, 2);
-      final anonymousGroup = groupList.firstWhere((g) => g.anonymous);
-      expect(anonymousGroup.messageCount, 2);
-      expect(anonymousGroup.displayUsername, anonymousMessageUsername);
-      expect(anonymousGroup.messageIdList, [5, 3]);
-      expect(anonymousGroup.canReply, false);
-      expect(anonymousGroup.sourceKey, anonymousMessageSourceId);
+      // 两个不同的随机昵称视为两个不同的分组
+      expect(groupList.length, 3);
+      final anonymousGroups = groupList.where((g) => g.anonymous).toList();
+      expect(anonymousGroups.length, 2);
+      final sameNameGroup = anonymousGroups.firstWhere(
+        (g) => g.sourceUsername == "安静的海豚",
+      );
+      expect(sameNameGroup.messageCount, 2);
+      expect(sameNameGroup.sourceId, anonymousMessageSourceId);
+      expect(sameNameGroup.displayUsername, "安静的海豚");
+      expect(sameNameGroup.messageIdList, [6, 5]);
+      expect(sameNameGroup.sourceKey, "$anonymousMessageSourceId:安静的海豚");
+      // 匿名消息不可回复
+      expect(sameNameGroup.canReply, false);
+      expect(
+        anonymousGroups
+            .firstWhere((g) => g.sourceUsername == "迷路的小鹿")
+            .messageCount,
+        1,
+      );
     });
 
     test('未读数量与分组键回退逻辑', () {
@@ -121,6 +142,23 @@ void main() {
       expect(groupList.first.unreadCount, 1);
       expect(groupList.first.hasUnread, true);
       expect(groupList.first.canReply, false);
+    });
+
+    test('昵称为空时展示未知用户', () {
+      final groupList = MessageGroupData.fromMessageList([
+        _message(
+          id: 8,
+          sourceId: anonymousMessageSourceId,
+          sourceUsername: "",
+          content: "没有昵称的匿名消息",
+          sentAt: DateTime(2026, 1, 4, 10),
+          anonymous: true,
+        ),
+      ]);
+
+      expect(groupList.length, 1);
+      expect(groupList.first.displayUsername, "未知用户");
+      expect(groupList.first.sourceKey, anonymousMessageSourceId);
     });
 
     test('空消息列表返回空分组', () {

@@ -6,7 +6,6 @@ import 'package:shine/components/dialog.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/ws_task.dart';
-import 'package:shine/storage/message_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/message_utils.dart';
 
@@ -135,7 +134,7 @@ Future<SendMessageInput?> _showSendMessageInputDialog({
                         ),
                         subtitle: Text(
                           anonymous
-                              ? "对方只会看到「$anonymousMessageUsername」，无法得知你的身份"
+                              ? "对方只会看到一个随机名字，无法得知你的身份"
                               : "对方将看到你的头像与昵称",
                           style: dialogContentSmallStyle,
                         ),
