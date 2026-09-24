@@ -85,26 +85,40 @@ class _MessageViewState extends State<MessageView> {
         Positioned(
           right: 0,
           bottom: 10,
-          child: FloatingActionButtonWidget(
-            onTap: () async {
-              if (widget.messageList.isEmpty) return;
-              for (final messageData in widget.messageList) {
-                await MessageStorage.removeRemindMessage(messageData.id);
-              }
-              HomePageRefreshNotifier.refreshMessage();
-            },
-            child: Container(
-              alignment: Alignment.center,
-              padding: EdgeInsets.all(8),
-              child: const Text(
-                "清",
-                style: TextStyle(
-                  color: mainColorPurple,
-                  fontFamily: "SmileySans",
-                  fontSize: 36,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Tooltip(
+                message: "发送广播",
+                child: FloatingActionButtonWidget(
+                  onTap: _broadcast,
+                  icon: Icons.campaign_outlined,
+                  iconColor: mainColorPurple,
+                  iconSize: 36,
                 ),
               ),
-            ),
+              FloatingActionButtonWidget(
+                onTap: () async {
+                  if (widget.messageList.isEmpty) return;
+                  for (final messageData in widget.messageList) {
+                    await MessageStorage.removeRemindMessage(messageData.id);
+                  }
+                  HomePageRefreshNotifier.refreshMessage();
+                },
+                child: Container(
+                  alignment: Alignment.center,
+                  padding: EdgeInsets.all(8),
+                  child: const Text(
+                    "清",
+                    style: TextStyle(
+                      color: mainColorPurple,
+                      fontFamily: "SmileySans",
+                      fontSize: 36,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -266,6 +280,15 @@ class _MessageViewState extends State<MessageView> {
       targetUsername: group.sourceUsername,
       message: widget.message,
       title: "给${group.displayUsername}发送消息",
+    );
+  }
+
+  /// 向指定分组发送广播
+  Future<void> _broadcast() async {
+    if (!mounted) return;
+    await showBroadcastMessageDialog(
+      context: context,
+      message: widget.message,
     );
   }
 

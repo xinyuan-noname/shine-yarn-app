@@ -382,14 +382,7 @@ Future<GroupStorageKey?> showGroupStorageKeySelectionDialog({
   return showDropDownDialog<GroupStorageKey>(
     context: context,
     title: title,
-    items: [
-      (GroupStorageKey.entire, "所有学生"),
-      (GroupStorageKey.male, "所有男生"),
-      (GroupStorageKey.female, "所有女生"),
-      (GroupStorageKey.position, "所有班委"),
-      (GroupStorageKey.user, "所有非班委"),
-      (GroupStorageKey.admin, "所有管理员"),
-    ],
+    items: groupStorageKeyLabelList,
     initialValue: initialValue,
   );
 }

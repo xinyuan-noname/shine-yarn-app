@@ -15,7 +15,31 @@ enum GroupStorageKey {
   final String name;
 }
 
+/// 各分组的中文名称
+const Map<GroupStorageKey, String> groupStorageKeyLabelMap = {
+  GroupStorageKey.entire: "所有学生",
+  GroupStorageKey.male: "所有男生",
+  GroupStorageKey.female: "所有女生",
+  GroupStorageKey.position: "所有班委",
+  GroupStorageKey.user: "所有非班委",
+  GroupStorageKey.admin: "所有管理员",
+};
+
+/// 各分组的中文名称，(分组, 名称) 列表形式
+List<(GroupStorageKey, String)> get groupStorageKeyLabelList => [
+  for (final entry in groupStorageKeyLabelMap.entries) (entry.key, entry.value),
+];
+
 class GroupStorage {
+  /// 从分组成员列表中取出所有学号
+  static List<String> getIdList(List<Map<String, dynamic>> userList) {
+    return userList
+        .map((user) => user['id'])
+        .whereType<String>()
+        .where((id) => id.isNotEmpty)
+        .toList();
+  }
+
   static Future<void> saveGroupUserList(
     GroupStorageKey key,
     List<Map<String, dynamic>> list,

@@ -170,26 +170,31 @@ class Worker {
     await Worker.syncMyProfile();
   }
 
+  /// 获取指定分组的成员列表，优先使用本地缓存，缓存不存在时向服务器获取
+  static Future<List<Map<String, dynamic>>> getUserListByGroup(
+    GroupStorageKey nameKeyEnum, {
+    bool force = false,
+  }) async {
+    List<Map<String, dynamic>>? list;
+    if (!force) {
+      list = await GroupStorage.getGroupUserList(nameKeyEnum);
+    }
+    if (list == null) {
+      final result = await ApiGroup.getGlobalGroupData(nameKeyEnum);
+      if (result is! List) return [];
+      list = result.whereType<Map<String, dynamic>>().toList();
+      await GroupStorage.saveGroupUserList(nameKeyEnum, list);
+    }
+    if (nameKeyEnum == GroupStorageKey.entire) {
+      UserCache.setFromGroupDataList(list);
+    }
+    return list;
+  }
+
   static syncGlobalGroup({bool force = false}) async {
     final list = GroupStorageKey.values;
     for (final nameKeyEnum in list) {
-      if (!force) {
-        final storage = await GroupStorage.getGroupUserList(nameKeyEnum);
-        if (storage is List<Map<String, dynamic>>) {
-          if (nameKeyEnum == GroupStorageKey.entire) {
-            UserCache.setFromGroupDataList(storage);
-          }
-          continue;
-        }
-      }
-      final result = await ApiGroup.getGlobalGroupData(nameKeyEnum);
-      if (result is List) {
-        final storage = result.whereType<Map<String, dynamic>>().toList();
-        await GroupStorage.saveGroupUserList(nameKeyEnum, storage);
-        if (nameKeyEnum == GroupStorageKey.entire) {
-          UserCache.setFromGroupDataList(storage);
-        }
-      }
+      await Worker.getUserListByGroup(nameKeyEnum, force: force);
     }
   }
 
