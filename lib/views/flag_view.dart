@@ -5,6 +5,7 @@ import 'package:shine/components/dialog.dart';
 import 'package:shine/components/file_display_bar.dart';
 import 'package:shine/components/floating_action_button_widget.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/components/link_text.dart';
 import 'package:shine/components/static_header_expansion.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/models/to_do_item_data.dart';
@@ -14,9 +15,11 @@ import 'package:shine/services/api.dart';
 import 'package:shine/services/api_message.dart';
 import 'package:shine/services/api_resource.dart';
 import 'package:shine/storage/message_storage.dart';
+import 'package:shine/storage/to_do_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/file_utils.dart';
 import 'package:shine/utils/time_utils.dart';
+import 'package:shine/utils/to_do_subject_utils.dart';
 
 class FlagView extends StatelessWidget {
   final List<ToDoItemData> unfinishedItemList;
@@ -28,6 +31,13 @@ class FlagView extends StatelessWidget {
   final String currentSubject;
   final Function(String) onChangeSubject;
   final List<String> resourceList;
+
+  /// 事项表筛选用的科目表（课表科目 + 资源站科目）
+  final List<String> toDoSubjectList;
+
+  /// 事项表当前选中的科目，null 表示「全部」
+  final String? toDoSubjectFilter;
+  final Function(String?) onChangeToDoSubjectFilter;
   const FlagView({
     super.key,
     required this.unfinishedItemList,
@@ -39,6 +49,9 @@ class FlagView extends StatelessWidget {
     required this.currentSubject,
     required this.onChangeSubject,
     required this.resourceList,
+    this.toDoSubjectList = const [],
+    this.toDoSubjectFilter,
+    required this.onChangeToDoSubjectFilter,
   });
 
   @override
@@ -167,7 +180,23 @@ class FlagView extends StatelessWidget {
   }
 
   Widget _buildToDoListWidget() {
-    final isEmpty = unfinishedItemList.isEmpty && finishedItemList.isEmpty;
+    final allItemList = [...unfinishedItemList, ...finishedItemList];
+    final subjectList = collectToDoSubjects(allItemList, toDoSubjectList);
+    // 选中的科目即使当前没有事项也保留，方便直接取消筛选
+    if (toDoSubjectFilter != null && !subjectList.contains(toDoSubjectFilter)) {
+      subjectList.add(toDoSubjectFilter!);
+    }
+    final unfinishedList = filterToDoListBySubject(
+      unfinishedItemList,
+      toDoSubjectFilter,
+      toDoSubjectList,
+    );
+    final finishedList = filterToDoListBySubject(
+      finishedItemList,
+      toDoSubjectFilter,
+      toDoSubjectList,
+    );
+    final isEmpty = unfinishedList.isEmpty && finishedList.isEmpty;
     return SizedBox.expand(
       child: Stack(
         children: [
@@ -175,201 +204,234 @@ class FlagView extends StatelessWidget {
             padding: bodyPadding,
             child: Container(
               padding: const EdgeInsets.all(10),
-              child: RefreshIndicator(
-                onRefresh: onRefresh,
-                child: ListView(
-                  children: [
-                    ListView.builder(
-                      physics: NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: max(1, unfinishedItemList.length),
-                      itemBuilder: (context, index) {
-                        if (isEmpty) {
-                          return Container(
-                            alignment: Alignment.center,
-                            child: const Text(
-                              "暂无事项，快去休息吧！",
-                              style: viewEmptyTextStyle,
-                              textAlign: TextAlign.center,
-                            ),
-                          );
-                        }
-                        if (unfinishedItemList.isEmpty) return null;
-                        final item = unfinishedItemList[index];
-                        return GestureDetector(
-                          onLongPress: () {
-                            _deleteToDoItem(context, item);
-                          },
-                          child: Container(
-                            padding: EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              boxShadow: [greyBoxShadow],
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: StaticHeaderExpansion(
-                              leading: Icon(Icons.panorama_fish_eye),
-                              onLeadingTap: () async {
-                                await MessageStorage.changeFinishedStatus(
-                                  itemId: item.itemId,
-                                  finished: true,
-                                );
-                                updateFinishedStatus();
-                              },
-                              onContentTap: () {
-                                _gotoEditToDoItem(item);
-                              },
-                              initiallyExpanded: true,
-                              title: Text(
-                                item.title,
-                                style: expansionListTitleStyle,
-                                textAlign: TextAlign.left,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                              children: [
-                                Text(
-                                  item.content.trim(),
-                                  style: const TextStyle(
-                                    fontFamily: "SmileySans",
-                                    fontSize: 16,
+              // 顶部固定一行科目筛选，列表在下面滚动
+              child: Column(
+                children: [
+                  if (subjectList.isNotEmpty)
+                    _buildToDoSubjectFilter(subjectList, allItemList),
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: onRefresh,
+                      child: ListView(
+                        children: [
+                          ListView.builder(
+                            physics: NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: max(1, unfinishedList.length),
+                            itemBuilder: (context, index) {
+                              if (isEmpty) {
+                                return _buildEmptyToDoTip();
+                              }
+                              if (unfinishedList.isEmpty) return null;
+                              final item = unfinishedList[index];
+                              final itemSubject = resolveToDoSubject(
+                                item,
+                                toDoSubjectList,
+                              );
+                              return GestureDetector(
+                                onLongPress: () {
+                                  _deleteToDoItem(context, item);
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    boxShadow: [greyBoxShadow],
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      item.source,
-                                      style: const TextStyle(
-                                        fontFamily: "SmileySans",
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                        color: bgColorLight,
-                                        shadows: [deepPurpleShadow],
-                                      ),
-                                      textAlign: TextAlign.right,
+                                  child: StaticHeaderExpansion(
+                                    leading: Icon(Icons.panorama_fish_eye),
+                                    onLeadingTap: () async {
+                                      await MessageStorage.changeFinishedStatus(
+                                        itemId: item.itemId,
+                                        finished: true,
+                                      );
+                                      updateFinishedStatus();
+                                    },
+                                    onContentTap: () {
+                                      _gotoEditToDoItem(item);
+                                    },
+                                    initiallyExpanded: true,
+                                    subtitle: itemSubject == null
+                                        ? null
+                                        : _buildToDoSubjectTag(itemSubject),
+                                    title: LinkText(
+                                      item.title,
+                                      style: expansionListTitleStyle,
+                                      textAlign: TextAlign.left,
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
                                     ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      getLocalTimeString(
-                                        DateTime.fromMillisecondsSinceEpoch(
-                                          item.ts,
+                                    children: [
+                                      LinkText(
+                                        item.content.trim(),
+                                        style: const TextStyle(
+                                          fontFamily: "SmileySans",
+                                          fontSize: 16,
                                         ),
                                       ),
-                                      style: const TextStyle(
-                                        fontFamily: "SmileySans",
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                        color: bgColorLight,
-                                        shadows: [deepPurpleShadow],
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            item.source,
+                                            style: const TextStyle(
+                                              fontFamily: "SmileySans",
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w500,
+                                              color: bgColorLight,
+                                              shadows: [deepPurpleShadow],
+                                            ),
+                                            textAlign: TextAlign.right,
+                                          ),
+                                        ],
                                       ),
-                                      textAlign: TextAlign.right,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: finishedItemList.length,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        final item = finishedItemList[index];
-                        return GestureDetector(
-                          onLongPress: () {
-                            _deleteToDoItem(context, item);
-                          },
-                          child: Container(
-                            padding: EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: StaticHeaderExpansion(
-                              leading: Icon(
-                                Icons.check_circle_outline,
-                                color: mainColorGrey80,
-                              ),
-                              onLeadingTap: () async {
-                                await MessageStorage.changeFinishedStatus(
-                                  itemId: item.itemId,
-                                  finished: false,
-                                );
-                                updateFinishedStatus();
-                              },
-                              onContentTap: () {
-                                _gotoEditToDoItem(item);
-                              },
-                              trailingColor: mainColorGrey80,
-                              title: Text(
-                                item.title,
-                                style: expansionListTitleLineThroughStyle,
-                                textAlign: TextAlign.left,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
-                              children: [
-                                Text(
-                                  item.content.trim(),
-                                  style: const TextStyle(
-                                    fontFamily: "SmileySans",
-                                    fontSize: 16,
-                                    decoration: TextDecoration.lineThrough,
-                                    color: mainColorGrey80,
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            getLocalTimeString(
+                                              DateTime.fromMillisecondsSinceEpoch(
+                                                item.ts,
+                                              ),
+                                            ),
+                                            style: const TextStyle(
+                                              fontFamily: "SmileySans",
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w500,
+                                              color: bgColorLight,
+                                              shadows: [deepPurpleShadow],
+                                            ),
+                                            textAlign: TextAlign.right,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      item.source,
-                                      style: const TextStyle(
-                                        fontFamily: "SmileySans",
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                        color: bgColorLight,
-                                        shadows: [deepPurpleShadow],
-                                      ),
-                                      textAlign: TextAlign.right,
+                              );
+                            },
+                          ),
+                          ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: finishedList.length,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              final item = finishedList[index];
+                              final itemSubject = resolveToDoSubject(
+                                item,
+                                toDoSubjectList,
+                              );
+                              return GestureDetector(
+                                onLongPress: () {
+                                  _deleteToDoItem(context, item);
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: StaticHeaderExpansion(
+                                    leading: Icon(
+                                      Icons.check_circle_outline,
+                                      color: mainColorGrey80,
                                     ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      getLocalTimeString(
-                                        DateTime.fromMillisecondsSinceEpoch(
-                                          item.ts,
+                                    onLeadingTap: () async {
+                                      await MessageStorage.changeFinishedStatus(
+                                        itemId: item.itemId,
+                                        finished: false,
+                                      );
+                                      updateFinishedStatus();
+                                    },
+                                    onContentTap: () {
+                                      _gotoEditToDoItem(item);
+                                    },
+                                    trailingColor: mainColorGrey80,
+                                    subtitle: itemSubject == null
+                                        ? null
+                                        : _buildToDoSubjectTag(
+                                            itemSubject,
+                                            finished: true,
+                                          ),
+                                    title: LinkText(
+                                      item.title,
+                                      style: expansionListTitleLineThroughStyle,
+                                      textAlign: TextAlign.left,
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                    children: [
+                                      LinkText(
+                                        item.content.trim(),
+                                        style: const TextStyle(
+                                          fontFamily: "SmileySans",
+                                          fontSize: 16,
+                                          decoration:
+                                              TextDecoration.lineThrough,
+                                          color: mainColorGrey80,
+                                        ),
+                                        // 已完成的事项保留删除线，链接依然标蓝可点
+                                        linkStyle: const TextStyle(
+                                          fontFamily: "SmileySans",
+                                          fontSize: 16,
+                                          color: mainColorLinkBlue,
+                                          decoration:
+                                              TextDecoration.lineThrough,
+                                          decorationColor: mainColorLinkBlue,
                                         ),
                                       ),
-                                      style: const TextStyle(
-                                        fontFamily: "SmileySans",
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                        color: bgColorLight,
-                                        shadows: [deepPurpleShadow],
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            item.source,
+                                            style: const TextStyle(
+                                              fontFamily: "SmileySans",
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w500,
+                                              color: bgColorLight,
+                                              shadows: [deepPurpleShadow],
+                                            ),
+                                            textAlign: TextAlign.right,
+                                          ),
+                                        ],
                                       ),
-                                      textAlign: TextAlign.right,
-                                    ),
-                                  ],
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            getLocalTimeString(
+                                              DateTime.fromMillisecondsSinceEpoch(
+                                                item.ts,
+                                              ),
+                                            ),
+                                            style: const TextStyle(
+                                              fontFamily: "SmileySans",
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w500,
+                                              color: bgColorLight,
+                                              shadows: [deepPurpleShadow],
+                                            ),
+                                            textAlign: TextAlign.right,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ],
-                            ),
+                              );
+                            },
                           ),
-                        );
-                      },
+                        ],
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -385,6 +447,133 @@ class FlagView extends StatelessWidget {
                 await globalNavigatorKey.currentState?.pushNamed('/to_do');
               },
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 事项表的科目筛选行：全部 + 各科目（带事项数量）
+  Widget _buildToDoSubjectFilter(
+    List<String> subjectList,
+    List<ToDoItemData> allItemList,
+  ) {
+    return SizedBox(
+      height: 32,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          _buildToDoSubjectChip(
+            label: allSubjectLabel,
+            count: allItemList.length,
+            selected: toDoSubjectFilter == null,
+            onTap: () => onChangeToDoSubjectFilter(null),
+          ),
+          ...subjectList.map((subject) {
+            return _buildToDoSubjectChip(
+              label: subject,
+              count: countToDoInSubject(allItemList, subject, toDoSubjectList),
+              selected: toDoSubjectFilter == subject,
+              onTap: () => onChangeToDoSubjectFilter(subject),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToDoSubjectChip({
+    required String label,
+    required int count,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(right: 8, bottom: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: selected ? purpleLinearGradientReversed : null,
+          color: selected ? null : Colors.white,
+          border: Border.all(
+            color: selected ? mainColorGreenBlue : mainColorGrey40,
+            width: 0.8,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: "SmileySans",
+                fontSize: 13,
+                fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
+                color: selected ? mainColorGreenBlue : darkColorPurple,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '$count',
+              style: TextStyle(
+                fontFamily: "SmileySans",
+                fontSize: 11,
+                color: selected ? bgColorLight80 : mainColorGrey,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 事项所属科目的小标签
+  Widget _buildToDoSubjectTag(String subject, {bool finished = false}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      decoration: BoxDecoration(
+        color: finished ? mainColorGrey20 : mainColorGreenBlue30,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        subject,
+        style: TextStyle(
+          fontFamily: "SmileySans",
+          fontSize: 12,
+          color: finished ? mainColorGrey : mainColorLinkBlue,
+        ),
+      ),
+    );
+  }
+
+  /// 筛选后没有内容时的提示
+  Widget _buildEmptyToDoTip() {
+    final subject = toDoSubjectFilter;
+    if (subject == null) {
+      return Container(
+        alignment: Alignment.center,
+        child: const Text(
+          "暂无事项，快去休息吧！",
+          style: viewEmptyTextStyle,
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+    return Container(
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Column(
+        children: [
+          Text(
+            "「$subject」暂无事项",
+            style: viewEmptyTextStyle,
+            textAlign: TextAlign.center,
+          ),
+          TextButton(
+            onPressed: () => onChangeToDoSubjectFilter(null),
+            child: const Text("查看全部事项"),
           ),
         ],
       ),
@@ -685,6 +874,8 @@ class FlagView extends StatelessWidget {
     if (result) {
       final deleteResult = await ApiMessage.deletePublicToDoItem(data.itemId);
       if (deleteResult == null) {
+        // 同步本地缓存，断网时也不会继续显示已删除的事项
+        await ToDoStorage.removeToDoItem(data.itemId);
         showToast(msg: "删除代办项成功");
         onRefresh();
       } else {

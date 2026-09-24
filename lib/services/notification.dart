@@ -1,10 +1,26 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz_data;
+import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
+
+  /// 日程提醒用的通知渠道
+  static const String scheduleChannelId = 'schedule_channel';
+  static const String scheduleChannelName = '日程提醒';
+
+  /// 日程提醒的通知 id 从这里开始分配（消息通知用 1000，不会冲突）
+  static const int _scheduleNotificationIdBase = 200000;
+
+  /// 用于 zonedSchedule 的时区是否已经初始化
+  static bool _timeZoneReady = false;
+
+  /// 给第 [index] 条日程提醒分配通知 id
+  static int scheduleNotificationId(int index) =>
+      _scheduleNotificationIdBase + index;
 
   static Future<void> init() async {
     if (kIsWeb) return;
@@ -31,21 +47,197 @@ class NotificationService {
   }
 
   static Future<void> _requestAndroidPermission() async {
-    if (Platform.isAndroid) {
-      if (Platform.version.startsWith('Android 13') ||
-          (Platform.isAndroid &&
-              Platform.operatingSystemVersion.contains('13'))) {
-        final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
-            _notificationsPlugin
-                .resolvePlatformSpecificImplementation<
-                  AndroidFlutterLocalNotificationsPlugin
-                >();
-        await androidImplementation
+    // Android 13 起通知需要用户授权，低版本调用是空操作
+    final androidImplementation = _notificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    await androidImplementation?.requestNotificationsPermission();
+  }
+
+  /// 申请发通知的权限（开启日程提醒时调用）。
+  ///
+  /// 返回是否拿到了通知权限，拿不到时排期仍会进行，只是用户看不到提醒。
+  static Future<bool> requestPermission() async {
+    if (kIsWeb) return false;
+    try {
+      if (Platform.isAndroid) {
+        final androidImplementation = _notificationsPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
+        final granted = await androidImplementation
             ?.requestNotificationsPermission();
-      } else {
+        // 精确闹钟权限被拒绝时排期会自动退回到不精确模式
+        await requestExactAlarmPermission();
+        return granted ?? false;
       }
+      if (Platform.isIOS) {
+        final iosImplementation = _notificationsPlugin
+            .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin
+            >();
+        return await iosImplementation?.requestPermissions(
+              alert: true,
+              badge: true,
+              sound: true,
+            ) ??
+            false;
+      }
+      if (Platform.isMacOS) {
+        final macosImplementation = _notificationsPlugin
+            .resolvePlatformSpecificImplementation<
+              MacOSFlutterLocalNotificationsPlugin
+            >();
+        return await macosImplementation?.requestPermissions(
+              alert: true,
+              badge: true,
+              sound: true,
+            ) ??
+            false;
+      }
+    } catch (e) {
+      return false;
+    }
+    return false;
+  }
+
+  /// Android 上申请「精确闹钟」权限（Android 12+），其它平台直接返回 true
+  static Future<bool> requestExactAlarmPermission() async {
+    if (kIsWeb || !Platform.isAndroid) return true;
+    try {
+      final androidImplementation = _notificationsPlugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+      if (await canScheduleExactNotifications()) return true;
+      return await androidImplementation?.requestExactAlarmsPermission() ??
+          false;
+    } catch (e) {
+      return false;
     }
   }
+
+  /// 当前是否允许精确排期（Android 12+ 需要用户授权）
+  static Future<bool> canScheduleExactNotifications() async {
+    if (kIsWeb || !Platform.isAndroid) return true;
+    try {
+      final androidImplementation = _notificationsPlugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+      return await androidImplementation?.canScheduleExactNotifications() ??
+          false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// 在指定时间弹一条本地通知（用于日程提醒）
+  ///
+  /// [scheduledDate] 按设备本地时间解释；Android 上拿不到精确闹钟权限时
+  /// 会自动退回到不精确排期，避免设置成功却收不到提醒。
+  static Future<void> zonedSchedule({
+    required int id,
+    required DateTime scheduledDate,
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    if (kIsWeb || Platform.isLinux) return;
+    ensureTimeZone();
+    final scheduledTzDate = tz.TZDateTime(
+      tz.local,
+      scheduledDate.year,
+      scheduledDate.month,
+      scheduledDate.day,
+      scheduledDate.hour,
+      scheduledDate.minute,
+    );
+    final exact = await canScheduleExactNotifications();
+    try {
+      await _notificationsPlugin.zonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: scheduledTzDate,
+        notificationDetails: _scheduleNotificationDetails,
+        androidScheduleMode: exact
+            ? AndroidScheduleMode.exactAllowWhileIdle
+            : AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: payload,
+      );
+    } catch (e) {
+      // 精确闹钟被系统拒绝（PlatformException）时退回不精确排期
+      await _notificationsPlugin.zonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: scheduledTzDate,
+        notificationDetails: _scheduleNotificationDetails,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: payload,
+      );
+    }
+  }
+
+  /// 撤销一条已排期的通知
+  static Future<void> cancelScheduled({required int id}) async {
+    if (kIsWeb) return;
+    try {
+      await _notificationsPlugin.cancel(id: id);
+    } catch (e) {
+      // 撤销失败不影响后续排期
+    }
+  }
+
+  /// 初始化时区数据：优先中国时区，设备不在东八区时退回到与设备当前偏移一致的地区
+  static void ensureTimeZone() {
+    if (_timeZoneReady) return;
+    try {
+      tz_data.initializeTimeZones();
+      final deviceOffset = DateTime.now().timeZoneOffset.inMinutes * 60000;
+      final shanghai = tz.getLocation('Asia/Shanghai');
+      if (shanghai.currentTimeZone.offset == deviceOffset) {
+        tz.setLocalLocation(shanghai);
+      } else {
+        for (final location in tz.timeZoneDatabase.locations.values) {
+          if (location.currentTimeZone.offset == deviceOffset) {
+            tz.setLocalLocation(location);
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      // 初始化失败时保持默认时区，排期仍按本地时间近似工作
+    }
+    _timeZoneReady = true;
+  }
+
+  static final NotificationDetails _scheduleNotificationDetails =
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          scheduleChannelId,
+          scheduleChannelName,
+          channelDescription: '上课前的日程提醒',
+          importance: Importance.max,
+          priority: Priority.high,
+          playSound: true,
+          enableVibration: true,
+          ticker: '日程提醒',
+        ),
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+        macOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        ),
+        windows: WindowsNotificationDetails(),
+      );
 
   static Future<void> showNotification({
     required int id,
@@ -86,9 +278,7 @@ class NotificationService {
     String? title,
     String? body,
     String? payload,
-  ) {
-  }
+  ) {}
 
-  static void onDidReceiveNotificationResponse(NotificationResponse response) {
-  }
+  static void onDidReceiveNotificationResponse(NotificationResponse response) {}
 }

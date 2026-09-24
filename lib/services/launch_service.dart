@@ -134,6 +134,24 @@ class LaunchService {
     await Future.delayed(const Duration(milliseconds: 200));
   }
 
+  /// 按包名启动已安装的应用（Android）。
+  ///
+  /// 事项表里点「学习通」标签时用它唤起学习通：比猜 URL Scheme 可靠，
+  /// 应用未安装时返回 false，由调用方退回到网页版。
+  static Future<bool> openAppByPackage(String packageName) async {
+    if (kIsWeb || !Platform.isAndroid) {
+      return false;
+    }
+    try {
+      final result = await _channel.invokeMethod<bool>('openApp', packageName);
+      return result ?? false;
+    } on MissingPluginException {
+      return false;
+    } on PlatformException {
+      return false;
+    }
+  }
+
   /// 把一个启动参数/原生回传值解析成绝对文件路径。
   ///
   /// 不是文件（例如引擎参数）或文件不存在时返回 null。

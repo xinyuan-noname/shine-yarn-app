@@ -33,6 +33,7 @@ import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/storage/task_storage.dart';
+import 'package:shine/storage/to_do_storage.dart';
 import 'package:shine/models/course_data.dart';
 import 'package:shine/services/download.dart';
 import 'package:shine/utils/message_utils.dart';
@@ -296,7 +297,10 @@ class Worker {
     final result = await ApiMessage.getPublicToDoList();
     if (result is List) {
       final list = result.whereType<Map<String, dynamic>>();
-      return list.map((e) => ToDoItemData.fromMap(e)).toList();
+      final toDoList = list.map((e) => ToDoItemData.fromMap(e)).toList();
+      // 同步成功后整体覆盖本地缓存，断网时事项表也能显示上次的内容
+      await ToDoStorage.saveToDoList(toDoList);
+      return toDoList;
     }
     return null;
   }

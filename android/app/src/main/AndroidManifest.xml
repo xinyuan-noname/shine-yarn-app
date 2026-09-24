@@ -13,6 +13,11 @@
     
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+
+    <!-- 日程提醒：精确排期需要 SCHEDULE_EXACT_ALARM（Android 12+ 可在设置里授权），
+         设备重启后恢复已排期的提醒需要 RECEIVE_BOOT_COMPLETED。 -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <application
         android:label="闪纺"
         android:name="${applicationName}"
@@ -111,5 +116,18 @@
         <package android:name="com.tencent.qqlite" />
         <package android:name="com.tencent.mm" />
         <package android:name="tv.danmaku.bili" />
+
+        <!-- 事项表里点「学习通」标签时按包名直接唤起学习通（超星）。 -->
+        <package android:name="com.chaoxing.mobile" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="chaoxing" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="xxt" />
+        </intent>
     </queries>
 </manifest>

@@ -20,6 +20,9 @@ const bgColorLight60 = Color.fromRGBO(230, 240, 255, 0.60);
 const deepColorBlue = Color.fromARGB(255, 0, 187, 255);
 const deepColorBlue80 = Color.fromARGB(204, 0, 187, 255);
 
+/// 正文中链接的颜色（比 deepColorBlue 更深，白底上更清晰）
+const mainColorLinkBlue = Color.fromARGB(255, 0, 122, 204);
+
 const mainColorGreenBlue = Color.fromARGB(255, 7, 247, 255);
 const mainColorGreenBlue80 = Color.fromRGBO(7, 247, 255, 0.80);
 const mainColorGreenBlue60 = Color.fromRGBO(7, 247, 255, 0.60);

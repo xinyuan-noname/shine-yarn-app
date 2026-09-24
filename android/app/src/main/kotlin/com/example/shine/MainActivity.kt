@@ -52,6 +52,18 @@ class MainActivity : FlutterActivity() {
                     pendingPaths.clear()
                 }
 
+                // 按包名启动已安装的应用（事项表里点「学习通」标签时用）。
+                "openApp" -> {
+                    val packageName = call.arguments as? String
+                    result.success(
+                        if (packageName.isNullOrEmpty()) {
+                            false
+                        } else {
+                            openAppByPackage(packageName)
+                        }
+                    )
+                }
+
                 else -> result.notImplemented()
             }
         }
@@ -84,6 +96,24 @@ class MainActivity : FlutterActivity() {
             channel?.invokeMethod("openFile", path)
         } else {
             pendingPaths.add(path)
+        }
+    }
+
+    /**
+     * 按包名启动已安装的应用（目前用于「学习通」，包名见 Dart 侧 link_utils.dart）。
+     *
+     * Android 11 起的包可见性限制需要在 AndroidManifest.xml 的 <queries> 里
+     * 声明对应包名，否则拿不到启动 Intent。
+     */
+    private fun openAppByPackage(packageName: String): Boolean {
+        return try {
+            val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+                ?: return false
+            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(launchIntent)
+            true
+        } catch (e: Exception) {
+            false
         }
     }
 

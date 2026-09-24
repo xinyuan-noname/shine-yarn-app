@@ -13,13 +13,15 @@ class ToDoItemData {
     required this.ts,
   });
 
+  /// 容错解析：字段缺失或类型不符时退化为空串 / 0，避免单条脏数据让整个事项表崩掉
   factory ToDoItemData.fromMap(Map<String, dynamic> json) {
+    final ts = json['ts'];
     return ToDoItemData(
-      itemId: json['itemId'] as String,
-      title: json['title'] as String,
-      content: json['content'] as String,
-      source: json['source'] as String,
-      ts: json['ts'] as int,
+      itemId: json['itemId']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      content: json['content']?.toString() ?? '',
+      source: json['source']?.toString() ?? '',
+      ts: ts is int ? ts : (int.tryParse(ts?.toString() ?? '') ?? 0),
     );
   }
 

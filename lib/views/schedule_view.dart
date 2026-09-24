@@ -7,8 +7,12 @@ import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/extensions/list.dart';
+import 'package:shine/models/schedule_reminder_data.dart';
 import 'package:shine/pages/home_page.dart';
+import 'package:shine/services/notification.dart';
+import 'package:shine/services/schedule_reminder_service.dart';
 import 'package:shine/storage/elective_storage.dart';
+import 'package:shine/storage/schedule_reminder_storage.dart';
 import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/models/course_data.dart';
@@ -135,6 +139,9 @@ class ScheduleView extends StatefulWidget {
   final List<CourseData> subjectInfoList;
   final List<ScheduleData> scheduleDataList;
   final ChangeShowWeekCallback onChangeShowDate;
+
+  /// 提醒设置变化后的回调（用于重排系统通知）
+  final VoidCallback? onReminderChanged;
   const ScheduleView({
     super.key,
     this.semesterName,
@@ -145,6 +152,7 @@ class ScheduleView extends StatefulWidget {
     required this.onRefresh,
     required this.onChangeShowDate,
     required this.showDate,
+    this.onReminderChanged,
   });
 
   @override
@@ -155,10 +163,14 @@ class _ScheduleViewState extends State<ScheduleView> {
   /// 专业任选课选课状态（科目名 -> 是否已选），仅保存在本地
   Map<String, bool> _electiveSelection = {};
 
+  /// 日程提醒设置（科目名 -> 设置），仅保存在本地
+  Map<String, ScheduleReminderSetting> _reminderSettings = {};
+
   @override
   void initState() {
     super.initState();
     _loadElectiveSelection();
+    _loadReminderSettings();
   }
 
   @override
@@ -176,6 +188,68 @@ class _ScheduleViewState extends State<ScheduleView> {
     setState(() {
       _electiveSelection = selection;
     });
+  }
+
+  Future<void> _loadReminderSettings() async {
+    final settings = await ScheduleReminderStorage.getSettings();
+    if (!mounted) return;
+    setState(() {
+      _reminderSettings = settings;
+    });
+  }
+
+  /// 该课程是否开启了上课提醒
+  bool _isReminderEnabled(String subjectName) =>
+      _reminderSettings[subjectName]?.enabled ?? false;
+
+  /// 按指定提前量预览下次提醒的时间
+  String? _reminderPreviewText(String subjectName, int leadMinutes) {
+    final occurrences = buildScheduleReminderOccurrences(
+      courseList: widget.subjectInfoList,
+      settings: {
+        subjectName: ScheduleReminderSetting(
+          enabled: true,
+          leadMinutes: leadMinutes,
+        ),
+      },
+      phaseList: widget.semesterPhaseList,
+      semesterStartedAt: widget.semesterStartedAt,
+      horizonDays: ScheduleReminderService.horizonDays,
+    );
+    final first = occurrences.firstOrNull;
+    if (first == null) return null;
+    final weekNames = ['一', '二', '三', '四', '五', '六', '日'];
+    final date = first.remindAt;
+    return '下次提醒：${date.month}月${date.day}日（周${weekNames[first.weekday - 1]}）'
+        '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}'
+        '，第 ${first.startPeriod}-${first.endPeriod} 节';
+  }
+
+  /// 打开某门课的提醒设置
+  Future<void> _openReminderDialog(CourseData courseData) async {
+    final subjectName = courseData.subjectName;
+    final setting =
+        _reminderSettings[subjectName] ?? ScheduleReminderSetting.disabled;
+    final result = await showScheduleReminderDialog(
+      context: context,
+      courseName: courseData.alias ?? subjectName,
+      setting: setting,
+      previewBuilder: (leadMinutes) =>
+          _reminderPreviewText(subjectName, leadMinutes),
+    );
+    if (result == null) return;
+    await ScheduleReminderStorage.setSetting(subjectName, result);
+    if (result.enabled) {
+      await NotificationService.requestPermission();
+    }
+    if (!mounted) return;
+    setState(() {
+      _reminderSettings = {..._reminderSettings, subjectName: result};
+    });
+    widget.onReminderChanged?.call();
+    showToast(
+      msg: result.enabled ? '已开启提醒（${result.leadText}）' : '已关闭该课程的提醒',
+    );
   }
 
   /// 专业任选课默认视为已选，只有本地显式记录为未选时才隐藏
@@ -697,6 +771,10 @@ class _ScheduleViewState extends State<ScheduleView> {
                   scheduleItem.$1.subjectName,
                 ),
                 courseData: courseData,
+                onReminder: () => _openReminderDialog(courseData),
+                reminderEnabled: _isReminderEnabled(
+                  scheduleItem.$1.subjectName,
+                ),
               );
             },
             onLongPress: () async {
@@ -751,6 +829,24 @@ class _ScheduleViewState extends State<ScheduleView> {
                         ),
                         child: Icon(
                           Icons.science,
+                          size: layout.labIconSize,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  // 已开启上课提醒的课程打个铃铛标
+                  if (_isReminderEnabled(scheduleItem.$1.subjectName))
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      child: Container(
+                        padding: EdgeInsets.all(layout.cellPadding),
+                        decoration: BoxDecoration(
+                          color: deepColorOrange,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.notifications_active,
                           size: layout.labIconSize,
                           color: Colors.white,
                         ),

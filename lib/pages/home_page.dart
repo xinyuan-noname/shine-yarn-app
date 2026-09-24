@@ -9,15 +9,18 @@ import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/api_resource.dart';
 import 'package:shine/services/event.dart';
+import 'package:shine/services/schedule_reminder_service.dart';
 import 'package:shine/storage/profile_storage.dart';
 import 'package:shine/storage/message_storage.dart';
 import 'package:shine/storage/semester_storage.dart';
 import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/storage/task_storage.dart';
+import 'package:shine/storage/to_do_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/models/course_data.dart';
 import 'package:shine/utils/debouncer_utils.dart';
 import 'package:shine/utils/upload_utils.dart';
+import 'package:shine/utils/to_do_subject_utils.dart';
 import 'package:shine/views/flag_view.dart';
 import 'package:shine/views/message_view.dart';
 import 'package:shine/views/schedule_view.dart';
@@ -90,6 +93,15 @@ class _HomePageState extends State<HomePage>
   final List<ToDoItemData> _allToDoList = [];
   final List<ToDoItemData> _unfinishedToDoList = [];
   final List<ToDoItemData> _finishedToDoList = [];
+
+  /// 事项表当前筛选的科目，null 表示「全部」
+  String? _toDoSubjectFilter;
+
+  /// 事项表筛选用的科目表：课表科目 + 资源站科目（实验课归到母课程）
+  List<String> get _toDoSubjectList => normalizeSubjectList([
+    ..._subjectInfo.map((course) => course.subjectName),
+    ..._resourceSubjectMap.keys,
+  ]);
 
   @override
   void initState() {
@@ -226,13 +238,25 @@ class _HomePageState extends State<HomePage>
     }
   }
 
+  /// 用本地缓存垫底：启动或断网时先显示上次同步到的事项
+  Future<void> _loadToDoListCache() async {
+    final cached = await ToDoStorage.getToDoList();
+    _allToDoList.clear();
+    _allToDoList.addAll(cached);
+    await _updateToDoListFinishedStatus();
+  }
+
   Future<void> _updateToDoList() async {
+    if (_allToDoList.isEmpty) {
+      await _loadToDoListCache();
+    }
     final toDoListResult = await Worker.syncToDoList();
     if (toDoListResult is List<ToDoItemData>) {
       _allToDoList.clear();
       _allToDoList.addAll(toDoListResult);
-      _updateToDoListFinishedStatus();
-    } else {
+      await _updateToDoListFinishedStatus();
+    } else if (_allToDoList.isEmpty) {
+      // 拉取失败且本地也没有缓存时才重试，避免网络异常时空转
       _toDoListDebouncer.run(() {
         _updateToDoList();
       });
@@ -279,6 +303,16 @@ class _HomePageState extends State<HomePage>
     _subjectInfo.addAll(await SubjectStorage.getCurrentDiySubjectInfo());
     _scheduleDataList.clear();
     _scheduleDataList.addAll(await SubjectStorage.getCurrentScheduleInfo());
+    await _rescheduleScheduleReminders();
+  }
+
+  /// 按当前课表与提醒设置重排上课提醒（课表/学期数据变化、用户改设置后调用）
+  Future<void> _rescheduleScheduleReminders() async {
+    await ScheduleReminderService.rescheduleAll(
+      courseList: _subjectInfo,
+      phaseList: _semesterPhaseList,
+      semesterStartedAt: _semesterStartedAt,
+    );
   }
 
   Future<void> _updateScheduleData() async {
@@ -294,6 +328,7 @@ class _HomePageState extends State<HomePage>
       _scheduleDataList.clear();
       _scheduleDataList.addAll(scheduleResult);
     }
+    await _rescheduleScheduleReminders();
     if (!mounted) return;
     setState(() {});
   }
@@ -361,6 +396,7 @@ class _HomePageState extends State<HomePage>
                 setState(() {});
               },
               showDate: _showDate,
+              onReminderChanged: _rescheduleScheduleReminders,
             ),
             FlagView(
               unfinishedItemList: _unfinishedToDoList,
@@ -379,6 +415,13 @@ class _HomePageState extends State<HomePage>
                 setState(() {});
               },
               resourceList: _resourceSubjectMap[_currentResourceSubject] ?? [],
+              toDoSubjectList: _toDoSubjectList,
+              toDoSubjectFilter: _toDoSubjectFilter,
+              onChangeToDoSubjectFilter: (subject) {
+                setState(() {
+                  _toDoSubjectFilter = subject;
+                });
+              },
             ),
             UserView(
               userInfoList: _userInfoList,

@@ -7,10 +7,13 @@ import 'package:shine/models/to_do_item_data.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/api_message.dart';
 import 'package:shine/services/ws_task.dart';
+import 'package:shine/storage/subject_storage.dart';
+import 'package:shine/storage/to_do_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/async_utils.dart';
 import 'package:shine/utils/debouncer_utils.dart';
 import 'package:shine/utils/message_utils.dart';
+import 'package:shine/utils/to_do_subject_utils.dart';
 
 class ToDoPage extends StatefulWidget {
   const ToDoPage({super.key});
@@ -27,6 +30,9 @@ class _ToDoPageState extends State<ToDoPage> {
   final ValueNotifier<String> _message = ValueNotifier("");
   ToDoItemData? _previousData;
   String? _itemId;
+
+  /// 作业模板里可选的科目（课表科目 + 自建科目）
+  List<String> _subjectOptions = [];
   @override
   void initState() {
     super.initState();
@@ -45,6 +51,7 @@ class _ToDoPageState extends State<ToDoPage> {
 
   void _init() {
     AsyncUtils.postFrame(_handleArgs);
+    _loadSubjectOptions();
   }
 
   Future<void> _handleArgs() async {
@@ -102,7 +109,55 @@ class _ToDoPageState extends State<ToDoPage> {
       title: Text("事项编辑", style: titleTextStyle),
       centerTitle: true,
       bottom: bottomLine,
+      actions: [
+        // 作业事项模板：一键填好标题与内容（含科目、截止时间）
+        TextButton.icon(
+          onPressed: _applyHomeworkTemplate,
+          icon: const Icon(
+            Icons.assignment_outlined,
+            size: 20,
+            color: mainColorLinkBlue,
+          ),
+          label: const Text(
+            "模板",
+            style: TextStyle(
+              fontFamily: "SmileySans",
+              fontSize: 16,
+              color: mainColorLinkBlue,
+            ),
+          ),
+        ),
+      ],
     );
+  }
+
+  /// 加载可选科目：课表科目 + 自建科目
+  Future<void> _loadSubjectOptions() async {
+    final names = <String>[];
+    names.addAll(await SubjectStorage.getCurrentSubjectName());
+    final diyList = await SubjectStorage.getCurrentDiySubjectInfo();
+    names.addAll(diyList.map((course) => course.subjectName));
+    if (!mounted) return;
+    setState(() {
+      _subjectOptions = normalizeSubjectList(names);
+    });
+  }
+
+  /// 套用作业事项模板
+  Future<void> _applyHomeworkTemplate() async {
+    if (ApiService.position == null) {
+      showToast(msg: "没有职务的同学不能创建事项");
+      return;
+    }
+    final result = await showHomeworkTemplateDialog(
+      context: context,
+      subjectOptions: _subjectOptions,
+    );
+    if (result == null) return;
+    _titleController.text = result.title;
+    _contentController.text = result.content;
+    setState(() {});
+    showToast(msg: "已套用作业模板，可继续修改");
   }
 
   Widget _buildBodyContent() {
@@ -206,6 +261,15 @@ class _ToDoPageState extends State<ToDoPage> {
       Navigator.of(context).pop();
     }
     if (success) {
+      // 把改动同步进本地缓存，断网时事项表也不会显示旧内容
+      final itemId = _itemId;
+      if (itemId != null) {
+        await ToDoStorage.updateToDoItem(
+          itemId: itemId,
+          title: title,
+          content: content,
+        );
+      }
       Navigator.of(context).pop();
       WsTask.sendRemind(
         msg: "收到由「${ApiService.position}」创建的待办事项「$title」。\n$content",

@@ -65,5 +65,12 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- 事项表里点「学习通」标签时用它唤起学习通 App：
+	     iOS 需要在这里登记要查询的 URL Scheme，否则 canLaunchUrl 一律返回 false。 -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>chaoxing</string>
+		<string>xxt</string>
+	</array>
 </dict>
 </plist>

@@ -6,6 +6,7 @@ import 'package:shine/components/input.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/models/course_data.dart';
 import 'package:shine/models/schedule_point_data.dart';
+import 'package:shine/models/schedule_reminder_data.dart';
 import 'package:shine/pages/home_page.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/storage/group_storage.dart';
@@ -13,6 +14,7 @@ import 'package:shine/storage/schedule_point_storage.dart';
 import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/message_utils.dart';
+import 'package:shine/utils/to_do_template_utils.dart';
 
 const dialogTitleStyle = TextStyle(
   fontSize: 20,
@@ -119,6 +121,10 @@ Future<void> showScheduleDialog({
   bool isDiy = false,
   CourseData? courseData,
   required Function(String) onJump,
+  /// 点击「提醒」后的回调（不传则不显示该按钮）
+  VoidCallback? onReminder,
+  /// 该课程是否已开启提醒
+  bool reminderEnabled = false,
 }) async {
   final courseAllName = courseInfo.subjectName.replaceAll("实验", "");
   final teachers = courseInfo.teachers.join("，");
@@ -127,7 +133,17 @@ Future<void> showScheduleDialog({
     builder: (BuildContext context) {
       return AlertDialog(
         backgroundColor: mainColorPurple,
-        title: Text(courseName, style: dialogTitleStyle),
+        title: Row(
+          children: [
+            Expanded(child: Text(courseName, style: dialogTitleStyle)),
+            if (reminderEnabled)
+              Icon(
+                Icons.notifications_active,
+                size: 18,
+                color: deepColorOrange,
+              ),
+          ],
+        ),
         content: Container(
           padding: EdgeInsets.all(0),
           child: Wrap(
@@ -149,6 +165,15 @@ Future<void> showScheduleDialog({
             onPressed: onYes ?? () => Navigator.of(context).pop(),
             child: Text("关闭"),
           ),
+          if (onReminder != null)
+            TextButton(
+              style: dialogButtonStyle,
+              onPressed: () {
+                Navigator.of(context).pop();
+                onReminder();
+              },
+              child: Text(reminderEnabled ? "提醒设置" : "开启提醒"),
+            ),
           if (!isDiy)
             TextButton(
               style: dialogButtonStyle,
@@ -357,6 +382,466 @@ Future<Map<String, bool>?> showElectiveSelectionDialog({
   });
 
   return completer.future;
+}
+
+/// 作业事项模板对话框：填科目、作业内容与截止时间，生成标题与内容
+///
+/// 返回可直接填入事项编辑页的标题与内容，用户取消时返回 null。
+Future<({String title, String content})?> showHomeworkTemplateDialog({
+  required BuildContext context,
+  required List<String> subjectOptions,
+}) async {
+  final subjectController = TextEditingController();
+  final homeworkController = TextEditingController();
+  final completer = Completer<({String title, String content})?>();
+  DateTime? deadline;
+  bool withChaoxingTip = true;
+
+  final future = showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          Future<void> pickDeadline() async {
+            final now = DateTime.now();
+            final pickedDate = await showDatePicker(
+              context: context,
+              initialDate: deadline ?? now.add(const Duration(days: 7)),
+              firstDate: DateTime(now.year - 1),
+              lastDate: DateTime(now.year + 5),
+              helpText: '选择截止日期',
+            );
+            if (pickedDate == null || !context.mounted) return;
+            final pickedTime = await showTimePicker(
+              context: context,
+              initialTime: deadline != null
+                  ? TimeOfDay(hour: deadline!.hour, minute: deadline!.minute)
+                  : const TimeOfDay(hour: 23, minute: 59),
+              helpText: '选择截止时间',
+            );
+            setState(() {
+              deadline = DateTime(
+                pickedDate.year,
+                pickedDate.month,
+                pickedDate.day,
+                pickedTime?.hour ?? 23,
+                pickedTime?.minute ?? 59,
+              );
+            });
+          }
+
+          void submit() {
+            final subject = subjectController.text.trim();
+            final homework = homeworkController.text.trim();
+            if (subject.isEmpty && homework.isEmpty) {
+              showToast(msg: '请至少填写科目或作业内容');
+              return;
+            }
+            final result = buildHomeworkToDoTemplate(
+              subject: subject,
+              homework: homework,
+              deadline: deadline,
+              withChaoxingTip: withChaoxingTip,
+            );
+            Navigator.of(context).pop();
+            completer.complete(result);
+          }
+
+          return AlertDialog(
+            backgroundColor: mainColorPurple,
+            title: Text('作业事项模板', style: dialogTitleStyle),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Input(
+                      name: "templateSubject",
+                      label: "科目",
+                      controller: subjectController,
+                      hintStyle: hintStyle,
+                      inputStyle: inputStyle,
+                      labelStyle: labelStyle,
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(width: 1.0, color: Colors.grey),
+                      ),
+                      color: mainColorPurple90,
+                    ),
+                    if (subjectOptions.isNotEmpty) ...[
+                      SizedBox(height: 6),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: subjectOptions.map((subject) {
+                          return GestureDetector(
+                            onTap: () {
+                              subjectController.text = subject;
+                              setState(() {});
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: mainColorPurple80,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: mainColorGreenBlue60,
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Text(
+                                subject,
+                                style: dialogContentSmallStyle.copyWith(
+                                  color: bgColorLight,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                    SizedBox(height: 12),
+                    TextField(
+                      controller: homeworkController,
+                      style: dialogContentSmallStyle.copyWith(
+                        color: bgColorLight80,
+                      ),
+                      maxLines: 3,
+                      minLines: 2,
+                      decoration: InputDecoration(
+                        labelText: '作业内容',
+                        labelStyle: dialogContentSmallStyle,
+                        hintText: '例如：第三章课后习题 1-10 题',
+                        hintStyle: dialogContentSmallStyle,
+                        filled: true,
+                        fillColor: mainColorPurple90,
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(width: 1.0, color: Colors.grey),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            deadline == null
+                                ? '截止时间：未设置'
+                                : '截止时间：${formatToDoDeadline(deadline!)}',
+                            style: dialogContentSmallStyle.copyWith(
+                              color: bgColorLight80,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          style: dialogButtonStyle,
+                          onPressed: pickDeadline,
+                          child: Text(deadline == null ? '选择时间' : '修改时间'),
+                        ),
+                        if (deadline != null)
+                          IconButton(
+                            onPressed: () {
+                              setState(() {
+                                deadline = null;
+                              });
+                            },
+                            icon: Icon(
+                              Icons.clear,
+                              size: 18,
+                              color: bgColorLight60,
+                            ),
+                            tooltip: '清除截止时间',
+                          ),
+                      ],
+                    ),
+                    CheckboxListTile(
+                      value: withChaoxingTip,
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      activeColor: mainColorGreenBlue,
+                      checkColor: darkColorPurple,
+                      title: Text(
+                        '附上「提交方式：学习通」',
+                        style: dialogContentStyle,
+                      ),
+                      subtitle: Text(
+                        '事项里会出现可点击的学习通标签',
+                        style: dialogContentSmallStyle,
+                      ),
+                      onChanged: (bool? value) {
+                        setState(() {
+                          withChaoxingTip = value ?? false;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      '生成后会填入标题与内容，可继续修改再保存',
+                      style: dialogContentSmallStyle,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  completer.complete(null);
+                },
+                child: Text('取消'),
+              ),
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: submit,
+                child: Text('生成'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+
+  future.then((_) {
+    if (completer.isCompleted) return;
+    completer.complete(null);
+  });
+
+  return completer.future;
+}
+
+/// 日程提醒设置对话框：开关提醒 + 选择提前量（含自定义分钟）
+///
+/// [previewBuilder] 用来按当前提前量生成「下次提醒」预览文案。
+/// 返回保存后的设置，用户取消时返回 null。
+Future<ScheduleReminderSetting?> showScheduleReminderDialog({
+  required BuildContext context,
+  required String courseName,
+  required ScheduleReminderSetting setting,
+  String? Function(int leadMinutes)? previewBuilder,
+}) async {
+  final completer = Completer<ScheduleReminderSetting?>();
+  var enabled = setting.enabled;
+  var leadMinutes = setting.leadMinutes;
+  var customMode =
+      !ScheduleReminderSetting.leadMinuteOptions.contains(leadMinutes);
+  final customController = TextEditingController(
+    text: customMode ? leadMinutes.toString() : '',
+  );
+
+  final future = showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          void applyCustomText() {
+            final parsed = int.tryParse(customController.text.trim());
+            if (parsed == null) return;
+            setState(() {
+              leadMinutes = parsed.clamp(0, 24 * 60);
+            });
+          }
+
+          final preview = enabled
+              ? previewBuilder?.call(leadMinutes)
+              : null;
+          return AlertDialog(
+            backgroundColor: mainColorPurple,
+            title: Text('提醒设置', style: dialogTitleStyle),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '课程：$courseName',
+                      style: dialogContentSmallStyle.copyWith(
+                        color: bgColorLight80,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    CheckboxListTile(
+                      value: enabled,
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      activeColor: mainColorGreenBlue,
+                      checkColor: darkColorPurple,
+                      title: Text('开启上课提醒', style: dialogContentStyle),
+                      subtitle: Text(
+                        '到点前用系统通知提醒你',
+                        style: dialogContentSmallStyle,
+                      ),
+                      onChanged: (bool? value) {
+                        setState(() {
+                          enabled = value ?? false;
+                        });
+                      },
+                    ),
+                    if (enabled) ...[
+                      SizedBox(height: 4),
+                      Text(
+                        '提前多久提醒',
+                        style: dialogContentStyle.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          ...ScheduleReminderSetting.leadMinuteOptions.map((
+                            minutes,
+                          ) {
+                            return _buildLeadMinuteChip(
+                              label: _leadMinuteLabel(minutes),
+                              selected: !customMode && leadMinutes == minutes,
+                              onTap: () {
+                                setState(() {
+                                  customMode = false;
+                                  leadMinutes = minutes;
+                                });
+                              },
+                            );
+                          }),
+                          _buildLeadMinuteChip(
+                            label: '自定义',
+                            selected: customMode,
+                            onTap: () {
+                              setState(() {
+                                customMode = true;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                      if (customMode) ...[
+                        SizedBox(height: 8),
+                        TextField(
+                          controller: customController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          style: dialogContentSmallStyle.copyWith(
+                            color: bgColorLight80,
+                          ),
+                          onChanged: (_) => applyCustomText(),
+                          decoration: InputDecoration(
+                            labelText: '提前分钟数（0-1440）',
+                            labelStyle: dialogContentSmallStyle,
+                            filled: true,
+                            fillColor: mainColorPurple90,
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 1.0,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                      SizedBox(height: 10),
+                      Text(
+                        '当前：${ScheduleReminderSetting(enabled: true, leadMinutes: leadMinutes).leadText}',
+                        style: dialogContentSmallStyle.copyWith(
+                          color: deepColorOrange,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        preview ?? '未来 7 天没有该课程的课次，暂时不会提醒',
+                        style: dialogContentSmallStyle,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  completer.complete(null);
+                },
+                child: Text('取消'),
+              ),
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () {
+                  if (customMode) applyCustomText();
+                  Navigator.of(context).pop();
+                  completer.complete(
+                    ScheduleReminderSetting(
+                      enabled: enabled,
+                      leadMinutes: leadMinutes,
+                    ),
+                  );
+                },
+                child: Text('保存'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+
+  future.then((_) {
+    if (completer.isCompleted) return;
+    completer.complete(null);
+  });
+
+  return completer.future;
+}
+
+String _leadMinuteLabel(int minutes) {
+  if (minutes < 60) return '$minutes 分钟';
+  final hours = minutes / 60;
+  final text = hours == hours.roundToDouble()
+      ? hours.round().toString()
+      : hours.toStringAsFixed(1);
+  return '$text 小时';
+}
+
+Widget _buildLeadMinuteChip({
+  required String label,
+  required bool selected,
+  required VoidCallback onTap,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: selected ? mainColorGreenBlue : mainColorPurple80,
+        border: Border.all(
+          color: selected ? mainColorGreenBlue : mainColorGreenBlue60,
+          width: 0.8,
+        ),
+      ),
+      child: Text(
+        label,
+        style: dialogContentSmallStyle.copyWith(
+          color: selected ? darkColorPurple : bgColorLight,
+        ),
+      ),
+    ),
+  );
 }
 
 Future<bool> showConfirmDialog({
