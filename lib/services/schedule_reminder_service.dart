@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shine/models/course_data.dart';
 import 'package:shine/models/schedule_reminder_data.dart';
 import 'package:shine/services/notification.dart';
+import 'package:shine/storage/holiday_storage.dart';
 import 'package:shine/storage/schedule_reminder_storage.dart';
 
 /// 日程提醒的排期：把「哪门课、提前多久提醒」变成系统的本地通知。
@@ -35,6 +36,8 @@ class ScheduleReminderService {
     await _cancelScheduled();
 
     final settings = await ScheduleReminderStorage.getSettings();
+    // 节假日不上课，这类课次不排提醒
+    final holidays = await HolidayStorage.getHolidays();
     final occurrences = buildScheduleReminderOccurrences(
       courseList: courseList,
       settings: settings,
@@ -43,6 +46,7 @@ class ScheduleReminderService {
       now: now,
       horizonDays: horizonDays,
       maxCount: maxOccurrenceCount,
+      holidays: holidays,
     );
 
     final scheduledIds = <int>[];

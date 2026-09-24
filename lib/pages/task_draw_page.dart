@@ -11,11 +11,15 @@ import 'package:shine/components/line.dart';
 import 'package:shine/components/task.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/components/user_info_bar.dart';
+import 'package:shine/services/api.dart';
+import 'package:shine/services/api_draw.dart';
 import 'package:shine/services/ws_task.dart';
 import 'package:shine/storage/group_storage.dart';
+import 'package:shine/storage/task_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/utils/async_utils.dart';
 import 'package:shine/utils/image_utils.dart';
+import 'package:shine/utils/message_utils.dart';
 import 'package:shine/utils/share_utils.dart';
 
 class TaskDrawPage extends StatefulWidget {
@@ -29,11 +33,30 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
   int? _taskId;
   String _title = "随机选人";
   bool _reproducible = false;
+  /// 抽取范围或重复设置有过改动, 需要在合适的时机同步到服务端
+  bool _dirty = false;
+  /// 正在向服务端同步, 避免重复提交
+  bool _syncing = false;
+  final ValueNotifier<String> _message = ValueNotifier("正在保存中");
   final TextEditingController _drawNumberController = TextEditingController(
     text: "1",
   );
-  final List<Map<String, dynamic>> _allUserList = UserCache.getUserList();
   final List<Map<String, dynamic>> _inRangeUserList = [];
+
+  /// 所有已知用户, 抽取范围可能来自服务端, 这里把两处数据合起来做展示兜底
+  List<Map<String, dynamic>> get _allUserList {
+    final Map<String, Map<String, dynamic>> merged = {};
+    for (final user in UserCache.getUserList()) {
+      final id = user["id"];
+      if (id is String) merged[id] = user;
+    }
+    for (final user in _inRangeUserList) {
+      final id = user["id"];
+      if (id is String) merged[id] = user;
+    }
+    return merged.values.toList();
+  }
+
   List<Map<String, dynamic>> get _outRangeUserList => _allUserList
       .where(
         (user) => !_inRangeUserList.any((userIn) {
@@ -79,18 +102,51 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
 
   Future<void> _handleArgs() async {
     final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is TaskDrawPageArgs) {
-      final groupStorageKey = args.groupStorageKey;
-      if (groupStorageKey is GroupStorageKey) {
-        final result = await GroupStorage.getGroupUserList(groupStorageKey);
-        if (result is List<Map<String, dynamic>>) {
-          _inRangeUserList.clear();
-          _inRangeUserList.addAll(result);
-          if (!mounted) return;
-          setState(() {});
+    if (args is! TaskDrawPageArgs) return;
+    // 从首页任务卡片打开时, 以服务端数据为准
+    final taskId = args.taskId ?? args.data?.id;
+    if (taskId is int) {
+      await _loadFromServer(taskId);
+      return;
+    }
+    final groupStorageKey = args.groupStorageKey;
+    if (groupStorageKey is GroupStorageKey) {
+      final result = await GroupStorage.getGroupUserList(groupStorageKey);
+      if (result is List<Map<String, dynamic>>) {
+        _inRangeUserList.clear();
+        _inRangeUserList.addAll(result);
+        if (!mounted) return;
+        setState(() {});
+      }
+    }
+  }
+
+  /// 加载服务端保存的随机选人任务
+  Future<void> _loadFromServer(int taskId) async {
+    final result = await ApiDraw.getDrawTask(taskId);
+    if (!mounted) return;
+    if (result is! Map) {
+      if (result is String) showToast(msg: result);
+      return;
+    }
+    _taskId = result["taskId"] is int ? result["taskId"] : taskId;
+    if (result["title"] is String) _title = result["title"];
+    _reproducible = result["reproducible"] == true;
+    _inRangeUserList.clear();
+    final rangeUserList = result["rangeUserList"];
+    if (rangeUserList is List) {
+      _inRangeUserList.addAll(rangeUserList.whereType<Map<String, dynamic>>());
+    }
+    _drawResult.clear();
+    final drawResult = result["drawResult"];
+    if (drawResult is List) {
+      for (final round in drawResult) {
+        if (round is List) {
+          _drawResult.add(round.whereType<String>().toList());
         }
       }
     }
+    setState(() {});
   }
 
   void _correctValue() {
@@ -107,9 +163,56 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
     }
   }
 
+  /// 把当前的范围/结果/设置同步到服务端, 没有任务时先创建
+  Future<String?> _syncToServer() async {
+    if (_syncing) return null;
+    if (_taskId == null && _drawResult.isEmpty) return null;
+    _syncing = true;
+    try {
+      if (_taskId == null) {
+        final result = await ApiDraw.createDrawTask(
+          title: _title,
+          rangeUserList: _inRangeUserList,
+          reproducible: _reproducible,
+          drawResult: _drawResult,
+        );
+        if (result is String) return result;
+        if (result is int) _taskId = result;
+        _dirty = false;
+        return null;
+      }
+      if (!_dirty) return null;
+      final result = await ApiDraw.updateDrawTask(
+        taskId: _taskId!,
+        title: _title,
+        rangeUserList: _inRangeUserList,
+        reproducible: _reproducible,
+        drawResult: _drawResult,
+      );
+      if (result is String) return result;
+      _dirty = false;
+      return null;
+    } finally {
+      _syncing = false;
+    }
+  }
+
+  /// 同步并给出提示, 由用户操作触发时使用
+  Future<void> _syncWithFeedback() async {
+    final error = await _syncToServer();
+    if (!mounted) return;
+    if (error != null) {
+      showToast(msg: "保存失败, $error");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return CustomBackHandler(
+      onWillPop: () async {
+        await _syncWithFeedback();
+        return true;
+      },
       child: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
@@ -151,23 +254,23 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
       centerTitle: true,
       bottom: bottomLine,
       actions: [
-        if (_taskId is int)
-          IconButton(
-            onPressed: () async {
-              final result = await showPromptDialog(
-                context: context,
-                title: "请输入更改任务名",
-                label: "更改后的任务名",
-                initValue: _title,
-              );
-              if (result is String) {
-                // await TaskStorage.updateCheckTask(id: _taskId!, title: result);
-                _title = result;
-                setState(() {});
-              }
-            },
-            icon: Icon(Icons.edit, size: 28),
-          ),
+        IconButton(
+          onPressed: () async {
+            final result = await showPromptDialog(
+              context: context,
+              title: "请输入更改任务名",
+              label: "更改后的任务名",
+              initValue: _title,
+            );
+            if (result is String) {
+              _title = result;
+              _dirty = true;
+              setState(() {});
+              await _syncWithFeedback();
+            }
+          },
+          icon: Icon(Icons.edit, size: 28),
+        ),
       ],
     );
   }
@@ -179,48 +282,55 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Expanded(
-            child: ListView.builder(
-              itemCount: _drawResult.length,
-              itemBuilder: (BuildContext context, int i) {
-                final list = _drawResultReversed[i];
-                final avatarList = List.generate(list.length, (index) {
-                  String id = list[index];
-                  Map user = _allUserList.firstWhere((ele) => ele["id"] == id);
-                  String username = user["username"];
-                  return SizedBox(
-                    width: 80,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        NetworkAvatar(id: id, radius: 25),
-                        Text(
-                          username,
-                          style: const TextStyle(
-                            fontFamily: "SmileySans",
-                            fontSize: 14,
+            child: _drawResult.isEmpty
+                ? Center(
+                    child: Text(
+                      "还没有抽取记录\n在下方设置人数后点击抽取",
+                      textAlign: TextAlign.center,
+                      style: textFieldHintStyle,
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _drawResult.length,
+                    itemBuilder: (BuildContext context, int i) {
+                      final list = _drawResultReversed[i];
+                      final avatarList = List.generate(list.length, (index) {
+                        String id = list[index];
+                        String username = _usernameOf(id);
+                        return SizedBox(
+                          width: 80,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              NetworkAvatar(id: id, radius: 25),
+                              Text(
+                                username,
+                                style: const TextStyle(
+                                  fontFamily: "SmileySans",
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                });
-                return Column(
-                  children: [
-                    ExpansionTile(
-                      initiallyExpanded: i == 0,
-                      title: Text(
-                        "第${_drawResult.length - i}次抽取结果(${avatarList.length}人)",
-                        style: expansionListTitleStyle,
-                      ),
-                      children: [
-                        Wrap(direction: Axis.horizontal, children: avatarList),
-                      ],
-                    ),
-                    SizedBox(width: 10),
-                  ],
-                );
-              },
-            ),
+                        );
+                      });
+                      return Column(
+                        children: [
+                          ExpansionTile(
+                            initiallyExpanded: i == 0,
+                            title: Text(
+                              "第${_drawResult.length - i}次抽取结果(${avatarList.length}人)",
+                              style: expansionListTitleStyle,
+                            ),
+                            children: [
+                              Wrap(direction: Axis.horizontal, children: avatarList),
+                            ],
+                          ),
+                          SizedBox(width: 10),
+                        ],
+                      );
+                    },
+                  ),
           ),
           SizedBox(height: 5),
           Column(
@@ -317,12 +427,16 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
                         value: _reproducible,
                         onChanged: (bool? value) {
                           _reproducible = !_reproducible;
+                          _dirty = true;
+                          _correctValue();
                           setState(() {});
                         },
                       ),
                       GestureDetector(
                         onTap: () {
                           _reproducible = !_reproducible;
+                          _dirty = true;
+                          _correctValue();
                           setState(() {});
                         },
                         child: Text(
@@ -356,6 +470,8 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
             username: username,
             onTap: () {
               _inRangeUserList.remove(item);
+              _dirty = true;
+              _correctValue();
               setState(() {});
             },
           );
@@ -381,6 +497,8 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
             ),
             onTap: () {
               _inRangeUserList.add(item);
+              _dirty = true;
+              _correctValue();
               setState(() {});
             },
           );
@@ -409,6 +527,10 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
           children: [
             buildBottomItem(
               onTap: () async {
+                if (_selectedIdList.isEmpty) {
+                  showToast(msg: "还没有抽到任何人");
+                  return;
+                }
                 final result = await showPromptDialog(
                   context: context,
                   title: "请设置提醒消息, 点击确定以发送",
@@ -452,7 +574,17 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
     );
   }
 
-  void _performDraw() {
+  /// 查询学号对应的昵称, 服务端返回的范围数据里没有昵称时回退到学号
+  String _usernameOf(String id) {
+    for (final user in _inRangeUserList) {
+      if (user["id"] == id && user["username"] is String) {
+        return user["username"];
+      }
+    }
+    return UserCache.getUsername(id) ?? id;
+  }
+
+  Future<void> _performDraw() async {
     int drawNumber = int.tryParse(_drawNumberController.text) ?? 1;
 
     List<String> availableIds = _reproducible
@@ -464,9 +596,7 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
     }
 
     if (drawNumber <= 0 || availableIds.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('没有足够的用户可供抽取')));
+      showToast(msg: '没有足够的用户可供抽取');
       return;
     }
 
@@ -474,12 +604,38 @@ class _TaskDrawPageState extends State<TaskDrawPage> {
     final shuffledIds = availableIds.toList()..shuffle(random);
     final drawnIds = shuffledIds.take(drawNumber).toList();
     _drawResult.add(drawnIds);
+    _dirty = true;
 
     setState(() {});
+
+    // 第一次抽取时才在服务端建立任务, 之后的抽取不断追加结果
+    if (ApiService.userType == "guest") return;
+    _message.value = _taskId == null ? "正在创建任务中" : "正在保存抽取结果中";
+    showMessageDialog(context, _message);
+    final success = await sendRequestAndChangeMessage(
+      _message,
+      request: Future(() async => _syncToServer()),
+      initMessageList: [],
+      messageList: ["正在保存中.", "正在保存中..", "正在保存中..."],
+      successMessage: "保存成功",
+      successMessageDuration: Duration(milliseconds: 300),
+      failMessageDuration: Duration(milliseconds: 800),
+    );
+    if (mounted) Navigator.of(context).pop();
+    if (!success && mounted) {
+      showToast(msg: "抽取结果未能保存到服务器, 请检查网络后重试");
+    }
   }
 }
 
 class TaskDrawPageArgs {
+  /// 抽取范围来源, 从群组发起时使用
   final GroupStorageKey? groupStorageKey;
-  const TaskDrawPageArgs({this.groupStorageKey});
+
+  /// 首页任务卡片点进来时已有的任务 ID
+  final int? taskId;
+
+  /// 首页任务卡片点进来时已有的任务数据
+  final DrawTaskStorageData? data;
+  const TaskDrawPageArgs({this.groupStorageKey, this.taskId, this.data});
 }

@@ -33,19 +33,24 @@ CourseData _course({
   );
 }
 
-/// 判断某个课程格是否使用了专业任选课的橙色底色
-bool _hasOrangeBackground(WidgetTester tester, String courseName) {
+/// 判断某个课程格是否使用了指定底色
+bool _hasBackgroundColor(WidgetTester tester, String courseName, Color color) {
   final containers = find.ancestor(
     of: find.text(courseName),
     matching: find.byType(Container),
   );
   for (final element in containers.evaluate()) {
     final decoration = (element.widget as Container).decoration;
-    if (decoration is BoxDecoration && decoration.color == deepColorOrange) {
+    if (decoration is BoxDecoration && decoration.color == color) {
       return true;
     }
   }
   return false;
+}
+
+/// 判断某个课程格是否使用了专业任选课的橙色底色
+bool _hasOrangeBackground(WidgetTester tester, String courseName) {
+  return _hasBackgroundColor(tester, courseName, deepColorOrange);
 }
 
 void main() {
@@ -260,6 +265,27 @@ void main() {
       expect(_hasOrangeBackground(tester, '大学物理实验'), isFalse);
       expect(find.byIcon(Icons.science), findsOneWidget);
       expect(find.text('选修课 1/2'), findsOneWidget);
+    });
+    testWidgets('节假日的课程显示为灰色', (WidgetTester tester) async {
+      // 2026-03-04（周三）设为校庆放假
+      SharedPreferences.setMockInitialValues({
+        'holiday_range_list_key': jsonEncode([
+          {'start': '2026-03-04', 'end': '2026-03-04', 'name': '校庆'},
+        ]),
+      });
+      await pumpSchedule(tester);
+      // 周三那门课变灰，并且日期表头标出「假」
+      expect(_hasBackgroundColor(tester, '嵌入式系统', mainColorHoliday), isTrue);
+      expect(find.text('假'), findsOneWidget);
+      // 其它天的课程不受影响
+      expect(_hasOrangeBackground(tester, '数字信号处理'), isTrue);
+    });
+
+    testWidgets('没有节假日时课程按原配色显示', (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues({});
+      await pumpSchedule(tester);
+      expect(find.text('假'), findsNothing);
+      expect(_hasBackgroundColor(tester, '嵌入式系统', mainColorHoliday), isFalse);
     });
   });
 }

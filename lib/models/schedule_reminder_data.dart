@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shine/models/course_data.dart';
+import 'package:shine/models/holiday_data.dart';
 
 /// 日程提醒设置：是否开启 + 提前多少分钟提醒
 class ScheduleReminderSetting {
@@ -122,6 +123,7 @@ List<ScheduleReminderOccurrence> buildScheduleReminderOccurrences({
   DateTime? now,
   int horizonDays = 7,
   int maxCount = 40,
+  List<HolidayRange> holidays = const [],
 }) {
   if (semesterStartedAt == null || phaseList.isEmpty) return const [];
   final current = now ?? DateTime.now();
@@ -149,6 +151,8 @@ List<ScheduleReminderOccurrence> buildScheduleReminderOccurrences({
           Duration(days: (week - 1) * 7 + session.weekday - 1),
         );
         if (date.isAfter(horizonEnd)) continue;
+        // 节假日不上课，不排提醒
+        if (holidayNameOf(date, holidays) != null) continue;
         final classStart = DateTime(
           date.year,
           date.month,

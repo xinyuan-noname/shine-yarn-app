@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/pages/home_page.dart';
 import 'package:shine/pages/task_check_page.dart';
+import 'package:shine/pages/task_draw_page.dart';
 import 'package:shine/pages/task_upload_page.dart';
+import 'package:shine/pages/task_vote_detail_page.dart';
 import 'package:shine/routes.dart';
 import 'package:shine/services/api.dart';
 import 'package:shine/services/api_task.dart';
@@ -48,6 +51,22 @@ class TaskCard extends StatelessWidget {
         );
         HomePageRefreshNotifier.refreshTask();
       },
+      DrawTaskStorageData: () async {
+        final data = taskData as DrawTaskStorageData;
+        await globalNavigatorKey.currentState?.pushNamed(
+          '/task/draw',
+          arguments: TaskDrawPageArgs(taskId: data.id, data: data),
+        );
+        HomePageRefreshNotifier.refreshTask();
+      },
+      VoteTaskStorageData: () async {
+        final data = taskData as VoteTaskStorageData;
+        await globalNavigatorKey.currentState?.pushNamed(
+          '/task/vote/detail',
+          arguments: TaskVoteDetailPageArgs(taskId: data.id, data: data),
+        );
+        HomePageRefreshNotifier.refreshTask();
+      },
     };
     final onDeleteMap = <Type, VoidCallback>{
       CheckTaskStorageData: () async {
@@ -63,6 +82,30 @@ class TaskCard extends StatelessWidget {
         ApiTask.deleteTask(taskId: taskData.id).then((_) async {
           await showToast(
             msg: "删除任务${taskData.title}成功",
+            duration: Duration(milliseconds: 500),
+          );
+          HomePageRefreshNotifier.refreshTask();
+        });
+      },
+      DrawTaskStorageData: () async {
+        ApiTask.deleteTask(taskId: taskData.id).then((_) async {
+          await showToast(
+            msg: "删除任务${taskData.title}成功",
+            duration: Duration(milliseconds: 500),
+          );
+          HomePageRefreshNotifier.refreshTask();
+        });
+      },
+      VoteTaskStorageData: () async {
+        final confirm = await showConfirmDialog(
+          context: context,
+          title: "删除投票",
+          content: "删除后投票记录也会一并清除，确定删除“${taskData.title}”吗？",
+        );
+        if (!confirm) return;
+        ApiTask.deleteTask(taskId: taskData.id).then((_) async {
+          await showToast(
+            msg: "删除投票${taskData.title}成功",
             duration: Duration(milliseconds: 500),
           );
           HomePageRefreshNotifier.refreshTask();
@@ -193,6 +236,12 @@ class TaskCard extends StatelessWidget {
         color: mainColorRed,
       );
     }
+    if (taskData is DrawTaskStorageData) {
+      return Icon(Icons.shuffle, size: largeIconSize, color: mainColorGreenBlue);
+    }
+    if (taskData is VoteTaskStorageData) {
+      return Icon(Icons.ballot, size: largeIconSize, color: mainColorOrange);
+    }
     return Icon(Icons.task, size: largeIconSize);
   }
 
@@ -202,6 +251,10 @@ class TaskCard extends StatelessWidget {
       type = "任务清查";
     } else if (taskData is UploadTaskStorageData) {
       type = "作业收集";
+    } else if (taskData is DrawTaskStorageData) {
+      type = "随机选人";
+    } else if (taskData is VoteTaskStorageData) {
+      type = "投票";
     } else {
       type = "未知任务";
     }
@@ -316,6 +369,57 @@ class TaskCard extends StatelessWidget {
           style: const TextStyle(
             fontFamily: 'SmileySans',
             fontSize: 8,
+            color: mainColorPurple,
+            overflow: TextOverflow.ellipsis,
+          ),
+          maxLines: 2,
+        ),
+      ]);
+    }
+    if (taskData is DrawTaskStorageData) {
+      final data = taskData as DrawTaskStorageData;
+      result.addAll([
+        Text(
+          "已抽取：${data.drawRoundCount}次(${data.selectedIdList.length}人)",
+          style: const TextStyle(
+            fontFamily: 'SmileySans',
+            fontSize: 12,
+            color: bgColorLight,
+          ),
+        ),
+        Text(
+          data.reproducible ? "成员可重复抽取" : "成员不可重复抽取",
+          style: const TextStyle(
+            fontFamily: 'SmileySans',
+            fontSize: 10,
+            color: bgColorLight80,
+          ),
+        ),
+      ]);
+    }
+    if (taskData is VoteTaskStorageData) {
+      final data = taskData as VoteTaskStorageData;
+      result.addAll([
+        Container(
+          padding: EdgeInsets.symmetric(vertical: 2, horizontal: 3),
+          decoration: BoxDecoration(
+            gradient: greyLinearGradient,
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Text(
+            data.ended ? '已结束' : '进行中',
+            style: const TextStyle(
+              fontFamily: 'SmileySans',
+              fontSize: 14,
+              color: bgColorLight80,
+            ),
+          ),
+        ),
+        Text(
+          "截止时间：${getLocalTimeString(data.endedAt)}(${getDayDifferenceString(data.endedAt)})",
+          style: const TextStyle(
+            fontFamily: 'SmileySans',
+            fontSize: 10,
             color: mainColorPurple,
             overflow: TextOverflow.ellipsis,
           ),

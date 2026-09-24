@@ -58,6 +58,9 @@ const mainColorGrey60 = Color.fromARGB(153, 158, 158, 158);
 const mainColorGrey40 = Color.fromARGB(102, 158, 158, 158);
 const mainColorGrey20 = Color.fromARGB(51, 158, 158, 158);
 
+/// 节假日不上课的课程格颜色（纯灰，和课程配色区分开）
+const mainColorHoliday = Color.fromARGB(255, 176, 176, 176);
+
 const mainColorRed = Color.fromRGBO(255, 83, 83, 1);
 const mainColorRed70 = Color.fromARGB(179, 255, 83, 83);
 const mainColorRed50 = Color.fromARGB(128, 255, 83, 83);

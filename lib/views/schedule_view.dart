@@ -7,11 +7,13 @@ import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/extensions/list.dart';
+import 'package:shine/models/holiday_data.dart';
 import 'package:shine/models/schedule_reminder_data.dart';
 import 'package:shine/pages/home_page.dart';
 import 'package:shine/services/notification.dart';
 import 'package:shine/services/schedule_reminder_service.dart';
 import 'package:shine/storage/elective_storage.dart';
+import 'package:shine/storage/holiday_storage.dart';
 import 'package:shine/storage/schedule_reminder_storage.dart';
 import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/theme.dart';
@@ -171,11 +173,15 @@ class _ScheduleViewState extends State<ScheduleView> {
   /// 日程提醒设置（科目名 -> 设置），仅保存在本地
   Map<String, ScheduleReminderSetting> _reminderSettings = {};
 
+  /// 节假日（放假不上课）区间，本地保存
+  List<HolidayRange> _holidays = [];
+
   @override
   void initState() {
     super.initState();
     _loadElectiveSelection();
     _loadReminderSettings();
+    _loadHolidays();
     ScheduleView.openReminderManager = _openReminderManagerDialog;
   }
 
@@ -212,6 +218,32 @@ class _ScheduleViewState extends State<ScheduleView> {
     });
   }
 
+  Future<void> _loadHolidays() async {
+    final holidays = await HolidayStorage.getHolidays();
+    if (!mounted) return;
+    setState(() {
+      _holidays = holidays;
+    });
+  }
+
+  /// 这天是不是节假日（放假不上课）
+  String? _holidayName(DateTime date) => holidayNameOf(date, _holidays);
+
+  /// 打开节假日设置
+  Future<void> _openHolidaySettingsDialog() async {
+    final result = await showHolidaySettingsDialog(
+      context: context,
+      holidays: _holidays,
+    );
+    if (result == null) return;
+    await HolidayStorage.saveHolidays(result);
+    if (!mounted) return;
+    setState(() {
+      _holidays = result;
+    });
+    showToast(msg: '已保存 ${result.length} 段节假日');
+  }
+
   /// 该课程是否开启了上课提醒
   bool _isReminderEnabled(String subjectName) =>
       _reminderSettings[subjectName]?.enabled ?? false;
@@ -237,6 +269,7 @@ class _ScheduleViewState extends State<ScheduleView> {
       phaseList: widget.semesterPhaseList,
       semesterStartedAt: widget.semesterStartedAt,
       horizonDays: ScheduleReminderService.horizonDays,
+      holidays: _holidays,
     );
     final first = occurrences.firstOrNull;
     if (first == null) return null;
@@ -480,6 +513,8 @@ class _ScheduleViewState extends State<ScheduleView> {
                                 context,
                                 startedAt: widget.semesterStartedAt!,
                                 selectedDate: widget.showDate,
+                                onOpenHolidaySettings:
+                                    _openHolidaySettingsDialog,
                               );
                               if (result != null) {
                                 widget.onChangeShowDate(result);
@@ -708,32 +743,42 @@ class _ScheduleViewState extends State<ScheduleView> {
     BuildContext context,
     _ScheduleLayout layout,
   ) {
-    return getWeekDates(widget.showDate)
-        .map(
-          (d) => GestureDetector(
-            onLongPress: () {
-              showSchedulePointDialog(context: context);
-            },
-            onDoubleTap: () {
-              showDailySchedulePointDialog(
-                context: context,
-                date: d,
-                weekday: d.weekday,
-              );
-            },
-            child: Container(
-              width: layout.cellWidth,
-              color: isToday(d) ? mainColorGreenBlue : Colors.transparent,
-              child: Column(
-                children: [
-                  Text(getCnWeekDayName(d), style: layout.titleTextStyle),
-                  Text(d.day.toString(), style: layout.dayTextStyle),
-                ],
-              ),
-            ),
+    return getWeekDates(widget.showDate).map((d) {
+      final holidayName = _holidayName(d);
+      return GestureDetector(
+        onLongPress: () {
+          showSchedulePointDialog(context: context);
+        },
+        onDoubleTap: () {
+          showDailySchedulePointDialog(
+            context: context,
+            date: d,
+            weekday: d.weekday,
+          );
+        },
+        child: Container(
+          width: layout.cellWidth,
+          color: isToday(d)
+              ? mainColorGreenBlue
+              : (holidayName == null ? Colors.transparent : mainColorGrey20),
+          child: Column(
+            children: [
+              Text(getCnWeekDayName(d), style: layout.titleTextStyle),
+              Text(d.day.toString(), style: layout.dayTextStyle),
+              // 节假日标个小「假」，配合灰色课格一起看
+              if (holidayName != null)
+                Text(
+                  '假',
+                  style: layout.dayTextStyle.copyWith(
+                    color: mainColorRed,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+            ],
           ),
-        )
-        .toList();
+        ),
+      );
+    }).toList();
   }
 
   List<(CourseBasicInfo, CourseSchedule)> _getshowSubjectInfoList() {
@@ -863,8 +908,13 @@ class _ScheduleViewState extends State<ScheduleView> {
     return scheduleItem.$1.alias ?? scheduleItem.$1.subjectName;
   }
 
-  /// 专业任选课及其实验课统一橙色，其它课程按星期取色
-  Color _getCourseColor(int weekdayIndex, CourseData courseData) {
+  /// 专业任选课及其实验课统一橙色；节假日不上课的课次显示为灰色；其它按星期取色
+  Color _getCourseColor(
+    int weekdayIndex,
+    CourseData courseData, {
+    String? holidayName,
+  }) {
+    if (holidayName != null) return mainColorHoliday;
     if (_getElectiveOwnerName(courseData) != null) return deepColorOrange;
     return _courseColorList.elementAt(weekdayIndex);
   }
@@ -878,6 +928,7 @@ class _ScheduleViewState extends State<ScheduleView> {
   }) {
     final List<Widget> children = [];
     final index = date.weekday - 1;
+    final holidayName = _holidayName(date);
     for (int i = 1; i <= widget.semesterPhaseList.length; i++) {
       ScheduleData? currentScheduleData = scheduleDataList.elementAtOrNull(0);
       final scheduleItem = courseList.elementAtOrNull(0);
@@ -961,7 +1012,11 @@ class _ScheduleViewState extends State<ScheduleView> {
                   bottom: BorderSide(color: bgColorLight),
                   left: BorderSide(color: bgColorLight),
                 ),
-                color: _getCourseColor(index, courseData),
+                color: _getCourseColor(
+                  index,
+                  courseData,
+                  holidayName: holidayName,
+                ),
                 borderRadius: BorderRadius.circular(5),
               ),
               child: Stack(

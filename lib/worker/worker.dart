@@ -251,6 +251,10 @@ class Worker {
         switch (taskInfo["taskType"]) {
           case "upload":
             result.add(UploadTaskStorageData.fromMap(taskInfo));
+          case "draw":
+            result.add(DrawTaskStorageData.fromMap(taskInfo));
+          case "vote":
+            result.add(VoteTaskStorageData.fromMap(taskInfo));
         }
       }
       return result;

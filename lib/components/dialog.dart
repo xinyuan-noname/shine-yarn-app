@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:shine/components/input.dart';
 import 'package:shine/components/toast.dart';
 import 'package:shine/models/course_data.dart';
+import 'package:shine/models/holiday_data.dart';
 import 'package:shine/models/schedule_point_data.dart';
 import 'package:shine/models/schedule_reminder_data.dart';
 import 'package:shine/pages/home_page.dart';
@@ -1238,6 +1239,175 @@ int _mostUsedLeadMinutes(Iterable<ScheduleReminderSetting> settings) {
   return best;
 }
 
+/// 节假日设置：列出当前的放假区间，可自行增删或恢复预置
+///
+/// 返回保存后的节假日列表，用户取消时返回 null。
+Future<List<HolidayRange>?> showHolidaySettingsDialog({
+  required BuildContext context,
+  required List<HolidayRange> holidays,
+}) async {
+  final current = List<HolidayRange>.of(holidays)
+    ..sort((a, b) => a.start.compareTo(b.start));
+  final completer = Completer<List<HolidayRange>?>();
+
+  final future = showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          Future<void> pickRange() async {
+            final now = DateTime.now();
+            final picked = await showDateRangePicker(
+              context: context,
+              firstDate: DateTime(now.year - 3),
+              lastDate: DateTime(now.year + 5),
+              helpText: '选择放假日期区间',
+              saveText: '下一步',
+            );
+            if (picked == null || !context.mounted) return;
+            final name = await showPromptDialog(
+              context: context,
+              title: '给这段假期起个名字',
+              label: '假期名称',
+              initValue: '放假',
+              max: 12,
+            );
+            if (!context.mounted) return;
+            setState(() {
+              current.add(
+                HolidayRange(
+                  start: DateUtils.dateOnly(picked.start),
+                  end: DateUtils.dateOnly(picked.end),
+                  name: (name ?? '').trim().isEmpty ? '放假' : name!.trim(),
+                ),
+              );
+              current.sort((a, b) => a.start.compareTo(b.start));
+            });
+          }
+
+          return AlertDialog(
+            backgroundColor: mainColorPurple,
+            title: Text('节假日设置', style: dialogTitleStyle),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '这段时间里的课程在课表上显示为灰色（共 ${current.length} 段）',
+                      style: dialogContentSmallStyle.copyWith(
+                        color: bgColorLight80,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        TextButton.icon(
+                          style: dialogButtonStyle,
+                          onPressed: pickRange,
+                          icon: Icon(
+                            Icons.add,
+                            size: 18,
+                            color: bgColorLight80,
+                          ),
+                          label: Text('添加假日'),
+                        ),
+                        TextButton(
+                          style: dialogButtonStyle,
+                          onPressed: () {
+                            setState(() {
+                              current
+                                ..clear()
+                                ..addAll(defaultHolidayRanges())
+                                ..sort((a, b) => a.start.compareTo(b.start));
+                            });
+                            showToast(msg: '已恢复预置节假日，记得保存');
+                          },
+                          child: Text('恢复预置'),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 4),
+                    if (current.isEmpty)
+                      Text(
+                        '暂无节假日，点「添加假日」选择放假日期',
+                        style: dialogContentSmallStyle,
+                      )
+                    else
+                      ...List.generate(current.length, (index) {
+                        final holiday = current[index];
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                holiday.label,
+                                style: dialogContentStyle.copyWith(
+                                  color: bgColorLight80,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  current.removeAt(index);
+                                });
+                              },
+                              icon: Icon(
+                                Icons.delete_outline,
+                                size: 18,
+                                color: Colors.red,
+                              ),
+                              tooltip: '删除这段假期',
+                            ),
+                          ],
+                        );
+                      }),
+                    SizedBox(height: 4),
+                    Text(
+                      '预置的是常见放假区间，各校校历与调休不同，请按自己学校的情况增删',
+                      style: dialogContentSmallStyle,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  completer.complete(null);
+                },
+                child: Text('取消'),
+              ),
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  completer.complete(List<HolidayRange>.of(current));
+                },
+                child: Text('保存'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+
+  future.then((_) {
+    if (completer.isCompleted) return;
+    completer.complete(null);
+  });
+
+  return completer.future;
+}
+
 Future<bool> showConfirmDialog({
   required BuildContext context,
   required String title,
@@ -2033,6 +2203,44 @@ Future<String?> showUnfinishedTaskSaveDialog({
     min: min,
     max: max,
     initValue: '',
+  );
+}
+
+/// 收到新投票推送时的邀请弹窗, 返回 true 表示用户选择立即投票
+Future<bool?> showVoteInviteDialog({
+  required BuildContext context,
+  required String title,
+  String creatorName = "老师",
+}) {
+  return showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: mainColorPurple,
+        title: Text("收到新的投票", style: dialogTitleStyle),
+        content: Text(
+          "$creatorName 发起了投票“$title”, 是否现在参与？",
+          style: dialogContentStyle,
+        ),
+        actions: [
+          TextButton(
+            style: dialogButtonStyle,
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+            child: Text("稍后"),
+          ),
+          TextButton(
+            style: dialogButtonStyle,
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+            child: Text("去投票"),
+          ),
+        ],
+      );
+    },
   );
 }
 

@@ -1,6 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:shine/components/dialog.dart';
+import 'package:shine/pages/task_vote_detail_page.dart';
+import 'package:shine/routes.dart';
+import 'package:shine/services/api.dart';
 import 'package:shine/services/event.dart';
 import 'package:shine/services/ws.dart';
 import 'package:shine/storage/message_storage.dart';
@@ -49,6 +54,10 @@ class WsTask {
                 _handleAck(map);
               case "remind":
                 _handleRemind(map);
+              case "vote":
+                _handleVote(map);
+              case "vote_update":
+                _handleVoteUpdate(map);
             }
           }
         },
@@ -177,6 +186,69 @@ class WsTask {
       sentAt: DateTime.fromMillisecondsSinceEpoch(ts),
     );
     EventBus.publish(MessageEvent(sourceUser: sourceUsername));
+  }
+
+  /// 处理服务器推送的新投票, 弹窗邀请用户立即投票
+  static Future<void> _handleVote(Map map) async {
+    final taskId = map["taskId"];
+    if (taskId is! int) return;
+    final title = map["title"] is String ? map["title"] as String : "新的投票";
+    VoteEventBus.publish(
+      VoteEvent(kind: "created", taskId: taskId, title: title),
+    );
+    // 应用不在前台时不打扰用户, 用户回来后在投票列表里仍能看到
+    if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+      return;
+    }
+    final navigator = globalNavigatorKey.currentState;
+    final context = navigator?.overlay?.context;
+    if (navigator == null || context == null) return;
+    final (creatorId, creatorName) = _parseVoteSource(map["source"]);
+    // 自己发起的投票不需要再弹窗邀请自己
+    if (creatorId.isNotEmpty && creatorId == ApiService.userId) return;
+    final goVote = await showVoteInviteDialog(
+      context: context,
+      title: title,
+      creatorName: creatorName,
+    );
+    if (goVote != true) return;
+    await navigator.pushNamed(
+      '/task/vote/detail',
+      arguments: TaskVoteDetailPageArgs(taskId: taskId),
+    );
+  }
+
+  /// 处理投票内容或进度变化, 通知正在查看该投票的页面刷新
+  static void _handleVoteUpdate(Map map) {
+    final taskId = map["taskId"];
+    if (taskId is! int) return;
+    VoteEventBus.publish(
+      VoteEvent(
+        kind: "updated",
+        taskId: taskId,
+        title: map["title"] is String ? map["title"] as String : null,
+      ),
+    );
+  }
+
+  /// 解析投票推送中的发起人信息, 返回 (发起人ID, 发起人昵称)
+  static (String, String) _parseVoteSource(dynamic rawSource) {
+    Map sourceMap = {};
+    if (rawSource is Map) {
+      sourceMap = rawSource;
+    } else if (rawSource is String) {
+      try {
+        final decoded = jsonDecode(rawSource);
+        if (decoded is Map) sourceMap = decoded;
+      } catch (e) {
+        sourceMap = {};
+      }
+    }
+    final id = sourceMap['id'] is String ? sourceMap['id'] as String : "";
+    final username = sourceMap['username'] is String
+        ? sourceMap['username'] as String
+        : "老师";
+    return (id, username);
   }
 
   static Future<void> start() async {

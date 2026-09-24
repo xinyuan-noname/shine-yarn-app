@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/models/course_data.dart';
+import 'package:shine/models/holiday_data.dart';
 import 'package:shine/models/schedule_reminder_data.dart';
 import 'package:shine/services/schedule_reminder_service.dart';
 import 'package:shine/storage/schedule_reminder_storage.dart';
@@ -145,6 +146,7 @@ void main() {
       int horizonDays = 7,
       int maxCount = 40,
       List<CourseData>? courses,
+      List<HolidayRange> holidays = const [],
     }) {
       return buildScheduleReminderOccurrences(
         courseList: courses ?? courseList,
@@ -154,6 +156,7 @@ void main() {
         now: now ?? DateTime(2026, 3, 2, 7, 0),
         horizonDays: horizonDays,
         maxCount: maxCount,
+        holidays: holidays,
       );
     }
 
@@ -170,6 +173,18 @@ void main() {
       expect(occurrences[1].remindAt, DateTime(2026, 3, 4, 13, 30));
       // 下周一 07:30（还在 7 天窗口内）
       expect(occurrences[2].remindAt, DateTime(2026, 3, 9, 7, 30));
+    });
+
+    test('节假日当天的课次不排提醒', () {
+      // 2026-03-02（周一）放假
+      final occurrences = build(
+        holidays: [HolidayRange.single(DateTime(2026, 3, 2), '校庆')],
+      );
+      // 周一的课被跳过，只剩周三与下周一
+      expect(occurrences.any((item) => item.weekday == 1), isFalse);
+      expect(occurrences.first.remindAt, DateTime(2026, 3, 4, 13, 30));
+      // 没传节假日时周一那节课照常排
+      expect(build().any((item) => item.weekday == 1), isTrue);
     });
 
     test('没开启提醒的课程不排期', () {

@@ -66,6 +66,83 @@ class CheckTaskStorageData extends TaskStorageData {
   });
 }
 
+/// 随机选人任务(保存在服务端)
+class DrawTaskStorageData extends TaskStorageData {
+  final bool reproducible;
+  final List<List<String>> drawResult;
+  const DrawTaskStorageData({
+    required super.id,
+    required super.title,
+    super.personal = false,
+    required super.createdAt,
+    this.reproducible = false,
+    this.drawResult = const [],
+  });
+
+  /// 已抽取的轮数
+  int get drawRoundCount => drawResult.length;
+
+  /// 已抽到过的学号(去重)
+  List<String> get selectedIdList =>
+      drawResult.expand((round) => round).toSet().toList();
+
+  factory DrawTaskStorageData.fromMap(Map<String, dynamic> map) {
+    final rawResult = map['drawResult'];
+    final List<List<String>> drawResult = [];
+    if (rawResult is List) {
+      for (final round in rawResult) {
+        if (round is List) {
+          drawResult.add(round.whereType<String>().toList());
+        }
+      }
+    }
+    return DrawTaskStorageData(
+      id: map['id'] ?? map['taskId'] as int,
+      title: map['title'] ?? "",
+      personal: false,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(
+        map["createdAt"] ?? map["startedAt"],
+      ),
+      reproducible: map['reproducible'] == true,
+      drawResult: drawResult,
+    );
+  }
+}
+
+/// 投票任务(保存在服务端)
+class VoteTaskStorageData extends TaskStorageData {
+  final DateTime endedAt;
+  final bool anonymous;
+  final bool multiple;
+  const VoteTaskStorageData({
+    required super.id,
+    required super.title,
+    super.personal = false,
+    required super.createdAt,
+    required this.endedAt,
+    this.anonymous = false,
+    this.multiple = false,
+  });
+
+  bool get ended => endedAt.isBefore(DateTime.now());
+
+  factory VoteTaskStorageData.fromMap(Map<String, dynamic> map) {
+    return VoteTaskStorageData(
+      id: map['id'] ?? map['taskId'] as int,
+      title: map['title'] ?? "",
+      personal: false,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(
+        map["createdAt"] ?? map["startedAt"],
+      ),
+      endedAt: DateTime.fromMillisecondsSinceEpoch(
+        map["endedAt"] ?? map["startedAt"],
+      ),
+      anonymous: map['anonymous'] == true,
+      multiple: map['multiple'] == true,
+    );
+  }
+}
+
 class TaskStorage {
   static AppDatabase get _db => DatabaseProvider.instance;
   static Future<void> addCheckTask({
