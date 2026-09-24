@@ -225,7 +225,46 @@ class _ScheduleViewState extends State<ScheduleView> {
         '，第 ${first.startPeriod}-${first.endPeriod} 节';
   }
 
-  /// 打开某门课的提醒设置
+  /// 打开统一的日程提醒管理
+  Future<void> _openReminderManagerDialog() async {
+    final courseList = _getReminderCourseList();
+    if (courseList.isEmpty) {
+      showToast(msg: "本学期暂无课程");
+      return;
+    }
+    final result = await showScheduleReminderManagerDialog(
+      context: context,
+      courseList: courseList,
+      settings: _reminderSettings,
+      previewBuilder: _reminderPreviewText,
+    );
+    if (result == null) return;
+    await ScheduleReminderStorage.saveSettings(result);
+    if (result.values.any((setting) => setting.enabled)) {
+      await NotificationService.requestPermission();
+    }
+    if (!mounted) return;
+    setState(() {
+      _reminderSettings = result;
+    });
+    widget.onReminderChanged?.call();
+    final enabledCount = result.values
+        .where((setting) => setting.enabled)
+        .length;
+    showToast(msg: enabledCount > 0 ? '已开启 $enabledCount 门课程的提醒' : '已关闭全部课程提醒');
+  }
+
+  /// 提醒管理里列出的课程（按科目名去重后排序）
+  List<CourseData> _getReminderCourseList() {
+    final Map<String, CourseData> result = {};
+    for (final courseData in widget.subjectInfoList) {
+      result.putIfAbsent(courseData.subjectName, () => courseData);
+    }
+    return result.values.toList()
+      ..sort((a, b) => a.subjectName.compareTo(b.subjectName));
+  }
+
+  /// 打开某门课的提醒设置（课表详情弹窗里的快捷入口）
   Future<void> _openReminderDialog(CourseData courseData) async {
     final subjectName = courseData.subjectName;
     final setting =
@@ -247,9 +286,7 @@ class _ScheduleViewState extends State<ScheduleView> {
       _reminderSettings = {..._reminderSettings, subjectName: result};
     });
     widget.onReminderChanged?.call();
-    showToast(
-      msg: result.enabled ? '已开启提醒（${result.leadText}）' : '已关闭该课程的提醒',
-    );
+    showToast(msg: result.enabled ? '已开启提醒（${result.leadText}）' : '已关闭该课程的提醒');
   }
 
   /// 专业任选课默认视为已选，只有本地显式记录为未选时才隐藏
@@ -413,7 +450,14 @@ class _ScheduleViewState extends State<ScheduleView> {
                               ),
                             ),
                           ),
-                          _genElectiveEntry(),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _genElectiveEntry(),
+                              const SizedBox(width: 6),
+                              _genReminderEntry(),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -530,6 +574,57 @@ class _ScheduleViewState extends State<ScheduleView> {
               const SizedBox(width: 4),
               Text(
                 '选修课 $selectedCount/${electiveList.length}',
+                style: const TextStyle(
+                  fontFamily: "SmileySans",
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 日程提醒统一入口：一个按钮管理所有课程的提醒
+  Widget _genReminderEntry() {
+    final enabledCount = _reminderSettings.values
+        .where((setting) => setting.enabled)
+        .length;
+    return InkWell(
+      onTap: _openReminderManagerDialog,
+      borderRadius: BorderRadius.circular(8),
+      child: Tooltip(
+        message: '日程提醒设置（课格左下角橙色铃铛表示已开启）',
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
+          margin: const EdgeInsets.symmetric(vertical: 3),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            gradient: purpleLinearGradient,
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 10,
+                color: mainColorPurple40,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                enabledCount > 0
+                    ? Icons.notifications_active
+                    : Icons.notifications_none,
+                size: 14,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                enabledCount > 0 ? '提醒 $enabledCount' : '提醒',
                 style: const TextStyle(
                   fontFamily: "SmileySans",
                   fontSize: 12,

@@ -121,8 +121,10 @@ Future<void> showScheduleDialog({
   bool isDiy = false,
   CourseData? courseData,
   required Function(String) onJump,
+
   /// 点击「提醒」后的回调（不传则不显示该按钮）
   VoidCallback? onReminder,
+
   /// 该课程是否已开启提醒
   bool reminderEnabled = false,
 }) async {
@@ -521,7 +523,10 @@ Future<({String title, String content})?> showHomeworkTemplateDialog({
                         filled: true,
                         fillColor: mainColorPurple90,
                         border: OutlineInputBorder(
-                          borderSide: BorderSide(width: 1.0, color: Colors.grey),
+                          borderSide: BorderSide(
+                            width: 1.0,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                     ),
@@ -566,10 +571,7 @@ Future<({String title, String content})?> showHomeworkTemplateDialog({
                       controlAffinity: ListTileControlAffinity.leading,
                       activeColor: mainColorGreenBlue,
                       checkColor: darkColorPurple,
-                      title: Text(
-                        '附上「提交方式：学习通」',
-                        style: dialogContentStyle,
-                      ),
+                      title: Text('附上「提交方式：学习通」', style: dialogContentStyle),
                       subtitle: Text(
                         '事项里会出现可点击的学习通标签',
                         style: dialogContentSmallStyle,
@@ -631,8 +633,9 @@ Future<ScheduleReminderSetting?> showScheduleReminderDialog({
   final completer = Completer<ScheduleReminderSetting?>();
   var enabled = setting.enabled;
   var leadMinutes = setting.leadMinutes;
-  var customMode =
-      !ScheduleReminderSetting.leadMinuteOptions.contains(leadMinutes);
+  var customMode = !ScheduleReminderSetting.leadMinuteOptions.contains(
+    leadMinutes,
+  );
   final customController = TextEditingController(
     text: customMode ? leadMinutes.toString() : '',
   );
@@ -651,9 +654,7 @@ Future<ScheduleReminderSetting?> showScheduleReminderDialog({
             });
           }
 
-          final preview = enabled
-              ? previewBuilder?.call(leadMinutes)
-              : null;
+          final preview = enabled ? previewBuilder?.call(leadMinutes) : null;
           return AlertDialog(
             backgroundColor: mainColorPurple,
             title: Text('提醒设置', style: dialogTitleStyle),
@@ -842,6 +843,388 @@ Widget _buildLeadMinuteChip({
       ),
     ),
   );
+}
+
+/// 统一的日程提醒管理：一个弹窗里开关所有课程的提醒、设置提前量
+///
+/// [previewBuilder] 用来按提前量生成「下次提醒」预览文案。
+/// 返回保存后的完整设置（含没有列出的历史条目），用户取消时返回 null。
+Future<Map<String, ScheduleReminderSetting>?>
+showScheduleReminderManagerDialog({
+  required BuildContext context,
+  required List<CourseData> courseList,
+  required Map<String, ScheduleReminderSetting> settings,
+  String? Function(String subjectName, int leadMinutes)? previewBuilder,
+}) async {
+  final Map<String, ScheduleReminderSetting> current = {
+    for (final course in courseList)
+      course.subjectName:
+          settings[course.subjectName] ?? ScheduleReminderSetting.disabled,
+  };
+  // 统一提前量：优先沿用已开启课程里最常见的那个
+  var defaultLeadMinutes = _mostUsedLeadMinutes(current.values);
+  final completer = Completer<Map<String, ScheduleReminderSetting>?>();
+
+  final future = showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          final enabledCount = current.values.where((s) => s.enabled).length;
+          final hasCustomLead = current.values.any(
+            (s) => s.enabled && s.leadMinutes != defaultLeadMinutes,
+          );
+          return AlertDialog(
+            backgroundColor: mainColorPurple,
+            title: Text('日程提醒', style: dialogTitleStyle),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '共 ${courseList.length} 门课程，已开启 $enabledCount 门',
+                      style: dialogContentSmallStyle.copyWith(
+                        color: bgColorLight80,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      '新开启课程的提前量',
+                      style: dialogContentStyle.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 6),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        ...ScheduleReminderSetting.leadMinuteOptions.map((
+                          minutes,
+                        ) {
+                          return _buildLeadMinuteChip(
+                            label: _leadMinuteLabel(minutes),
+                            selected:
+                                defaultLeadMinutes == minutes &&
+                                ScheduleReminderSetting.leadMinuteOptions
+                                    .contains(defaultLeadMinutes),
+                            onTap: () {
+                              setState(() {
+                                defaultLeadMinutes = minutes;
+                              });
+                            },
+                          );
+                        }),
+                        _buildLeadMinuteChip(
+                          label: '自定义',
+                          selected: !ScheduleReminderSetting.leadMinuteOptions
+                              .contains(defaultLeadMinutes),
+                          onTap: () async {
+                            final minutes =
+                                await showScheduleReminderLeadPicker(
+                                  context: context,
+                                  initialLeadMinutes: defaultLeadMinutes,
+                                );
+                            if (minutes == null) return;
+                            setState(() {
+                              defaultLeadMinutes = minutes;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    if (hasCustomLead)
+                      TextButton(
+                        style: dialogButtonStyle,
+                        onPressed: () {
+                          setState(() {
+                            for (final name in current.keys.toList()) {
+                              final setting = current[name];
+                              if (setting == null || !setting.enabled) continue;
+                              current[name] = setting.copyWith(
+                                leadMinutes: defaultLeadMinutes,
+                              );
+                            }
+                          });
+                        },
+                        child: Text(
+                          '把「${_leadMinuteLabel(defaultLeadMinutes)}」应用到已开启课程',
+                        ),
+                      ),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        TextButton(
+                          style: dialogButtonStyle,
+                          onPressed: () {
+                            setState(() {
+                              for (final name in current.keys.toList()) {
+                                current[name] = ScheduleReminderSetting(
+                                  enabled: true,
+                                  leadMinutes: defaultLeadMinutes,
+                                );
+                              }
+                            });
+                          },
+                          child: Text('全部开启'),
+                        ),
+                        TextButton(
+                          style: dialogButtonStyle,
+                          onPressed: () {
+                            setState(() {
+                              for (final name in current.keys.toList()) {
+                                final setting = current[name];
+                                if (setting == null) continue;
+                                current[name] = setting.copyWith(
+                                  enabled: false,
+                                );
+                              }
+                            });
+                          },
+                          child: Text('全部关闭'),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 4),
+                    ...courseList.map((course) {
+                      final subjectName = course.subjectName;
+                      final setting =
+                          current[subjectName] ??
+                          ScheduleReminderSetting.disabled;
+                      final preview = setting.enabled
+                          ? previewBuilder?.call(
+                              subjectName,
+                              setting.leadMinutes,
+                            )
+                          : null;
+                      return SwitchListTile(
+                        value: setting.enabled,
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        activeThumbColor: mainColorGreenBlue,
+                        secondary: IconButton(
+                          tooltip: '单独设置这门课的提前量',
+                          onPressed: setting.enabled
+                              ? () async {
+                                  final minutes =
+                                      await showScheduleReminderLeadPicker(
+                                        context: context,
+                                        initialLeadMinutes: setting.leadMinutes,
+                                      );
+                                  if (minutes == null) return;
+                                  setState(() {
+                                    current[subjectName] = setting.copyWith(
+                                      leadMinutes: minutes,
+                                    );
+                                  });
+                                }
+                              : null,
+                          icon: Icon(
+                            Icons.timer_outlined,
+                            size: 18,
+                            color: setting.enabled
+                                ? bgColorLight80
+                                : bgColorLight60,
+                          ),
+                        ),
+                        title: Text(
+                          course.alias ?? subjectName,
+                          style: dialogContentStyle,
+                        ),
+                        subtitle: Text(
+                          setting.enabled
+                              ? '${setting.leadText}'
+                                    '${preview == null ? '' : ' · $preview'}'
+                              : '未开启提醒',
+                          style: dialogContentSmallStyle,
+                        ),
+                        onChanged: (bool? value) {
+                          final enabled = value ?? false;
+                          setState(() {
+                            current[subjectName] = ScheduleReminderSetting(
+                              enabled: enabled,
+                              leadMinutes: setting.enabled
+                                  ? setting.leadMinutes
+                                  : defaultLeadMinutes,
+                            );
+                          });
+                        },
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  completer.complete(null);
+                },
+                child: Text('取消'),
+              ),
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  completer.complete({...settings, ...current});
+                },
+                child: Text('保存'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+
+  future.then((_) {
+    if (completer.isCompleted) return;
+    completer.complete(null);
+  });
+
+  return completer.future;
+}
+
+/// 单独的提前量选择弹窗（管理列表里点计时器图标时用）
+Future<int?> showScheduleReminderLeadPicker({
+  required BuildContext context,
+  required int initialLeadMinutes,
+}) async {
+  final completer = Completer<int?>();
+  var leadMinutes = initialLeadMinutes;
+  var customMode = !ScheduleReminderSetting.leadMinuteOptions.contains(
+    initialLeadMinutes,
+  );
+  final customController = TextEditingController(
+    text: customMode ? initialLeadMinutes.toString() : '',
+  );
+
+  final future = showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          void applyCustomText() {
+            final parsed = int.tryParse(customController.text.trim());
+            if (parsed == null) return;
+            leadMinutes = parsed.clamp(0, 24 * 60);
+          }
+
+          return AlertDialog(
+            backgroundColor: mainColorPurple,
+            title: Text('提前多久提醒', style: dialogTitleStyle),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    ...ScheduleReminderSetting.leadMinuteOptions.map((minutes) {
+                      return _buildLeadMinuteChip(
+                        label: _leadMinuteLabel(minutes),
+                        selected: !customMode && leadMinutes == minutes,
+                        onTap: () {
+                          setState(() {
+                            customMode = false;
+                            leadMinutes = minutes;
+                          });
+                        },
+                      );
+                    }),
+                    _buildLeadMinuteChip(
+                      label: '自定义',
+                      selected: customMode,
+                      onTap: () {
+                        setState(() {
+                          customMode = true;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                if (customMode) ...[
+                  SizedBox(height: 8),
+                  TextField(
+                    controller: customController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    style: dialogContentSmallStyle.copyWith(
+                      color: bgColorLight80,
+                    ),
+                    onChanged: (_) => applyCustomText(),
+                    decoration: InputDecoration(
+                      labelText: '提前分钟数（0-1440）',
+                      labelStyle: dialogContentSmallStyle,
+                      filled: true,
+                      fillColor: mainColorPurple90,
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(width: 1.0, color: Colors.grey),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            actions: [
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  completer.complete(null);
+                },
+                child: Text('取消'),
+              ),
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () {
+                  if (customMode) applyCustomText();
+                  Navigator.of(context).pop();
+                  completer.complete(leadMinutes);
+                },
+                child: Text('确定'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+
+  future.then((_) {
+    if (completer.isCompleted) return;
+    completer.complete(null);
+  });
+
+  return completer.future;
+}
+
+/// 已开启课程里最常见的提前量
+int _mostUsedLeadMinutes(Iterable<ScheduleReminderSetting> settings) {
+  final counts = <int, int>{};
+  for (final setting in settings) {
+    if (!setting.enabled) continue;
+    counts[setting.leadMinutes] = (counts[setting.leadMinutes] ?? 0) + 1;
+  }
+  if (counts.isEmpty) return ScheduleReminderSetting.defaultLeadMinutes;
+  var best = ScheduleReminderSetting.defaultLeadMinutes;
+  var bestCount = 0;
+  counts.forEach((minutes, count) {
+    if (count > bestCount) {
+      best = minutes;
+      bestCount = count;
+    }
+  });
+  return best;
 }
 
 Future<bool> showConfirmDialog({

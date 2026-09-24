@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shine/components/dialog.dart';
 import 'package:shine/models/course_data.dart';
 import 'package:shine/models/schedule_reminder_data.dart';
 import 'package:shine/services/schedule_reminder_service.dart';
 import 'package:shine/storage/schedule_reminder_storage.dart';
+import 'package:shine/views/schedule_view.dart';
 
 /// 每天 5 节课，起始时间分别是 08:00 / 10:00 / 14:00 / 16:00 / 19:00
 final List<List<TimeOfDay>> _phaseList = [
@@ -295,6 +299,163 @@ void main() {
         ScheduleReminderService.buildReminderBody(occurrence),
         '第 3 节 14:00 开始',
       );
+    });
+  });
+
+  group('统一提醒管理弹窗', () {
+    final courseList = [
+      _course(
+        schedule: [
+          CourseSchedule(
+            weekday: 1,
+            period: const [1, 2],
+            weeks: const [1, 2, 3],
+            location: 'A101',
+          ),
+        ],
+      ),
+      _course(
+        name: '高等数学',
+        schedule: [
+          CourseSchedule(
+            weekday: 2,
+            period: const [1, 2],
+            weeks: const [1, 2, 3],
+            location: 'C303',
+          ),
+        ],
+      ),
+    ];
+
+    /// 打开管理弹窗，弹窗关闭后通过 [onResult] 回传结果
+    Future<void> pumpManager(
+      WidgetTester tester, {
+      required void Function(Map<String, ScheduleReminderSetting>?) onResult,
+      Map<String, ScheduleReminderSetting> settings = const {},
+    }) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                onPressed: () async {
+                  final result = await showScheduleReminderManagerDialog(
+                    context: context,
+                    courseList: courseList,
+                    settings: settings,
+                  );
+                  onResult(result);
+                },
+                child: const Text('打开'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('打开'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('一个弹窗里能开关任意课程的提醒', (WidgetTester tester) async {
+      await pumpManager(tester, onResult: (_) {});
+      // 两门课都在同一个列表里
+      expect(find.text('日程提醒'), findsOneWidget);
+      expect(find.text('共 2 门课程，已开启 0 门'), findsOneWidget);
+      expect(find.text('数字信号处理'), findsOneWidget);
+      expect(find.text('高等数学'), findsOneWidget);
+      expect(find.text('未开启提醒'), findsNWidgets(2));
+
+      // 开启第一门课，默认提前 30 分钟
+      await tester.tap(find.text('数字信号处理'));
+      await tester.pumpAndSettle();
+      expect(find.text('共 2 门课程，已开启 1 门'), findsOneWidget);
+      expect(find.text('提前 30 分钟'), findsWidgets);
+
+      await tester.tap(find.text('保存'));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('保存后的设置包含开关结果与默认提前量', (WidgetTester tester) async {
+      final completer = Completer<Map<String, ScheduleReminderSetting>?>();
+      await pumpManager(tester, onResult: completer.complete);
+      await tester.tap(find.text('数字信号处理'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('保存'));
+      await tester.pumpAndSettle();
+      final settings = await completer.future;
+      expect(settings?['数字信号处理']?.enabled, isTrue);
+      expect(settings?['数字信号处理']?.leadMinutes, 30);
+      expect(settings?['高等数学']?.enabled, isFalse);
+    });
+
+    testWidgets('全部开启 / 全部关闭 一键生效', (WidgetTester tester) async {
+      await pumpManager(tester, onResult: (_) {});
+      await tester.tap(find.text('全部开启'));
+      await tester.pumpAndSettle();
+      expect(find.text('共 2 门课程，已开启 2 门'), findsOneWidget);
+
+      await tester.tap(find.text('全部关闭'));
+      await tester.pumpAndSettle();
+      expect(find.text('共 2 门课程，已开启 0 门'), findsOneWidget);
+    });
+
+    testWidgets('切换统一提前量后新开启的课程跟随该提前量', (WidgetTester tester) async {
+      final completer = Completer<Map<String, ScheduleReminderSetting>?>();
+      await pumpManager(tester, onResult: completer.complete);
+      // 选 1 小时
+      await tester.tap(find.text('1 小时'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('高等数学'));
+      await tester.pumpAndSettle();
+      expect(find.text('提前 1 小时'), findsWidgets);
+      await tester.tap(find.text('保存'));
+      await tester.pumpAndSettle();
+      final settings = await completer.future;
+      expect(settings?['高等数学']?.leadMinutes, 60);
+    });
+  });
+
+  group('课表上的统一提醒入口', () {
+    testWidgets('点「提醒」按钮就能打开统一的提醒管理弹窗', (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues({});
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ScheduleView(
+              semesterName: '2026春',
+              semesterStartedAt: _semesterStartedAt,
+              semesterPhaseList: _phaseList,
+              subjectInfoList: [
+                _course(
+                  schedule: [
+                    CourseSchedule(
+                      weekday: 3,
+                      period: const [3, 4],
+                      weeks: const [1, 2, 3],
+                      location: 'A101',
+                    ),
+                  ],
+                ),
+              ],
+              scheduleDataList: const [],
+              showDate: DateTime(2026, 3, 4),
+              onRefresh: () async {},
+              onChangeShowDate: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 工具栏上的统一入口
+      expect(find.text('提醒'), findsOneWidget);
+      await tester.tap(find.text('提醒'));
+      await tester.pumpAndSettle();
+
+      // 打开的是管理弹窗，里面直接能看到课程
+      expect(find.text('日程提醒'), findsOneWidget);
+      expect(find.text('共 1 门课程，已开启 0 门'), findsOneWidget);
+      expect(find.text('高等数学'), findsNothing);
     });
   });
 
