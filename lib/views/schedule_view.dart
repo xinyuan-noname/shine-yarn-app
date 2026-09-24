@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:shine/components/bottom_sheet.dart';
 import 'package:shine/components/dialog.dart';
 import 'package:shine/components/line.dart';
+import 'package:shine/components/toast.dart';
 import 'package:shine/extensions/list.dart';
 import 'package:shine/pages/home_page.dart';
+import 'package:shine/storage/elective_storage.dart';
 import 'package:shine/storage/subject_storage.dart';
 import 'package:shine/theme.dart';
 import 'package:shine/models/course_data.dart';
@@ -124,7 +126,7 @@ const List<Color> _courseColorList = [
 
 typedef ChangeShowWeekCallback = void Function(DateTime d);
 
-class ScheduleView extends StatelessWidget {
+class ScheduleView extends StatefulWidget {
   final String? semesterName;
   final DateTime? semesterStartedAt;
   final List<List<TimeOfDay>> semesterPhaseList;
@@ -144,6 +146,103 @@ class ScheduleView extends StatelessWidget {
     required this.onChangeShowDate,
     required this.showDate,
   });
+
+  @override
+  State<ScheduleView> createState() => _ScheduleViewState();
+}
+
+class _ScheduleViewState extends State<ScheduleView> {
+  /// 专业任选课选课状态（科目名 -> 是否已选），仅保存在本地
+  Map<String, bool> _electiveSelection = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadElectiveSelection();
+  }
+
+  @override
+  void didUpdateWidget(covariant ScheduleView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 学期变化后读取该学期的选课状态
+    if (oldWidget.semesterName != widget.semesterName) {
+      _loadElectiveSelection();
+    }
+  }
+
+  Future<void> _loadElectiveSelection() async {
+    final selection = await ElectiveStorage.getSelection(widget.semesterName);
+    if (!mounted) return;
+    setState(() {
+      _electiveSelection = selection;
+    });
+  }
+
+  /// 专业任选课默认视为已选，只有本地显式记录为未选时才隐藏
+  bool _isElectiveSelected(String subjectName) =>
+      _electiveSelection[subjectName] ?? true;
+
+  /// 实验课对应的母课程（按科目名去掉「实验」后缀匹配），找不到返回 null
+  CourseData? _getBaseCourse(CourseData subject) {
+    if (!subject.isExperiment) return null;
+    final baseName = subject.experimentBaseName;
+    if (baseName.isEmpty || baseName == subject.subjectName) return null;
+    for (final courseData in widget.subjectInfoList) {
+      if (courseData.subjectName == baseName) return courseData;
+    }
+    return null;
+  }
+
+  /// 决定该课程显示状态的专业任选课科目名：
+  /// 实验课跟随母课程（母课程是专业任选课时按母课程判断），不受选课状态影响时返回 null
+  String? _getElectiveOwnerName(CourseData subject) {
+    final baseCourse = _getBaseCourse(subject);
+    if (baseCourse != null && baseCourse.isMajorElective) {
+      return baseCourse.subjectName;
+    }
+    return subject.isMajorElective ? subject.subjectName : null;
+  }
+
+  /// 课程是否需要在课表中显示：未选的专业任选课及其实验课都不显示
+  bool _isSubjectVisible(CourseData subject) {
+    final owner = _getElectiveOwnerName(subject);
+    if (owner == null) return true;
+    return _isElectiveSelected(owner);
+  }
+
+  /// 本学期可作为独立选课项的专业任选课（实验课跟随母课程，不单独列出）
+  List<CourseData> _getElectiveCourseList() {
+    final Map<String, CourseData> result = {};
+    for (final courseData in widget.subjectInfoList) {
+      if (_getElectiveOwnerName(courseData) != courseData.subjectName) continue;
+      result.putIfAbsent(courseData.subjectName, () => courseData);
+    }
+    return result.values.toList()
+      ..sort((a, b) => a.subjectName.compareTo(b.subjectName));
+  }
+
+  /// 打开专业任选课选课设置
+  Future<void> _openElectiveSettingDialog() async {
+    final electiveList = _getElectiveCourseList();
+    if (electiveList.isEmpty) {
+      showToast(msg: "本学期暂无专业任选课");
+      return;
+    }
+    final result = await showElectiveSelectionDialog(
+      context: context,
+      electiveList: electiveList,
+      selection: _electiveSelection,
+      semesterName: widget.semesterName,
+    );
+    if (result == null) return;
+    await ElectiveStorage.saveSelection(widget.semesterName, result);
+    if (!mounted) return;
+    setState(() {
+      _electiveSelection = result;
+    });
+    final selectedCount = result.values.where((value) => value).length;
+    showToast(msg: "已选 $selectedCount/${result.length} 门专业任选课");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -186,23 +285,28 @@ class ScheduleView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "${semesterName ?? "未知学期"}(第${_getCurrentWeek()}周)",
+                      "${widget.semesterName ?? "未知学期"}(第${_getCurrentWeek()}周)",
                       style: labelStyle,
                     ),
                     bottomLine,
                     SizedBox(
-                      child: Row(
+                      // 用 Wrap 兜底：窄屏上选修课入口会自动换行，不会溢出
+                      child: Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        runSpacing: 4,
                         children: [
                           InkWell(
                             onTap: () async {
-                              if (semesterStartedAt == null) return;
+                              if (widget.semesterStartedAt == null) return;
                               final result = await showWeekBottomSheet(
                                 context,
-                                startedAt: semesterStartedAt!,
-                                selectedDate: showDate,
+                                startedAt: widget.semesterStartedAt!,
+                                selectedDate: widget.showDate,
                               );
                               if (result != null) {
-                                onChangeShowDate(result);
+                                widget.onChangeShowDate(result);
                               }
                             },
                             child: Container(
@@ -235,6 +339,7 @@ class ScheduleView extends StatelessWidget {
                               ),
                             ),
                           ),
+                          _genElectiveEntry(),
                         ],
                       ),
                     ),
@@ -256,7 +361,7 @@ class ScheduleView extends StatelessWidget {
                                   child: Container(
                                     alignment: Alignment.center,
                                     child: Text(
-                                      '${showDate.month}月',
+                                      '${widget.showDate.month}月',
                                       style: columnLayout.titleTextStyle,
                                     ),
                                   ),
@@ -272,12 +377,12 @@ class ScheduleView extends StatelessWidget {
                                   final layout = columnLayout.withCourseHeight(
                                     _resolveCourseHeight(
                                       bodyConstraints.maxHeight,
-                                      semesterPhaseList.length,
+                                      widget.semesterPhaseList.length,
                                       columnLayout.textScale,
                                     ),
                                   );
                                   return RefreshIndicator(
-                                    onRefresh: onRefresh,
+                                    onRefresh: widget.onRefresh,
                                     child: SingleChildScrollView(
                                       physics:
                                           const AlwaysScrollableScrollPhysics(),
@@ -314,11 +419,62 @@ class ScheduleView extends StatelessWidget {
     }
   }
 
+  /// 专业任选课入口：显示已选 / 总数，点击进入选课设置（本地保存）
+  Widget _genElectiveEntry() {
+    final electiveList = _getElectiveCourseList();
+    if (electiveList.isEmpty) return const SizedBox.shrink();
+    final selectedCount = electiveList
+        .where((courseData) => _isElectiveSelected(courseData.subjectName))
+        .length;
+    return InkWell(
+      onTap: _openElectiveSettingDialog,
+      borderRadius: BorderRadius.circular(8),
+      child: Tooltip(
+        message: '专业任选课设置（橙色为已选课程）',
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
+          margin: const EdgeInsets.symmetric(vertical: 3),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            gradient: orangeLinearGradient,
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 10,
+                color: mainColorOrange50,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.playlist_add_check,
+                size: 14,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '选修课 $selectedCount/${electiveList.length}',
+                style: const TextStyle(
+                  fontFamily: "SmileySans",
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   List<Widget> _genTableTitleList(
     BuildContext context,
     _ScheduleLayout layout,
   ) {
-    return getWeekDates(showDate)
+    return getWeekDates(widget.showDate)
         .map(
           (d) => GestureDetector(
             onLongPress: () {
@@ -348,7 +504,9 @@ class ScheduleView extends StatelessWidget {
 
   List<(CourseBasicInfo, CourseSchedule)> _getshowSubjectInfoList() {
     final List<(CourseBasicInfo, CourseSchedule)> result = [];
-    for (final subject in subjectInfoList) {
+    for (final subject in widget.subjectInfoList) {
+      // 未选的专业任选课不出现在自己的课表中
+      if (!_isSubjectVisible(subject)) continue;
       final schedule = subject.findScheduleByWeek(_getShowTimeWeek());
       if (schedule == null) continue;
       for (final scheduleItem in schedule) {
@@ -364,7 +522,7 @@ class ScheduleView extends StatelessWidget {
   }
 
   List<ScheduleData> _getShowScheduleDataList() {
-    final result = scheduleDataList.where((element) {
+    final result = widget.scheduleDataList.where((element) {
       return element.week == _getShowTimeWeek();
     }).toList();
     result.sort((a, b) {
@@ -378,7 +536,7 @@ class ScheduleView extends StatelessWidget {
   List<Widget> _genCourseColumn(BuildContext context, _ScheduleLayout layout) {
     final courseList = _getshowSubjectInfoList();
     final scheduleDataList = _getShowScheduleDataList();
-    return getWeekDates(showDate).map((d) {
+    return getWeekDates(widget.showDate).map((d) {
       return Container(
         decoration: isToday(d)
             ? BoxDecoration(boxShadow: [BoxShadow(color: mainColorGreenBlue)])
@@ -420,13 +578,13 @@ class ScheduleView extends StatelessWidget {
               subjectName: '',
               courseType: '选修课',
               credit: 0.0,
-              semester: semesterName,
+              semester: widget.semesterName,
             ),
             schedule: [
               CourseSchedule(
                 weekday: weekday,
                 period: [startPeriod, startPeriod + 1],
-                weeks: [_getWeek(showDate)],
+                weeks: [_getWeek(widget.showDate)],
                 location: '',
               ),
             ],
@@ -444,8 +602,8 @@ class ScheduleView extends StatelessWidget {
     (CourseBasicInfo, CourseSchedule) scheduleItem,
     ScheduleData? scheduleData,
   ) {
-    return scheduleItem.$1.courseType == "实验" ||
-        scheduleData?.isExperiment == true;
+    // 课程类型为「实验」或科目名带「实验」后缀（如「数字信号处理实验」）都算实验课
+    return scheduleItem.$1.isExperiment || scheduleData?.isExperiment == true;
   }
 
   String _getLocation(
@@ -471,6 +629,12 @@ class ScheduleView extends StatelessWidget {
     return scheduleItem.$1.alias ?? scheduleItem.$1.subjectName;
   }
 
+  /// 专业任选课及其实验课统一橙色，其它课程按星期取色
+  Color _getCourseColor(int weekdayIndex, CourseData courseData) {
+    if (_getElectiveOwnerName(courseData) != null) return deepColorOrange;
+    return _courseColorList.elementAt(weekdayIndex);
+  }
+
   List<Widget> _genCourseRow({
     required List<(CourseBasicInfo, CourseSchedule)> courseList,
     required DateTime date,
@@ -480,7 +644,7 @@ class ScheduleView extends StatelessWidget {
   }) {
     final List<Widget> children = [];
     final index = date.weekday - 1;
-    for (int i = 1; i <= semesterPhaseList.length; i++) {
+    for (int i = 1; i <= widget.semesterPhaseList.length; i++) {
       ScheduleData? currentScheduleData = scheduleDataList.elementAtOrNull(0);
       final scheduleItem = courseList.elementAtOrNull(0);
       for (final item in courseList) {
@@ -511,7 +675,7 @@ class ScheduleView extends StatelessWidget {
         }
         String courseName = _getCourseName(scheduleItem, mappedScheduleData);
         String location = _getLocation(scheduleItem, mappedScheduleData);
-        CourseData courseData = subjectInfoList.firstWhere(
+        CourseData courseData = widget.subjectInfoList.firstWhere(
           (data) => data.subjectName == scheduleItem.$1.subjectName,
         );
         children.add(
@@ -559,7 +723,7 @@ class ScheduleView extends StatelessWidget {
                   bottom: BorderSide(color: bgColorLight),
                   left: BorderSide(color: bgColorLight),
                 ),
-                color: _courseColorList.elementAt(index),
+                color: _getCourseColor(index, courseData),
                 borderRadius: BorderRadius.circular(5),
               ),
               child: Stack(
@@ -617,8 +781,8 @@ class ScheduleView extends StatelessWidget {
     return SizedBox(
       width: layout.cellWidth,
       child: Column(
-        children: List.generate(semesterPhaseList.length, (index) {
-          final phase = semesterPhaseList[index];
+        children: List.generate(widget.semesterPhaseList.length, (index) {
+          final phase = widget.semesterPhaseList[index];
           final start = phase[0];
           final end = phase[1];
           return SizedBox(
@@ -647,13 +811,13 @@ class ScheduleView extends StatelessWidget {
   }
 
   int _getWeek(DateTime d) {
-    if (semesterStartedAt == null) return 0;
-    final s = semesterStartedAt?.weekOfYear ?? 1;
+    if (widget.semesterStartedAt == null) return 0;
+    final s = widget.semesterStartedAt?.weekOfYear ?? 1;
     final e = d.weekOfYear;
     return e - s + 1;
   }
 
   int _getShowTimeWeek() {
-    return _getWeek(showDate);
+    return _getWeek(widget.showDate);
   }
 }

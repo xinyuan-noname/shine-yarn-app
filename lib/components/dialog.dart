@@ -183,6 +183,182 @@ Future<void> showScheduleDialog({
   );
 }
 
+const _cnWeekdayShortNames = ['一', '二', '三', '四', '五', '六', '日'];
+
+/// 汇总课程的星期 / 节次 / 地点，用于列表副标题
+String _describeCourseSchedule(CourseData courseData) {
+  if (courseData.schedule.isEmpty) return '暂无时间安排';
+  final sorted = List<CourseSchedule>.from(courseData.schedule)
+    ..sort((a, b) {
+      final byWeekday = a.weekday.compareTo(b.weekday);
+      if (byWeekday != 0) return byWeekday;
+      return a.start.compareTo(b.start);
+    });
+  return sorted
+      .map((item) {
+        final weekday = item.weekday >= 1 && item.weekday <= 7
+            ? '周${_cnWeekdayShortNames[item.weekday - 1]}'
+            : '未知星期';
+        final period = item.period.isEmpty
+            ? '未知节次'
+            : '${item.start}-${item.end}节';
+        final location = item.location.trim().isEmpty
+            ? ''
+            : ' ${item.location.trim()}';
+        return '$weekday $period$location';
+      })
+      .join('；');
+}
+
+/// 专业任选课选课设置对话框
+///
+/// [electiveList] 为本学期全部专业任选课（含未选的），[selection] 为本地保存的选课状态，
+/// 未记录的科目默认视为已选。返回保存后的选课状态，用户取消时返回 null。
+Future<Map<String, bool>?> showElectiveSelectionDialog({
+  required BuildContext context,
+  required List<CourseData> electiveList,
+  required Map<String, bool> selection,
+  String? semesterName,
+}) async {
+  // 当前编辑中的状态，未记录的科目默认「已选」
+  final Map<String, bool> current = {
+    for (final courseData in electiveList)
+      courseData.subjectName: selection[courseData.subjectName] ?? true,
+  };
+  final completer = Completer<Map<String, bool>?>();
+
+  final future = showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (BuildContext context, StateSetter setState) {
+          final selectedCount = current.values.where((value) => value).length;
+          return AlertDialog(
+            backgroundColor: mainColorPurple,
+            title: Text('专业任选课设置', style: dialogTitleStyle),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${semesterName == null || semesterName.isEmpty ? '当前学期' : semesterName}'
+                      '共 ${electiveList.length} 门专业任选课，已选 $selectedCount 门',
+                      style: dialogContentSmallStyle.copyWith(
+                        color: bgColorLight80,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      '实验课跟随所属课程：课程未选时，其实验课也一并隐藏',
+                      style: dialogContentSmallStyle,
+                    ),
+                    SizedBox(height: 8),
+                    // 批量操作
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        TextButton(
+                          style: dialogButtonStyle,
+                          onPressed: () {
+                            setState(() {
+                              for (final name in current.keys.toList()) {
+                                current[name] = true;
+                              }
+                            });
+                          },
+                          child: Text('全选'),
+                        ),
+                        TextButton(
+                          style: dialogButtonStyle,
+                          onPressed: () {
+                            setState(() {
+                              for (final name in current.keys.toList()) {
+                                current[name] = false;
+                              }
+                            });
+                          },
+                          child: Text('全不选'),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 4),
+                    ...electiveList.map((courseData) {
+                      final subjectName = courseData.subjectName;
+                      final teachers = courseData.teachers.join('，');
+                      final credit = courseData.credit;
+                      final subtitle = [
+                        courseData.courseType,
+                        if (teachers.isNotEmpty) teachers,
+                        if (credit != null) '$credit学分',
+                        _describeCourseSchedule(courseData),
+                      ].join(' · ');
+                      return CheckboxListTile(
+                        value: current[subjectName] ?? true,
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        controlAffinity: ListTileControlAffinity.leading,
+                        activeColor: mainColorGreenBlue,
+                        checkColor: darkColorPurple,
+                        title: Text(
+                          courseData.alias ?? subjectName,
+                          style: dialogContentStyle.copyWith(
+                            color: current[subjectName] == true
+                                ? deepColorOrange
+                                : bgColorLight60,
+                          ),
+                        ),
+                        subtitle: Text(
+                          subtitle,
+                          style: dialogContentSmallStyle,
+                        ),
+                        onChanged: (bool? value) {
+                          setState(() {
+                            current[subjectName] = value ?? false;
+                          });
+                        },
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  completer.complete(null);
+                },
+                child: Text('取消'),
+              ),
+              TextButton(
+                style: dialogButtonStyle,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  completer.complete(Map<String, bool>.from(current));
+                },
+                child: Text('保存'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+
+  future.then((_) {
+    if (completer.isCompleted) return;
+    completer.complete(null);
+  });
+
+  return completer.future;
+}
+
 Future<bool> showConfirmDialog({
   required BuildContext context,
   required String title,
@@ -909,8 +1085,9 @@ void _showAddItemDialog({
                             (existing) => existing.name == name,
                           )) {
                             weekRules[targetWeekdayIndex] = targetRule.copyWith(
-                              deductionItems: List.from(targetRule.deductionItems)
-                                ..add(newItem),
+                              deductionItems: List.from(
+                                targetRule.deductionItems,
+                              )..add(newItem),
                             );
                           }
                         }
@@ -918,7 +1095,17 @@ void _showAddItemDialog({
                     });
 
                     final targetNames = selectedWeekdays
-                        .map((i) => ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'][i])
+                        .map(
+                          (i) => [
+                            '星期一',
+                            '星期二',
+                            '星期三',
+                            '星期四',
+                            '星期五',
+                            '星期六',
+                            '星期日',
+                          ][i],
+                        )
                         .join('、');
                     showToast(msg: '已添加到 $targetNames');
 
@@ -1663,12 +1850,19 @@ Future<bool?> showDailySchedulePointDialog({
 }
 
 /// 计算得分（基准分可配置，加分项按权重比例分配基准分，扣分项按百分比扣除）
-double _calculateScore(SchedulePointRule rule, Map<String, bool> itemCompletionStatus, double baseScore) {
+double _calculateScore(
+  SchedulePointRule rule,
+  Map<String, bool> itemCompletionStatus,
+  double baseScore,
+) {
   double totalScore = 0.0; // 初始为0分
-  
+
   // 计算加分项总权重
-  double totalBonusWeight = rule.bonusItems.fold(0.0, (sum, item) => sum + item.weight);
-  
+  double totalBonusWeight = rule.bonusItems.fold(
+    0.0,
+    (sum, item) => sum + item.weight,
+  );
+
   // 计算加分项得分（按权重比例分配基准分）
   if (totalBonusWeight > 0) {
     for (final item in rule.bonusItems) {
@@ -1678,7 +1872,7 @@ double _calculateScore(SchedulePointRule rule, Map<String, bool> itemCompletionS
       }
     }
   }
-  
+
   // 计算扣分项（按基准分的百分比扣除）
   for (final item in rule.deductionItems) {
     if (itemCompletionStatus[item.id] ?? false) {
@@ -1686,7 +1880,7 @@ double _calculateScore(SchedulePointRule rule, Map<String, bool> itemCompletionS
       totalScore -= baseScore * (item.weight / 100.0);
     }
   }
-  
+
   return totalScore;
 }
 

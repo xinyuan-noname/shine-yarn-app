@@ -114,31 +114,9 @@ class _ToolKarnaughMapPageState extends State<ToolKarnaughMapPage> {
     return value.toRadixString(2).padLeft(bits, '0');
   }
 
-  String _mintermAlgebraic(int index, List<String> order) {
-    final bits = _bits(index, order.length);
-    final terms = <String>[];
-    for (var i = 0; i < order.length; i++) {
-      terms.add(bits[i] == '1' ? order[i] : "${order[i]}'");
-    }
-    return terms.join('');
-  }
 
-  String _maxtermAlgebraic(int index, List<String> order) {
-    final bits = _bits(index, order.length);
-    final terms = <String>[];
-    for (var i = 0; i < order.length; i++) {
-      terms.add(bits[i] == '0' ? order[i] : "${order[i]}'");
-    }
-    return '(${terms.join(' + ')})';
-  }
 
-  String _mintermsAlgebraic(List<int> minterms, List<String> order) {
-    return minterms.map((m) => _mintermAlgebraic(m, order)).join(' + ');
-  }
 
-  String _maxtermsAlgebraic(List<int> maxterms, List<String> order) {
-    return maxterms.map((m) => _maxtermAlgebraic(m, order)).join(' · ');
-  }
 
   List<String> _minimalSop(
     Set<int> ones,
@@ -270,7 +248,7 @@ class _ToolKarnaughMapPageState extends State<ToolKarnaughMapPage> {
           }
         }
         if (best == null || bestCover == 0) break;
-        chosen.add(best!);
+        chosen.add(best);
         remaining.removeWhere((index) => _patternMatches(best!, index, n));
       }
       return chosen;

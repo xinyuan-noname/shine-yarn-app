@@ -64,6 +64,12 @@ const deepColorRed = Color.fromRGBO(255, 17, 0, 1);
 const mainColorOrange = Color.fromRGBO(255, 204, 128, 1);
 const mainColorOrange50 = Color.fromRGBO(255, 204, 128, 0.5);
 
+/// 专业任选课专用橙色：底色用 deepColorOrange，保证课程文字对比度，浅色用于点缀
+const deepColorOrange = Color.fromARGB(255, 255, 152, 0);
+const deepColorOrange80 = Color.fromARGB(204, 255, 152, 0);
+const deepColorOrange60 = Color.fromARGB(153, 255, 152, 0);
+const deepColorOrange30 = Color.fromARGB(77, 255, 152, 0);
+
 final inputDecorationLight = InputDecoration(
   contentPadding: EdgeInsets.only(left: 10),
   filled: true,
@@ -218,4 +224,9 @@ const greyLinearGradient = LinearGradient(
   begin: Alignment.topLeft,
   end: Alignment.bottomRight,
   colors: [Colors.grey, mainColorGrey80],
+);
+const orangeLinearGradient = LinearGradient(
+  begin: Alignment.topLeft,
+  end: Alignment.bottomRight,
+  colors: [deepColorOrange, mainColorOrange],
 );
