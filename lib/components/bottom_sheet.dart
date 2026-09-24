@@ -45,7 +45,6 @@ Future<DateTime?> showWeekBottomSheet(
   BuildContext context, {
   required DateTime startedAt,
   required DateTime selectedDate,
-  VoidCallback? onOpenHolidaySettings,
 }) {
   final completer = Completer<DateTime?>();
   final future = showModalBottomSheet(
@@ -58,76 +57,44 @@ Future<DateTime?> showWeekBottomSheet(
     builder: (context) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (onOpenHolidaySettings != null)
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      '选择周次',
-                      style: TextStyle(
-                        fontFamily: "SmileySans",
-                        fontSize: 14,
-                        color: bgColorLight80,
-                      ),
-                    ),
-                  ),
-                  TextButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      onOpenHolidaySettings();
-                    },
-                    icon: const Icon(
-                      Icons.event_busy,
-                      size: 16,
-                      color: mainColorGreenBlue,
-                    ),
-                    label: Text('节假日设置', style: bottomSheetGridTitleTextStyle),
-                  ),
-                ],
-              ),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 5,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.5,
-              ),
-              itemCount: 20,
-              itemBuilder: (BuildContext context, int index) {
-                DateTime date = startedAt.add(Duration(days: index * 7));
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    completer.complete(date);
-                  },
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(width: 1, color: mainColorGreenBlue60),
-                      gradient: selectedDate.inSameWeek(date)
-                          ? purpleLinearGradient
-                          : null,
-                      boxShadow: [
-                        if (selectedDate.inSameWeek(date))
-                          BoxShadow(color: mainColorOrange50, blurRadius: 5),
-                      ],
-                    ),
-                    child: Text(
-                      inCurrentWeek(date) ? "当前周" : "第${index + 1}周",
-                      style: bottomSheetGridTitleTextStyle,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                );
+        child: GridView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 5,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.5,
+          ),
+          itemCount: 20,
+          itemBuilder: (BuildContext context, int index) {
+            DateTime date = startedAt.add(Duration(days: index * 7));
+            return GestureDetector(
+              onTap: () {
+                Navigator.of(context).pop();
+                completer.complete(date);
               },
-            ),
-          ],
+              child: Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(width: 1, color: mainColorGreenBlue60),
+                  gradient: selectedDate.inSameWeek(date)
+                      ? purpleLinearGradient
+                      : null,
+                  boxShadow: [
+                    if (selectedDate.inSameWeek(date))
+                      BoxShadow(color: mainColorOrange50, blurRadius: 5),
+                  ],
+                ),
+                child: Text(
+                  inCurrentWeek(date) ? "当前周" : "第${index + 1}周",
+                  style: bottomSheetGridTitleTextStyle,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          },
         ),
       );
     },

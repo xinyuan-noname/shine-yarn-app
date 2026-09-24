@@ -229,21 +229,6 @@ class _ScheduleViewState extends State<ScheduleView> {
   /// 这天是不是节假日（放假不上课）
   String? _holidayName(DateTime date) => holidayNameOf(date, _holidays);
 
-  /// 打开节假日设置
-  Future<void> _openHolidaySettingsDialog() async {
-    final result = await showHolidaySettingsDialog(
-      context: context,
-      holidays: _holidays,
-    );
-    if (result == null) return;
-    await HolidayStorage.saveHolidays(result);
-    if (!mounted) return;
-    setState(() {
-      _holidays = result;
-    });
-    showToast(msg: '已保存 ${result.length} 段节假日');
-  }
-
   /// 该课程是否开启了上课提醒
   bool _isReminderEnabled(String subjectName) =>
       _reminderSettings[subjectName]?.enabled ?? false;
@@ -513,8 +498,6 @@ class _ScheduleViewState extends State<ScheduleView> {
                                 context,
                                 startedAt: widget.semesterStartedAt!,
                                 selectedDate: widget.showDate,
-                                onOpenHolidaySettings:
-                                    _openHolidaySettingsDialog,
                               );
                               if (result != null) {
                                 widget.onChangeShowDate(result);
@@ -744,7 +727,6 @@ class _ScheduleViewState extends State<ScheduleView> {
     _ScheduleLayout layout,
   ) {
     return getWeekDates(widget.showDate).map((d) {
-      final holidayName = _holidayName(d);
       return GestureDetector(
         onLongPress: () {
           showSchedulePointDialog(context: context);
@@ -758,22 +740,11 @@ class _ScheduleViewState extends State<ScheduleView> {
         },
         child: Container(
           width: layout.cellWidth,
-          color: isToday(d)
-              ? mainColorGreenBlue
-              : (holidayName == null ? Colors.transparent : mainColorGrey20),
+          color: isToday(d) ? mainColorGreenBlue : Colors.transparent,
           child: Column(
             children: [
               Text(getCnWeekDayName(d), style: layout.titleTextStyle),
               Text(d.day.toString(), style: layout.dayTextStyle),
-              // 节假日标个小「假」，配合灰色课格一起看
-              if (holidayName != null)
-                Text(
-                  '假',
-                  style: layout.dayTextStyle.copyWith(
-                    color: mainColorRed,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
             ],
           ),
         ),

@@ -267,16 +267,16 @@ void main() {
       expect(find.text('选修课 1/2'), findsOneWidget);
     });
     testWidgets('节假日的课程显示为灰色', (WidgetTester tester) async {
-      // 2026-03-04（周三）设为校庆放假
+      // 2026-03-04（周三）放假；缓存未过期，不会触发联网
       SharedPreferences.setMockInitialValues({
-        'holiday_range_list_key': jsonEncode([
+        'holiday_cache_key': jsonEncode([
           {'start': '2026-03-04', 'end': '2026-03-04', 'name': '校庆'},
         ]),
+        'holiday_cache_synced_at_key': DateTime.now().toIso8601String(),
       });
       await pumpSchedule(tester);
-      // 周三那门课变灰，并且日期表头标出「假」
+      // 周三那门课变灰
       expect(_hasBackgroundColor(tester, '嵌入式系统', mainColorHoliday), isTrue);
-      expect(find.text('假'), findsOneWidget);
       // 其它天的课程不受影响
       expect(_hasOrangeBackground(tester, '数字信号处理'), isTrue);
     });
@@ -284,8 +284,8 @@ void main() {
     testWidgets('没有节假日时课程按原配色显示', (WidgetTester tester) async {
       SharedPreferences.setMockInitialValues({});
       await pumpSchedule(tester);
-      expect(find.text('假'), findsNothing);
       expect(_hasBackgroundColor(tester, '嵌入式系统', mainColorHoliday), isFalse);
+      expect(_hasOrangeBackground(tester, '嵌入式系统'), isTrue);
     });
   });
 }

@@ -74,41 +74,20 @@ String? holidayNameOf(DateTime date, List<HolidayRange> holidays) {
   return null;
 }
 
-/// 预置的节假日。
+/// 兜底用的节假日：只写「法定固定日期」，连休与调休以联网拉到的数据为准。
 ///
-/// 只写「固定日期」的法定节假日（元旦 / 劳动节 / 国庆）与常见连休区间，
-/// 按农历或每年调整的假期（春节、清明、端午、中秋）只预置近年，且都**可以自行增删**
-/// —— 学校校历、调休安排请在「节假日设置」里改。
-List<HolidayRange> defaultHolidayRanges() {
+/// 只有在首次启动还没联网、又没有本地缓存时才会用到。
+List<HolidayRange> fallbackHolidayRanges({DateTime? now}) {
+  final year = (now ?? DateTime.now()).year;
   return [
-    for (final year in [2025, 2026, 2027]) ...[
-      HolidayRange.single(DateTime(year, 1, 1), '元旦'),
+    for (final y in [year, year + 1]) ...[
+      HolidayRange.single(DateTime(y, 1, 1), '元旦'),
+      HolidayRange.single(DateTime(y, 5, 1), '劳动节'),
       HolidayRange(
-        start: DateTime(year, 5, 1),
-        end: DateTime(year, 5, 5),
-        name: '劳动节',
-      ),
-      HolidayRange(
-        start: DateTime(year, 10, 1),
-        end: DateTime(year, 10, 7),
+        start: DateTime(y, 10, 1),
+        end: DateTime(y, 10, 3),
         name: '国庆节',
       ),
     ],
-    // 农历节日：这里预置 2026 年的常见连休区间，不对的话直接改
-    HolidayRange(
-      start: DateTime(2026, 4, 4),
-      end: DateTime(2026, 4, 6),
-      name: '清明节',
-    ),
-    HolidayRange(
-      start: DateTime(2026, 6, 19),
-      end: DateTime(2026, 6, 21),
-      name: '端午节',
-    ),
-    HolidayRange(
-      start: DateTime(2026, 9, 25),
-      end: DateTime(2026, 9, 27),
-      name: '中秋节',
-    ),
   ];
 }
