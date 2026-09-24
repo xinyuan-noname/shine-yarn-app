@@ -50,6 +50,31 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- 把闪纺登记为 PDF 的「打开方式」之一：
+                 文件管理器 / 浏览器 / 聊天软件用 VIEW 打开 PDF 时，闪纺会出现在
+                 选择列表里（不会抢占系统默认应用，用户自己选）。
+                 带 mimeType 的过滤器同时覆盖 content:// 与 file:// 的 URI。 -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/pdf" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:mimeType="application/pdf" />
+            </intent-filter>
+            <!-- 少数文件管理器发 VIEW 时不带 MIME 类型，只给 file:// 路径。 -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="file" />
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.pdf" />
+            </intent-filter>
         </activity>
         <meta-data
             android:name="flutterEmbedding"
