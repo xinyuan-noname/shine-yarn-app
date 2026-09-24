@@ -23,6 +23,14 @@ List<String> normalizeSubjectList(Iterable<String> names) {
   return result;
 }
 
+/// 事项表卡片里科目用的简写：超过 [maxChars] 个字就截成「前几个字…」，
+/// 配合课程别名使用（有别名说明用户自己定了短名字）。
+String abbreviateSubjectName(String name, {int maxChars = 3}) {
+  final trimmed = name.trim();
+  if (trimmed.length <= maxChars) return trimmed;
+  return '${trimmed.substring(0, maxChars)}…';
+}
+
 /// 从事项里解析所属科目。
 ///
 /// 先按已知科目名匹配（更长的名字优先，避免「数学」抢走「高等数学」），
@@ -71,7 +79,9 @@ int countToDoInSubject(
   List<String> subjectList,
 ) {
   if (subject == null) return items.length;
-  return items.where((item) => isToDoInSubject(item, subject, subjectList)).length;
+  return items
+      .where((item) => isToDoInSubject(item, subject, subjectList))
+      .length;
 }
 
 /// 汇总事项表中真实出现过的科目：科目表里命中的排前面，其余按出现顺序补充

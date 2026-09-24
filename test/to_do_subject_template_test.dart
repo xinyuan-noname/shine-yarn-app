@@ -174,6 +174,26 @@ void main() {
     });
   });
 
+  group('科目简写', () {
+    test('超过三个字截断成「前三个字…」', () {
+      expect(abbreviateSubjectName('数字信号处理'), '数字信…');
+      expect(abbreviateSubjectName('大学物理'), '大学物…');
+      expect(abbreviateSubjectName('马克思主义基本原理'), '马克思…');
+    });
+
+    test('不超过三个字原样显示', () {
+      expect(abbreviateSubjectName('高数'), '高数');
+      expect(abbreviateSubjectName('英语'), '英语');
+      expect(abbreviateSubjectName('数字信号'), '数字信号');
+      expect(abbreviateSubjectName('  高数  '), '高数');
+    });
+
+    test('可以指定保留字数', () {
+      expect(abbreviateSubjectName('数字信号处理', maxChars: 2), '数字…');
+      expect(abbreviateSubjectName('数字信号处理', maxChars: 6), '数字信号处理');
+    });
+  });
+
   group('事项表科目筛选界面', () {
     Widget buildFlagView({
       required List<ToDoItemData> items,
@@ -243,6 +263,30 @@ void main() {
       await tester.tap(find.text('全部'));
       await tester.pumpAndSettle();
       expect(find.text('高等数学作业', findRichText: true), findsOneWidget);
+    });
+
+    testWidgets('卡片上的科目用简写，全名只留在筛选胶囊里', (WidgetTester tester) async {
+      final tabController = TabController(length: 3, vsync: const TestVSync());
+      addTearDown(tabController.dispose);
+
+      await tester.pumpWidget(
+        StatefulBuilder(
+          builder: (context, setState) {
+            return buildFlagView(
+              items: [_item(itemId: 'b', title: '数字信号处理作业')],
+              filter: null,
+              tabController: tabController,
+              onChangeFilter: (_) {},
+            );
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // 卡片上是简写（截断成前三个字 + 省略号）
+      expect(find.text('数字信…'), findsOneWidget);
+      // 全名只出现在筛选胶囊里
+      expect(find.text('数字信号处理'), findsOneWidget);
     });
 
     testWidgets('筛选后没有事项时给出提示并能切回全部', (WidgetTester tester) async {

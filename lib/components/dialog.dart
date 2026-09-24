@@ -274,10 +274,6 @@ Future<Map<String, bool>?> showElectiveSelectionDialog({
                       ),
                     ),
                     SizedBox(height: 8),
-                    Text(
-                      '实验课跟随所属课程：课程未选时，其实验课也一并隐藏',
-                      style: dialogContentSmallStyle,
-                    ),
                     SizedBox(height: 8),
                     // 批量操作
                     Wrap(

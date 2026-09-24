@@ -51,8 +51,6 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
             _buildSelectorCard(),
             const SizedBox(height: 12),
             _buildTransformCard(_selected),
-            const SizedBox(height: 12),
-            _buildHintCard(),
           ],
         ),
       ),
@@ -761,22 +759,7 @@ class _ToolFunctionTransformerPageState extends State<ToolFunctionTransformerPag
     );
   }
 
-  Widget _buildHintCard() {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [greyBoxShadow],
-        gradient: whiteLinearGradient,
-      ),
-      child: const Text(
-        '说明：本工具支持输入常见函数并查看其傅里叶变换、'
-        '拉普拉斯变换和 z 变换。离散信号默认给出 DTFT 与 z 变换；'
-        '连续信号默认给出傅里叶变换与拉普拉斯变换。',
-        style: TextStyle(fontSize: 13, height: 1.5, color: Colors.black87),
-      ),
-    );
-  }
+
 }
 
 class _TransformEntry {

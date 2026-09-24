@@ -17,13 +17,13 @@ class _ToolEncoderPageState extends State<ToolEncoderPage> {
   String _result = '';
 
   final List<_EncoderItem> _items = const [
-    _EncoderItem('pcm', 'PCM A律13折线编码', 'PCM / 信源编码'),
-    _EncoderItem('source', '香农码 / 费诺码 / 哈夫曼码', '信源编码'),
-    _EncoderItem('hamming', '汉明码（可调位数）', '信道编码'),
+    _EncoderItem('pcm', 'A律13折线编码', 'PCM'),
+    _EncoderItem('source', '香农/费诺/哈夫曼码', '信源编码'),
+    _EncoderItem('hamming', '汉明码', '信道编码'),
     _EncoderItem('cyclic', '循环码', '信道编码'),
     _EncoderItem('conv', '卷积码', '信道编码'),
-    _EncoderItem('line', 'AMI码 / HDB3码', '线路编码'),
-    _EncoderItem('mod', 'ASK / FSK / PSK', '数字调制'),
+    _EncoderItem('line', 'AMI/HDB3码', '线路编码'),
+    _EncoderItem('mod', 'ASK/FSK/PSK', '数字调制'),
   ];
 
   @override
@@ -48,7 +48,6 @@ class _ToolEncoderPageState extends State<ToolEncoderPage> {
             const SizedBox(height: 12),
             _buildDetail(),
             const SizedBox(height: 12),
-            _buildHintCard(),
           ],
         ),
       ),
@@ -260,21 +259,7 @@ class _ToolEncoderPageState extends State<ToolEncoderPage> {
     );
   }
 
-  Widget _buildHintCard() {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [greyBoxShadow],
-        gradient: whiteLinearGradient,
-      ),
-      child: const Text(
-        '说明：本工具涵盖 PCM、信源编码、信道编码、线路编码和数字调制。'
-        '可输入参数实时计算，也可查看原理说明。',
-        style: TextStyle(fontSize: 13, height: 1.5, color: Colors.black87),
-      ),
-    );
-  }
+
 
   // ---------- 计算函数 ----------
 

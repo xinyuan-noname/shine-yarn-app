@@ -103,6 +103,23 @@ class _HomePageState extends State<HomePage>
     ..._resourceSubjectMap.keys,
   ]);
 
+  /// 事项表卡片上科目用的简写：优先课程别名，其次自动缩写
+  Map<String, String> get _toDoSubjectShortNames {
+    final result = <String, String>{};
+    for (final course in _subjectInfo) {
+      final name = normalizeSubjectName(course.subjectName);
+      if (name.isEmpty) continue;
+      final alias = course.alias?.trim();
+      result.putIfAbsent(
+        name,
+        () => abbreviateSubjectName(
+          alias != null && alias.isNotEmpty ? alias : name,
+        ),
+      );
+    }
+    return result;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -308,11 +325,11 @@ class _HomePageState extends State<HomePage>
 
   /// 按当前课表与提醒设置重排上课提醒（课表/学期数据变化、用户改设置后调用）
   Future<void> _rescheduleScheduleReminders() async {
-      await ScheduleReminderService.rescheduleAll(
-        courseList: _subjectInfo,
-        phaseList: _semesterPhaseList,
-        semesterStartedAt: _semesterStartedAt,
-      );
+    await ScheduleReminderService.rescheduleAll(
+      courseList: _subjectInfo,
+      phaseList: _semesterPhaseList,
+      semesterStartedAt: _semesterStartedAt,
+    );
   }
 
   Future<void> _updateScheduleData() async {
@@ -416,6 +433,7 @@ class _HomePageState extends State<HomePage>
               },
               resourceList: _resourceSubjectMap[_currentResourceSubject] ?? [],
               toDoSubjectList: _toDoSubjectList,
+              toDoSubjectShortNames: _toDoSubjectShortNames,
               toDoSubjectFilter: _toDoSubjectFilter,
               onChangeToDoSubjectFilter: (subject) {
                 setState(() {

@@ -35,6 +35,9 @@ class FlagView extends StatelessWidget {
   /// 事项表筛选用的科目表（课表科目 + 资源站科目）
   final List<String> toDoSubjectList;
 
+  /// 卡片上科目用的简写（科目名 -> 简写），没有对应项时按名字自动缩写
+  final Map<String, String> toDoSubjectShortNames;
+
   /// 事项表当前选中的科目，null 表示「全部」
   final String? toDoSubjectFilter;
   final Function(String?) onChangeToDoSubjectFilter;
@@ -50,6 +53,7 @@ class FlagView extends StatelessWidget {
     required this.onChangeSubject,
     required this.resourceList,
     this.toDoSubjectList = const [],
+    this.toDoSubjectShortNames = const {},
     this.toDoSubjectFilter,
     required this.onChangeToDoSubjectFilter,
   });
@@ -252,15 +256,24 @@ class FlagView extends StatelessWidget {
                                       _gotoEditToDoItem(item);
                                     },
                                     initiallyExpanded: true,
-                                    subtitle: itemSubject == null
-                                        ? null
-                                        : _buildToDoSubjectTag(itemSubject),
-                                    title: LinkText(
-                                      item.title,
-                                      style: expansionListTitleStyle,
-                                      textAlign: TextAlign.left,
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
+                                    title: Row(
+                                      children: [
+                                        Expanded(
+                                          child: LinkText(
+                                            item.title,
+                                            style: expansionListTitleStyle,
+                                            textAlign: TextAlign.left,
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                          ),
+                                        ),
+                                        if (itemSubject != null) ...[
+                                          const SizedBox(width: 6),
+                                          _buildToDoSubjectTag(
+                                            _shortSubjectName(itemSubject),
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                     children: [
                                       LinkText(
@@ -350,18 +363,26 @@ class FlagView extends StatelessWidget {
                                       _gotoEditToDoItem(item);
                                     },
                                     trailingColor: mainColorGrey80,
-                                    subtitle: itemSubject == null
-                                        ? null
-                                        : _buildToDoSubjectTag(
-                                            itemSubject,
+                                    title: Row(
+                                      children: [
+                                        Expanded(
+                                          child: LinkText(
+                                            item.title,
+                                            style:
+                                                expansionListTitleLineThroughStyle,
+                                            textAlign: TextAlign.left,
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                          ),
+                                        ),
+                                        if (itemSubject != null) ...[
+                                          const SizedBox(width: 6),
+                                          _buildToDoSubjectTag(
+                                            _shortSubjectName(itemSubject),
                                             finished: true,
                                           ),
-                                    title: LinkText(
-                                      item.title,
-                                      style: expansionListTitleLineThroughStyle,
-                                      textAlign: TextAlign.left,
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
+                                        ],
+                                      ],
                                     ),
                                     children: [
                                       LinkText(
@@ -529,19 +550,28 @@ class FlagView extends StatelessWidget {
     );
   }
 
-  /// 事项所属科目的小标签
+  /// 科目简写：有自定义简写就用它，否则自动截短
+  String _shortSubjectName(String subject) {
+    final short = toDoSubjectShortNames[subject];
+    if (short != null && short.isNotEmpty) return short;
+    return abbreviateSubjectName(subject);
+  }
+
+  /// 事项所属科目的小标签（用简写，紧跟标题右侧，不额外占一行）
   Widget _buildToDoSubjectTag(String subject, {bool finished = false}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
       decoration: BoxDecoration(
         color: finished ? mainColorGrey20 : mainColorGreenBlue30,
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
         subject,
+        maxLines: 1,
+        overflow: TextOverflow.clip,
         style: TextStyle(
           fontFamily: "SmileySans",
-          fontSize: 12,
+          fontSize: 11,
           color: finished ? mainColorGrey : mainColorLinkBlue,
         ),
       ),

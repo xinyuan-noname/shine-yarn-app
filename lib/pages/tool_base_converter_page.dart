@@ -41,7 +41,6 @@ class _ToolBaseConverterPageState extends State<ToolBaseConverterPage> {
             const SizedBox(height: 12),
             _buildResultCard(),
             const SizedBox(height: 12),
-            _buildHintCard(),
           ],
         ),
       ),
@@ -84,22 +83,6 @@ class _ToolBaseConverterPageState extends State<ToolBaseConverterPage> {
                     if (value != null) {
                       setState(() {
                         _inputBase = value;
-                        _result = '';
-                        _error = '';
-                      });
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildBaseDropdown(
-                  label: '输出进制',
-                  value: _outputBase,
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        _outputBase = value;
                         _result = '';
                         _error = '';
                       });
@@ -246,21 +229,7 @@ class _ToolBaseConverterPageState extends State<ToolBaseConverterPage> {
     );
   }
 
-  Widget _buildHintCard() {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: const [greyBoxShadow],
-        gradient: whiteLinearGradient,
-      ),
-      child: const Text(
-        '说明：支持二进制（BIN）、八进制（OCT）、十进制（DEC）和十六进制（HEX）之间的相互转换。'
-        '输入十六进制时可使用 0-9 和 A-F，不区分大小写。',
-        style: TextStyle(fontSize: 13, height: 1.5, color: Colors.black87),
-      ),
-    );
-  }
+
 
   void _convert() {
     final input = _inputController.text.trim();
