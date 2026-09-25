@@ -85,9 +85,10 @@ class ApiService {
         }
         Worker.scheduleUrlNow();
       } else {
+        // 带上状态码，方便在手机上直接看出是接口不存在(404)还是参数被拒(400/409)
         err = DioException(
           requestOptions: err.requestOptions,
-          message: '请求出错',
+          message: code == null ? '请求出错' : '请求出错($code)',
           type: DioExceptionType.unknown,
         );
       }
